@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Release Notes - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">ProxyForge <span>0.1.0-alpha.1</span></a>
+    <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">GitHub</a>
+  </header>
+  <main class="layout">
+    <nav class="sidebar" aria-label="Documentation"><a href="./">README</a><a aria-current="page" href="release-notes.html">Release Notes</a><a href="release-checklist.html">Release Checklist</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="release-evidence.html">Release Evidence</a><a href="agentic-interface.html">Agentic Interface</a><a href="security.html">Security Policy</a></nav>
+    <article class="doc">
+      <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/RELEASE_NOTES_v0.1.0-alpha.1.md">docs/RELEASE_NOTES_v0.1.0-alpha.1.md</a></p>
+      <h1 id="proxyforge-v0-1-0-alpha-1-release-notes">ProxyForge v0.1.0-alpha.1 Release Notes</h1>
+<p><strong>Release type:</strong> alpha source cut <strong>Release date:</strong> 2026-06-20 <strong>Git tag target:</strong> <code>v0.1.0-alpha.1</code> <strong>Public distribution boundary:</strong> native Linux and Windows release jobs must attach artifact receipts for the exact release commit before publishing installers broadly.</p>
+<h2 id="summary">Summary</h2>
+<p>ProxyForge <code>0.1.0-alpha.1</code> completes the roadmap through Phase 19 as a source and release-process cut. The application includes the local-first Electron workbench, proxy/MITM capture, scanner, OAST, Repeater, Intruder, Exploit Lab, Reports, Extensions, Automations, AI provider control, headless CLI, and release hardening gates described in the master plan.</p>
+<p>The alpha package policy is intentionally conservative: npm publication is disabled, non-publishing builds use <code>--publish never</code>, Electron fuses are verified on packaged executables, and public installer distribution requires native artifact smoke receipts from Linux and Windows hosts.</p>
+<h2 id="gate-results">Gate Results</h2>
+<div class="table-wrap"><table><thead><tr><th>Gate</th><th>Result</th><th>Evidence</th></tr></thead><tbody><tr><td>G1</td><td>Passed</td><td>Scanner core: payload mutation, oracle classification, probe rendering, evidence matrix, insertion points, active scan fixtures.</td></tr><tr><td>G2</td><td>Passed</td><td>Scanner depth: active/passive families, named checks, passive posture rules, retest and evidence packages.</td></tr><tr><td>G3</td><td>Passed</td><td>Browser scan oracle: managed browser scan driver, DOM XSS, prototype pollution, browser workflow smoke.</td></tr><tr><td>G4</td><td>Passed</td><td>OAST and SBOM: signed callback correlation, OAST SSRF, CycloneDX/SPDX project SBOM round trips.</td></tr><tr><td>G5</td><td>Passed</td><td>Traffic Tier 1: flow filters, rule packs, HAR export, cut/export, HTTP history tooling.</td></tr><tr><td>G6</td><td>Passed</td><td>Alternate proxy modes and alpha cut: SOCKS5, reverse, DNS proxy, release notes, release tag target, hotfix process.</td></tr><tr><td>G7</td><td>Passed</td><td>HTTP/2 transport and ALPN capture with frame editor coverage.</td></tr><tr><td>G8</td><td>Passed</td><td>Streaming capture and disk-backed spool coverage for large bodies and SSE.</td></tr><tr><td>G9</td><td>Passed</td><td>Playback client/server and matcher replay coverage.</td></tr><tr><td>G10</td><td>Passed</td><td>Content views for multipart, zip, CSS, MQTT, Socket.IO, WBXML, DNS, GraphQL, SSE, and protobuf.</td></tr><tr><td>G11</td><td>Passed</td><td>Optional native side-car mode stubs: transparent Linux, raw TCP/UDP, HTTP/3, WireGuard.</td></tr><tr><td>G12</td><td>Passed</td><td>Extension SDK: typed API, manifest validation, signed package, runtime policy, compatibility fixtures.</td></tr><tr><td>G13</td><td>Passed</td><td>Project Store: schema migrations, crash recovery, snapshot round trips, workflow persistence.</td></tr><tr><td>G14</td><td>Passed</td><td>Full-chain GUI/headless E2E: Playwright workflow audit, focused browser smoke, headless runner.</td></tr><tr><td>G15</td><td>Passed</td><td>Release hardening: sandboxing, IPC contracts, path traversal, zip-slip, body caps, redaction boundaries.</td></tr><tr><td>G16</td><td>Passed</td><td>API/spec ingest and automation: OpenAPI/Postman/Insomnia/WSDL/OData/GraphQL, AJAX spider, recipes.</td></tr><tr><td>G17</td><td>Passed</td><td>Release trust and packaging process: private npm policy, explicit non-publishing builds, Electron fuse policy, native artifact CI matrix.</td></tr></tbody></table></div>
+<h2 id="verification-commands">Verification Commands</h2>
+<p>The release source cut was validated with:</p>
+<pre><code>npm run build
+npm run docs:pages
+npm run release:fuses
+node tests/electron-fuse-policy.mjs
+node tests/release-readiness.mjs
+node tests/ci-nightly-policy.mjs
+node tests/agent-option-audit.mjs
+node tests/release-package-license.mjs
+node tests/private-output-permissions.mjs
+node tests/install-docs-production-engine.mjs
+node tests/release-trust-production-engine.mjs
+node tests/roadmap-completion.mjs
+npm run test:ci:fast
+npm run test:ci:full -- --skip-browser
+npx playwright install --with-deps chromium
+npx playwright test
+npm run release:trust
+npm audit --omit=dev
+npm audit</code></pre>
+<p><code>npm run test:ci:fast</code> is the required public-alpha source gate. Publish the source tag only after GitHub CI records a clean run for the exact release commit with Chromium installed. Unsigned binaries can be built for validation, but publish release-certified installers only after native artifact receipts and <code>npm run release:preflight</code> pass for the exact release tag.</p>
+<h2 id="known-alpha-boundaries">Known Alpha Boundaries</h2>
+<ul><li>Windows binaries are unsigned unless a release operator supplies a code-signing certificate; SmartScreen warnings are expected for unsigned artifacts.</li><li>Native Linux and Windows artifact receipts must come from the GitHub native artifact matrix or equivalent clean hosts for the exact release commit/tag.</li><li><code>npm run release:preflight</code> is expected to fail in extracted source archives without a git tag, live-validation evidence, native receipts, and <code>SHA256SUMS.txt</code>; that is a binary-release blocker, not a source-alpha blocker.</li><li>The renderer remains a large single bundle; Vite emits the existing chunk-size warning.</li><li>Optional native side-car modes remain optional and degrade gracefully when side-car binaries are absent: transparent proxy, raw TCP/UDP, HTTP/3/QUIC, and WireGuard.</li><li>Local Playwright browser tests require <code>npx playwright install --with-deps chromium</code> before <code>npm run test:e2e</code>.</li></ul>
+<h2 id="hotfix-window">Hotfix Window</h2>
+<p>The alpha hotfix process is documented in <code>docs/HOTFIX_PROCESS.md</code>. Hotfixes must branch from the release tag, pass the source gate, pass the curated fast gate, regenerate release trust evidence, and publish replacement native artifact receipts before distribution.</p>
+    </article>
+  </main>
+</body>
+</html>

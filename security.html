@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Security Policy - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">ProxyForge <span>0.1.0-alpha.1</span></a>
+    <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">GitHub</a>
+  </header>
+  <main class="layout">
+    <nav class="sidebar" aria-label="Documentation"><a href="./">README</a><a href="release-notes.html">Release Notes</a><a href="release-checklist.html">Release Checklist</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="release-evidence.html">Release Evidence</a><a href="agentic-interface.html">Agentic Interface</a><a aria-current="page" href="security.html">Security Policy</a></nav>
+    <article class="doc">
+      <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/SECURITY.md">SECURITY.md</a></p>
+      <h1 id="security-policy">Security Policy</h1>
+<p>ProxyForge is a security testing tool. Use it only on systems you own or are explicitly authorized to assess.</p>
+<h2 id="alpha-scope">Alpha Scope</h2>
+<p>The open-source alpha is intended for local, authorized assessment workflows. It includes active scanning, replay, Intruder-style payload execution, OAST/callback handling, exploit validation helpers, and AI/agent control surfaces, so operators are responsible for scope, rate limits, approvals, and stop conditions.</p>
+<h2 id="reporting-vulnerabilities">Reporting Vulnerabilities</h2>
+<p>Please report vulnerabilities in ProxyForge itself through a private GitHub Security Advisory for this repository: https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new</p>
+<p>Use public issues only for non-sensitive bugs. Do not include live third-party secrets, raw customer traffic, reusable exploit tokens, exploitable proof-of-concept details, or unrelated private data in public reports.</p>
+<h2 id="secret-handling">Secret Handling</h2>
+<p>Operational workspaces intentionally preserve full-fidelity tokens, cookies, keys, callbacks, raw requests, raw responses, replay material, scanner probes, and exploit validation data so operators and agents can reproduce findings. Redaction is expected only in report/export artifacts prepared for submission.</p>
+<h2 id="responsible-use">Responsible Use</h2>
+<p>Do not use ProxyForge to attack systems without authorization. The maintainers may decline support for unlawful, unsafe, or out-of-scope activity.</p>
+    </article>
+  </main>
+</body>
+</html>

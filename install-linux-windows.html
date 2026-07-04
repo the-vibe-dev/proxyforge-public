@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install Linux and Windows - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">ProxyForge <span>0.1.0-alpha.1</span></a>
+    <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">GitHub</a>
+  </header>
+  <main class="layout">
+    <nav class="sidebar" aria-label="Documentation"><a href="./">README</a><a href="release-notes.html">Release Notes</a><a href="release-checklist.html">Release Checklist</a><a aria-current="page" href="install-linux-windows.html">Install Linux and Windows</a><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="release-evidence.html">Release Evidence</a><a href="agentic-interface.html">Agentic Interface</a><a href="security.html">Security Policy</a></nav>
+    <article class="doc">
+      <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/INSTALL_LINUX_WINDOWS.md">docs/INSTALL_LINUX_WINDOWS.md</a></p>
+      <h1 id="install-proxyforge">Install ProxyForge</h1>
+<p>ProxyForge is a desktop web-security workbench with a packaged headless CLI. Pick your OS below — each Quick Start is 3 steps. Advanced operators and CI users see <a href="#advanced">Advanced</a>.</p>
+<p>&gt; <strong>Alpha note.</strong> Binaries in <code>v0.1.0-alpha.1</code> are unsigned. Windows SmartScreen and most antivirus tools will warn the publisher is unknown. This is expected for the alpha and goes away once signing certificates are in place. See <a href="#verify-your-download">Verify your download</a> to confirm authenticity from the SHA-256 sums.</p>
+<p>---</p>
+<h2 id="quick-start-windows">Quick Start — Windows</h2>
+<p>1. <strong>Download</strong> the installer from the latest release:</p>
+<ul><li><strong>Installer (recommended):</strong> <code>ProxyForge Setup 0.1.0-alpha.1.exe</code></li><li><strong>Portable (no install):</strong> <code>ProxyForge 0.1.0-alpha.1.exe</code></li></ul>
+<p>https://github.com/the-vibe-dev/proxyforge-public/releases/latest</p>
+<p>2. <strong>Run it.</strong> SmartScreen will show *&quot;Windows protected your PC&quot;* — click <strong>More info → Run anyway</strong>. The installer asks where to install; default is fine. Click <strong>Install</strong>.</p>
+<p>3. <strong>Export and manually trust the project CA on first launch.</strong></p>
+<ul><li>Open ProxyForge → <strong>Settings → Project CA</strong>.</li><li>Click <strong>Generate root CA</strong>, then <strong>Export PEM</strong>.</li><li>Open the exported <code>.pem</code> with the Certificate Import Wizard and import it to <strong>Trusted Root Certification Authorities → Current User</strong>.</li></ul>
+<p>4. <strong>Point your browser at the proxy.</strong> Windows Settings → Network → Proxy → Manual → <code>127.0.0.1:8080</code>. Or use the *ProxyForge: Launch Managed Browser* button in the app (does this automatically with an isolated Chromium profile).</p>
+<p>You&#39;re done. Open any HTTPS site; traffic appears in <strong>Proxy → HTTP history</strong>.</p>
+<h3 id="windows-portable-mode">Windows portable mode</h3>
+<p>If you grabbed <code>ProxyForge 0.1.0-alpha.1.exe</code> (portable), there&#39;s no installer step. Double-click to launch. The portable build does <strong>not</strong> put itself in the Start menu and does not register an uninstaller — delete the file to remove it.</p>
+<p>---</p>
+<h2 id="quick-start-linux-debian-ubuntu-mint">Quick Start — Linux (Debian / Ubuntu / Mint)</h2>
+<p>1. <strong>Download</strong> <code>proxyforge_0.1.0-alpha.1_amd64.deb</code> from https://github.com/the-vibe-dev/proxyforge-public/releases/latest</p>
+<p>2. <strong>Install:</strong></p>
+<pre><code>   sudo apt install ./proxyforge_0.1.0-alpha.1_amd64.deb</code></pre>
+<p><code>apt</code> pulls in the GTK / NSS / asound dependencies automatically.</p>
+<p>3. <strong>Export and manually trust the project CA on first launch.</strong></p>
+<ul><li>Open ProxyForge from your app launcher (or run <code>proxyforge</code>).</li><li><strong>Settings → Project CA → Generate root CA → Export PEM.</strong></li><li>Import the PEM into the browser or OS trust store you use for testing. Chromium-derived browsers on Linux usually use the user NSS store; Firefox and Curl have separate trust stores. See <a href="#linux-ca-fallback">Linux CA fallback</a>.</li></ul>
+<p>4. <strong>Browser proxy:</strong> Settings → Network → Manual → <code>127.0.0.1:8080</code>. Or click *Launch Managed Browser* in the app.</p>
+<p>---</p>
+<h2 id="quick-start-linux-appimage-distro-agnostic">Quick Start — Linux (AppImage, distro-agnostic)</h2>
+<p>For Fedora, Arch, openSUSE, and any other distro where <code>.deb</code> doesn&#39;t apply:</p>
+<p>1. <strong>Download</strong> <code>ProxyForge-0.1.0-alpha.1.AppImage</code>.</p>
+<p>2. <strong>Make it executable and run:</strong></p>
+<pre><code>   chmod +x ProxyForge-0.1.0-alpha.1.AppImage
+   ./ProxyForge-0.1.0-alpha.1.AppImage</code></pre>
+<p>3. <strong>Export and manually trust the project CA</strong> using the same <code>.deb</code> Quick Start steps.</p>
+<p>4. <strong>Browser proxy</strong> → <code>127.0.0.1:8080</code>.</p>
+<p>The AppImage is self-contained. To uninstall, delete the file.</p>
+<p>---</p>
+<h2 id="what-the-first-run-settings-flow-does">What the first-run Settings flow does</h2>
+<p>When you click <strong>Generate root CA</strong>, ProxyForge:</p>
+<p>1. Creates a per-project root certificate inside your project folder and exposes it for export. 2. Derives per-host leaf certificates on the fly as you visit HTTPS sites, signed by that root. 3. Keeps the root and host certs isolated per project. No cross-engagement contamination.</p>
+<p>ProxyForge does not install or remove OS/browser trust-store entries in this alpha. Trusting the exported PEM and removing that trust are manual operating-system or browser actions. <strong>Revoke</strong> rotates/deletes the local project CA material inside ProxyForge; it cannot remove a certificate you already imported into Windows, NSS, Firefox, Curl, or a system trust store.</p>
+<p>---</p>
+<h2 id="verify-your-download">Verify your download</h2>
+<p>Each release publishes <code>SHA256SUMS.txt</code> next to the binaries. Verify:</p>
+<pre><code># Linux / macOS
+sha256sum -c SHA256SUMS.txt --ignore-missing</code></pre>
+<pre><code># Windows PowerShell
+Get-FileHash &quot;ProxyForge Setup 0.1.0-alpha.1.exe&quot; -Algorithm SHA256
+# Compare against the line for that filename in SHA256SUMS.txt</code></pre>
+<p>---</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="windows-smartscreen-blocks-the-installer">Windows SmartScreen blocks the installer</h3>
+<p>Expected for the unsigned alpha. Click <strong>More info</strong> → <strong>Run anyway</strong>. If you use Windows Pro with managed app control, ask your admin to allowlist the publisher <code>dev.proxyforge.desktop</code> for testing.</p>
+<h3 id="antivirus-quarantines-the-exe">Antivirus quarantines the .exe</h3>
+<p>Unsigned Electron binaries trip several AV engines. Add an exclusion for the install directory (default <code>C:\Users\&lt;you&gt;\AppData\Local\Programs\ProxyForge\</code>) or run from a portable folder you&#39;ve allowed. Code signing is on the roadmap for the next alpha.</p>
+<h3 id="browser-shows-your-connection-is-not-private-on-every-site">Browser shows &quot;Your connection is not private&quot; on every site</h3>
+<p>The project CA isn&#39;t trusted by that browser yet.</p>
+<ul><li><strong>Chrome / Edge / Brave on Windows or Linux:</strong> export the PEM from ProxyForge and import it into that browser&#39;s trust source. Restart the browser after trusting.</li><li><strong>Firefox (any OS):</strong> Firefox uses its own trust store. See <a href="#linux-ca-fallback">Linux CA fallback</a> → Firefox section, or use Settings → Privacy &amp; Security → Certificates → Import in Firefox to add the exported PEM manually.</li><li><strong>Safari (macOS):</strong> not supported in this alpha.</li></ul>
+<h3 id="proxy-capture-history-is-empty">Proxy capture history is empty</h3>
+<ul><li>Confirm browser proxy is set to <code>127.0.0.1:8080</code> (or whichever port you chose in Settings → Proxy listener).</li><li>Confirm ProxyForge says *Proxy listening on 127.0.0.1:8080* in the status bar.</li><li>Test with <code>curl -x http://127.0.0.1:8080 -k https://example.com</code> from a terminal. A reachable upstream produces an HTTP history row.</li></ul>
+<h3 id="the-app-won-t-start-on-linux">The app won&#39;t start on Linux</h3>
+<p>Missing dependency. Run <code>proxyforge</code> from a terminal — the error tells you which lib (usually <code>libnss3</code>, <code>libgbm1</code>, or <code>libnotify4</code>). Install with <code>sudo apt install &lt;package&gt;</code> and retry.</p>
+<h3 id="i-want-to-uninstall">I want to uninstall</h3>
+<ul><li><strong>Windows installer:</strong> Settings → Apps → ProxyForge → Uninstall, or run the uninstaller in the install directory.</li><li><strong>Windows portable:</strong> delete the <code>.exe</code>.</li><li><strong>Linux .deb:</strong> <code>sudo apt remove proxyforge</code>.</li><li><strong>Linux AppImage:</strong> delete the file.</li><li>Removing the app does not remove your project files or trust-store entries. Project files live wherever you saved them. App-managed settings, browser profiles, reports, provider config, and runtime state can also live under Electron&#39;s per-user app data directory. Manually remove any imported ProxyForge root CA from each OS/browser trust store you used.</li></ul>
+<h3 id="linux-ca-fallback">Linux CA fallback</h3>
+<p>After exporting the PEM from <strong>Settings → Project CA</strong>, import it into the store your test browser actually uses:</p>
+<pre><code># Chromium / Chrome / Edge user NSS store (Linux):
+sudo apt install libnss3-tools
+certutil -d sql:$HOME/.pki/nssdb -A -t &quot;C,,&quot; -n &quot;ProxyForge Root&quot; -i ~/path/to/proxyforge-ca.pem
+
+# Firefox (Linux/macOS/Windows — same UI per profile):
+# Settings → Privacy &amp; Security → Certificates → View Certificates → Authorities → Import
+# Tick &quot;Trust this CA to identify websites&quot;
+
+# Curl / system-wide (Debian/Ubuntu):
+sudo cp ~/path/to/proxyforge-ca.pem /usr/local/share/ca-certificates/proxyforge.crt
+sudo update-ca-certificates</code></pre>
+<h3 id="windows-ca-fallback">Windows CA fallback</h3>
+<p>After exporting the PEM from <strong>Settings → Project CA</strong>, use the Certificate Import Wizard:</p>
+<p>1. Double-click the exported <code>.pem</code> (rename to <code>.cer</code> if Windows refuses). 2. Click <strong>Install Certificate</strong> → <strong>Current User</strong> → <strong>Place all certificates in the following store</strong> → <strong>Browse</strong> → <strong>Trusted Root Certification Authorities</strong> → <strong>OK</strong> → <strong>Next</strong> → <strong>Finish</strong>. 3. Confirm the security warning.</p>
+<p>---</p>
+<h2 id="headless-cli">Headless CLI</h2>
+<p>The desktop install includes a packaged headless runner for CI and scripted workflows.</p>
+<pre><code># Linux: from your installed copy
+proxyforge headless --target https://app.example.test \
+  --scope app.example.test \
+  --report json,bundle \
+  --sarif --junit \
+  --out-dir ./out
+
+# Windows: from PowerShell
+&amp; &quot;C:\Program Files\ProxyForge\proxyforge.exe&quot; headless `
+  --target https://app.example.test --scope app.example.test `
+  --report json,bundle --out-dir .\out</code></pre>
+<p>Authenticated CI scans can pass secrets via environment variables instead of config files:</p>
+<pre><code>PROXYFORGE_AUTHORIZATION=&quot;Bearer $TOKEN&quot; \
+PROXYFORGE_COOKIE=&quot;session=$SESSION_ID&quot; \
+proxyforge headless --target https://app.example.test --scope app.example.test \
+  --report json,bundle --sarif</code></pre>
+<p>Replay a captured project from CI:</p>
+<pre><code>proxyforge headless --project-file retail-api.proxyforge.json \
+  --project-exchange hx-1032 --report json,bundle</code></pre>
+<p>Exit codes: <code>0</code> success, <code>1</code> scan blocked (scope/safety), <code>2</code> <code>--fail-on</code> severity threshold met. Full CLI reference in <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/OPERATOR_GUIDE.md">OPERATOR_GUIDE.md</a>.</p>
+<p>---</p>
+<h2 id="advanced">Advanced</h2>
+<p>The sections below are for release engineers, CI maintainers, and contributors. New users do not need them.</p>
+<h3 id="build-from-source">Build from source</h3>
+<pre><code>git clone https://github.com/the-vibe-dev/proxyforge-public.git
+cd proxyforge-public
+npm install
+npm run build          # renderer + electron tsc
+npx playwright install --with-deps chromium  # required before local Playwright browser tests
+npm run dist:linux     # AppImage + .deb in release/
+npm run dist:win       # NSIS installer + portable .exe — requires Wine + Mono on Linux hosts
+npm run dist:win:zip   # zip-only fallback when Wine is unavailable</code></pre>
+<p>The zip fallback emits <code>ProxyForge-0.1.0-alpha.1-win.zip</code> for manual unpacked Windows testing.</p>
+<p>Wine + Mono setup on Debian/Ubuntu:</p>
+<pre><code>sudo apt install wine wine64 mono-devel</code></pre>
+<h3 id="per-project-ca-rotation">Per-project CA rotation</h3>
+<ul><li><strong>Settings → Project CA → Rotate root</strong> generates a new root and revokes the previous one. Trust must be re-imported.</li><li>Closing a project and opening another changes project context. Any root you manually imported remains trusted until you remove it from the relevant OS/browser trust store. Use <strong>Revoke</strong> to discard ProxyForge&#39;s local CA material, then remove the old root from each trust store you used.</li></ul>
+<h3 id="strict-upstream-tls-validation">Strict upstream TLS validation</h3>
+<p>Default is <strong>strict</strong>. ProxyForge refuses upstream certificates that are self-signed, expired, hostname-mismatched, or untrusted unless you explicitly select <strong>relaxed</strong> for a controlled lab/private-CA run. Prefer importing a private CA into the relevant trust store over disabling upstream validation.</p>
+<h3 id="release-smoke-commands">Release smoke commands</h3>
+<p>Linux unpacked launch smoke (structured exit, no manual clicks):</p>
+<pre><code>npm run release:smoke:linux</code></pre>
+<p>AppImage launch smoke:</p>
+<pre><code>node scripts/release-smoke.mjs --platform linux \
+  --artifact release/ProxyForge-0.1.0-alpha.1.AppImage \
+  --out test-results/release-smoke-linux-appimage.json</code></pre>
+<p>Clean-container deb install/runtime/uninstall smoke (requires Docker):</p>
+<pre><code>PROXYFORGE_DOCKER=&quot;sudo -n docker&quot; scripts/release-deb-container-smoke.sh --gui --browser-trust</code></pre>
+<p>This smoke installs the deb into <code>debian:bookworm-slim</code>, verifies the packaged Electron Node runtime, launches the GUI under Xvfb with <code>PROXYFORGE_RELEASE_SMOKE=1</code>, installs Chromium plus <code>libnss3-tools</code>, imports the project CA into an isolated Chromium NSS trust store, captures trusted HTTPS browser traffic, then uninstalls and confirms cleanup.</p>
+<p>Packaged browser-routing smoke on a host with Chromium, Chrome, or Edge:</p>
+<pre><code>node scripts/release-smoke.mjs --platform linux \
+  --artifact release/linux-unpacked/proxyforge --browser-routing \
+  --out test-results/release-smoke-linux-browser-routing.json</code></pre>
+<p>Windows installer NSIS install/launch/uninstall smoke (Windows host required):</p>
+<pre><code>node scripts\release-smoke.mjs --platform windows `
+  --artifact &quot;release\ProxyForge Setup 0.1.0-alpha.1.exe&quot; `
+  --uninstall --out test-results\release-smoke-windows-installer.json</code></pre>
+<p>Windows packaged browser-routing and DPAPI sample-cookie smoke:</p>
+<pre><code>node scripts\release-smoke.mjs --platform windows `
+  --artifact release\win-unpacked\ProxyForge.exe `
+  --browser-routing --dpapi-cookie `
+  --out test-results\release-smoke-windows-browser-dpapi.json</code></pre>
+<p>Add <code>--browser-trust-store</code> only on hosts that permit temporary <code>Cert:\CurrentUser\Root</code> mutation and cleanup; if the host rejects it the smoke records a <code>blocked</code> lane and continues.</p>
+<h3 id="smoke-output-format">Smoke output format</h3>
+<pre><code>{
+  &quot;kind&quot;: &quot;proxyforge-release-smoke-result&quot;,
+  &quot;schemaVersion&quot;: 1,
+  &quot;platform&quot;: &quot;linux&quot;,
+  &quot;status&quot;: &quot;passed&quot;,
+  &quot;artifact&quot;: &quot;release/linux-unpacked/proxyforge&quot;,
+  &quot;checks&quot;: [
+    { &quot;name&quot;: &quot;artifact-exists&quot;, &quot;status&quot;: &quot;passed&quot; },
+    { &quot;name&quot;: &quot;electron-node-runtime&quot;, &quot;status&quot;: &quot;passed&quot; },
+    { &quot;name&quot;: &quot;packaged-headless-scan-report&quot;, &quot;status&quot;: &quot;passed&quot; },
+    { &quot;name&quot;: &quot;packaged-runtime-proxy-cert-oast-report&quot;, &quot;status&quot;: &quot;passed&quot; },
+    { &quot;name&quot;: &quot;packaged-browser-routing&quot;, &quot;status&quot;: &quot;passed&quot; },
+    { &quot;name&quot;: &quot;packaged-gui-launch&quot;, &quot;status&quot;: &quot;passed&quot; }
+  ]
+}</code></pre>
+<p>Attach JSON output and artifact SHA-256 values to <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/RELEASE_EVIDENCE.md">RELEASE_EVIDENCE.md</a>. A lane is not marked <code>Production Ready</code> until its clean-machine install, browser routing/trust-store, packaged headless scan/report, packaged runtime proxy/cert/OAST/report, and platform-specific cookie/decryption smokes have current evidence.</p>
+<h3 id="known-host-dependent-lanes">Known host-dependent lanes</h3>
+<ul><li><strong>Windows <code>Cert:\CurrentUser\Root</code> mutation</strong> — blocked with <code>ERROR_NOT_SUPPORTED</code> on <code>windows-trust-runner</code> and similar locked hosts. This is the trust-store automation lane only; the manual fallback in <a href="#windows-ca-fallback">Windows CA fallback</a> works on any session.</li><li><strong>Windows DPAPI sample-cookie extraction</strong> — requires a host where the current user has a Chromium-derived profile key DPAPI can unwrap.</li><li><strong>Linux Secret Service cookie extraction</strong> — requires a desktop session with an unlocked keyring.</li></ul>
+<p>These do not block alpha install. They are noted in the release matrix and revisit cycles.</p>
+    </article>
+  </main>
+</body>
+</html>
