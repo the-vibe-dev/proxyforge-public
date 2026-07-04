@@ -1,0 +1,257 @@
+schema_version: playbook.system
+id: playbook.cross_surface_idor
+name: Cross-Surface IDOR and Access-Control Parity
+version: 1.0.0
+status: active
+summary: >-
+  Prove object/action authorization gaps that exist only on a less-tested
+  client surface (desktop app, mobile app, browser extension, WebSocket) for
+  a backend whose browser path is well-guarded. Captures install-time and
+  client-specific traffic with owned accounts and bounded replay.
+owner:
+  team: sechive-core
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - authorized_testing_scope
+  - evidence_gated_execution
+  adds:
+  - cross_surface_parity_coverage
+  - safe_proof_depth
+modes:
+  allowed:
+  - bugbounty
+  - pentest
+  - own-source
+  requires_scope: true
+objectives:
+  primary:
+  - capture_multi_client_traffic
+  - build_surface_parity_matrix
+  - replay_cross_subject_on_weak_surface
+  - prove_minimal_impact
+  secondary:
+  - record_negative_evidence
+  - route_followup_playbooks
+target_requirements:
+  surfaces:
+    any:
+    - surface.desktop.app
+    - surface.mobile.app
+    - surface.browser.extension
+    - surface.api.websocket
+    - surface.api.rest
+required_skills:
+  primary:
+  - access_control_bypass
+  supporting:
+  - authz_matrix_tester
+  - object_id_enumerator
+  - web_hunter
+  - poc_validator
+  - report_generator
+  - scope_guard
+theory_filters:
+  preferred_theories:
+  - authz.surface_parity_client
+  - authz.websocket_subscription
+  - authz.object_access.idor
+  - authz.function_level
+proof_continuation:
+  enabled: true
+  max_replans: 3
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 40
+  max_retries_per_step: 3
+  max_branches: 8
+steps:
+- id: scope.preflight
+  title: Confirm authorization, allowed client surfaces, and proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - proxy_capture_not_authorized
+    - destructive_action_required
+- id: accounts.prepare
+  title: Prepare owned accounts, roles, tenants, and canary objects across surfaces
+  agent: planner
+  action_type: test_fixture_setup
+  skill_ref: scope_guard
+  inputs_from:
+  - scope.preflight
+  evidence_gate:
+    id: gate.accounts.prepared
+    required:
+    - type: owned_test_account_matrix
+      count: 1
+    - type: canary_object_set
+      count: 1
+- id: capture.install_and_runtime
+  title: Capture install-time and runtime traffic for desktop/mobile/extension clients
+  agent: executor
+  action_type: dynamic_validation
+  skill_ref: access_control_bypass
+  inputs_from:
+  - accounts.prepare
+  evidence_gate:
+    id: gate.capture.traffic
+    required_any:
+    - type: http_exchange
+      count: 1
+    - type: websocket_frame_exchange
+      count: 1
+    blocked_when:
+    - real_user_data_visible
+- id: parity.matrix
+  title: Build the per-mechanism browser-vs-client authorization parity matrix
+  agent: researcher
+  action_type: analysis
+  skill_ref: authz_matrix_tester
+  inputs_from:
+  - capture.install_and_runtime
+  evidence_gate:
+    id: gate.parity.matrix
+    required:
+    - type: surface_parity_matrix
+      count: 1
+- id: authz.replay
+  title: Replay bounded cross-subject requests on the weaker client path only
+  agent: executor
+  action_type: dynamic_validation
+  skill_ref: access_control_bypass
+  inputs_from:
+  - parity.matrix
+  evidence_gate:
+    id: gate.authz.replay
+    required_any:
+    - type: cross_surface_request_pair
+      count: 1
+    - type: negative_evidence
+      count: 1
+    blocked_when:
+    - non_owned_object_required
+    - real_user_data_visible
+  loop:
+    type: per_mechanism_matrix
+    max_iterations: 60
+- id: impact.minimize
+  title: Minimize to one mechanism, one boundary, one replay spec; restore state
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - authz.replay
+  evidence_gate:
+    id: gate.impact.minimized
+    required_any:
+    - type: replay_spec
+      count: 1
+    - type: closure_note
+      count: 1
+    required:
+    - type: cleanup_log
+      count: 1
+- id: closeout
+  title: Promote redacted evidence and confirm report readiness
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: report_generator
+  inputs_from:
+  - impact.minimize
+  evidence_gate:
+    id: gate.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+agents:
+  orchestrator:
+    role: planner
+    responsibilities: [select_playbooks, maintain_scope_state, coordinate_handoffs]
+    handoff_artifacts: [run_plan, scope_ref, coverage_matrix]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  planner:
+    role: planner
+    responsibilities: [define_objective, choose_safe_proof_depth, set_stop_conditions]
+    handoff_artifacts: [validation_plan, roe_matrix, candidate_queue]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  researcher:
+    role: researcher
+    responsibilities: [map_surface, build_parity_matrix, record_negative_evidence]
+    handoff_artifacts: [surface_parity_matrix, observation_bundle]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  executor:
+    role: executor
+    responsibilities: [capture_multi_client_traffic, run_bounded_replay, honor_rate_limits]
+    handoff_artifacts: [http_exchange, websocket_frame_exchange, blocked_record]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  validator:
+    role: validator
+    responsibilities: [minimize_proof, verify_false_positive_filters, confirm_cleanup]
+    handoff_artifacts: [replay_spec, cleanup_log, negative_evidence]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  evaluator:
+    role: evaluator
+    responsibilities: [review_evidence_quality, enforce_policy, decide_submission_readiness]
+    handoff_artifacts: [readiness_decision, redaction_log, gap_list]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - third_party_impact
+    - proxy_capture_not_authorized
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+  data_handling:
+    use_test_accounts_and_canaries: true
+    redact_sensitive_values: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - real_user_data_would_be_accessed
+  - destructive_effect_detected
+  - persistence_or_evasion_required_outside_lab
+
+executable_steps:
+  - playbook_step_id: idor.authz_matrix
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_authz_matrix_idor
+    evidence_emit: { kind: api_authorization_matrix }
+  - playbook_step_id: idor.forged_owner
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_forged_owner_post
+    evidence_emit: { kind: api_authorization_matrix }
+  - playbook_step_id: idor.basket_foreign_id
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_basket_manipulate_foreign_id
+    evidence_emit: { kind: api_authorization_matrix }
+  - playbook_step_id: idor.review_nosql_patch
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_review_nosql_patch
+    evidence_emit: { kind: api_authorization_matrix }

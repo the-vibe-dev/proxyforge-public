@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: extension.privileged_message_origin_unchecked
+title: Privileged extension message handler does not verify sender origin
+version: 1.0.0
+status: active
+summary: A Chromium extension's background script or service worker exposes a privileged action via runtime.onMessage / chrome.runtime.connect and dispatches on the message body without checking sender.id, sender.url, or sender.tab against an allow-list. A malicious page (or another extension via externally_connectable) can invoke the privileged action.
+vuln_class: access_control
+subclass: missing_origin_check
+severity_default: high
+mappings:
+  cwe: [CWE-346, CWE-862, CWE-284]
+applicability:
+  target_surfaces: [surface.chromium.extensions, surface.chromium.renderer, surface.chromium.browser]
+preconditions:
+  required:
+    - extension_handler_dispatches_on_attacker_message
+    - sender_identity_not_validated
+detection_logic:
+  predicates:
+    - source_review_shows_no_sender_id_or_url_check
+    - manifest_externally_connectable_overpermissive
+    - witness_demonstrates_action_from_unprivileged_page
+  disconfirming_observations:
+    - sender_id_validated_against_allowlist
+    - manifest_restricts_externally_connectable_to_known_ids
+exploitability_model:
+  factors: [reachable_from_arbitrary_web_origin, action_grants_privileged_capability]
+impact_model:
+  dimensions: [privilege_escalation, info_leak]
+evidence_requirements:
+  minimum_for_validated:
+    - type: regression_witness
+      count: 1
+    - type: rootcause_hypothesis
+      count: 1
+  preferred_for_critical:
+    - type: ipc_trace
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_action_genuinely_privileged
+    - confirm_no_implicit_origin_check_via_csp_or_csp_isolation
+linked_skills:
+  primary: [crash_triage]
+  supporting: [chromium_research]
+linked_playbooks:
+  primary: [playbook.crash_to_root_cause]

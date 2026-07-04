@@ -1,0 +1,61 @@
+id: api_sequence_miner
+name: API Sequence Miner
+version: 1
+summary: Extract valid API call sequences from browser traffic, JS bundles, OpenAPI specs, and mobile apps. Infer state-machine preconditions. Test permutations. Identify missing state checks. Feed to api_sequence_verifier for business-logic discovery.
+roles:
+  - researcher
+  - executor
+modes:
+  - bugbounty
+  - pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+status: active
+tags:
+  - api-sequencing
+  - business-logic
+  - workflow-discovery
+  - state-machine
+  - api-reordering
+  - missing-state-check
+  - api-flow-extraction
+  - openapi-parsing
+  - js-bundle-analysis
+  - mobile-app-decompile
+  - proxy-flow-mining
+requires_scope: true
+required_tools: []
+optional_tools:
+  - grep
+  - jq
+  - mobile-decompile-tools
+fallback_chain:
+  har_extraction: [internal_proxy]
+  openapi_parsing: [jq]
+  js_analysis: [grep]
+triggers:
+  surface:
+    - api_endpoint_discovered
+    - user_workflow_execution
+    - js_bundle_with_api_calls
+    - openapi_specification
+    - mobile_app_decompile
+  pivot:
+    - api_sequence_extracted_to_business_logic_test
+    - missing_state_check_to_bypass
+hypothesis_templates:
+  - id: api_sequence_permutation_bypass
+    description: Valid sequence is POST /payment → POST /receipt, but /receipt allowed before /payment; double-receipt or unpaid receipt issuance.
+  - id: missing_state_guard
+    description: API endpoint lacks precondition check. Caller can skip prior step (e.g., /checkout without /add-to-cart).
+  - id: optional_step_mandatory
+    description: Step marked as optional in API docs can actually be skipped, breaking workflow invariant.
+  - id: state_inference_gap
+    description: Server infers state from caller context rather than explicit request; attacker can bypass by replaying old context.
+forbidden:
+  - destructive
+  - dos
+  - out_of_scope
+  - production_data_mutation

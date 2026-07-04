@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: web.http_smuggling.cl_te_te_cl_h2
+title: HTTP request smuggling (CL.TE / TE.CL / H2.CL / H2.TE) via frontend↔backend desync
+version: 1.0.0
+status: active
+summary: A frontend proxy and backend server disagree on request boundaries (Content-Length vs Transfer-Encoding, or HTTP/2 downgrade to HTTP/1.1) so an attacker-supplied trailing request fragment is interpreted as the prefix of the next victim's request, enabling cache poisoning, request hijacking, header smuggling, or auth bypass.
+vuln_class: web_protocol
+subclass: request_smuggling
+severity_default: critical
+mappings:
+  cwe: [CWE-444]
+  web: [http1_1, http2]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [frontend_proxy_present, backend_parses_request_boundaries_differently_or_h2_downgrade_present]
+detection_logic:
+  predicates:
+    - cl_te_or_te_cl_timing_difference_observable
+    - h2_pseudo_header_or_te_smuggle_modifies_next_request
+    - response_queue_desync_observable_via_target_to_self_probe
+  disconfirming_observations:
+    - frontend_normalizes_te_and_cl_to_one_canonical
+    - h2_end_to_end_no_downgrade
+    - smuggle_probes_return_unchanged_responses
+exploitability_model:
+  factors: [proxy_normalizer_state, h2_downgrade_state, backend_parser_quirks]
+impact_model:
+  dimensions: [auth_bypass, cache_poisoning, credential_theft_via_request_hijack]
+evidence_requirements:
+  minimum_for_validated:
+    - type: smuggle_probe_request_pair
+      count: 1
+    - type: response_queue_desync_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_request_hijack_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_actually_belongs_to_other_request
+    - verify_no_proxy_normalization_explains_delta
+    - verify_repro_against_dedicated_endpoint
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

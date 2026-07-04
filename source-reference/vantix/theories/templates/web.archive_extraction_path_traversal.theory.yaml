@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: web.archive_extraction_path_traversal
+title: Archive extraction path traversal
+version: 1.0.0
+status: active
+summary: Archive upload or import handlers may extract member paths outside the intended directory when paths are not normalized and constrained.
+vuln_class: web_parser
+subclass: archive_extraction_traversal
+severity_default: high
+mappings:
+  owasp_top10_2025: [A03, A05]
+  wstg: [WSTG-INPV, WSTG-CONF]
+  cwe: [CWE-22, CWE-434]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [archive_upload_or_import]
+preconditions:
+  required: [scope_authorizes_upload_testing, inert_overwrite_target_or_lab]
+  blockers: [production_file_overwrite_risk, cleanup_not_possible]
+detection_logic:
+  predicates:
+    - archive_member_path_probe_uploaded
+    - extraction_location_or_retrieval_delta_observed
+    - path_escape_or_overwrite_boundary_confirmed
+  disconfirming_observations:
+    - archive_rejected
+    - member_paths_normalized_inside_sandbox
+    - no_extraction_or_retrieval_evidence
+exploitability_model:
+  factors: [upload_auth_state, extraction_path, overwrite_power, served_static_root]
+impact_model:
+  dimensions: [file_overwrite, static_content_integrity, code_execution_precondition]
+evidence_requirements:
+  minimum_for_validated:
+    - type: upload_artifact
+      count: 1
+    - type: retrieval_or_state_readback
+      count: 1
+false_positive_filters:
+  required: [verify_inert_payload, verify_path_escape, verify_cleanup_or_lab_only]
+linked_skills:
+  primary: [web_hunter]
+  supporting: [payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [path_boundary_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [zip_slip, archive_member_path_normalization, upload_import_boundary]

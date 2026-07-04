@@ -1,0 +1,80 @@
+id: graphql_hunter
+name: GraphQL Hunter
+version: 1
+summary: GraphQL-specific attack methodology - introspection-driven field/mutation auth gaps, alias batching, depth DoS, node() IDOR, subscription auth, persisted-query cache abuse
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- graphql
+- introspection
+- alias-batching
+- depth-attack
+- field-level-authz
+- mutation-authz
+- node-idor
+- relay-cursor
+- subscription-auth
+- graphql-ws
+- subscriptions-transport-ws
+- persisted-query
+- automatic-persisted-queries
+- apq
+- batch-query
+- fragment-cycle
+- type-confusion
+- input-coercion
+- mass-assignment-input-type
+requires_scope: true
+required_tools:
+- curl
+- jq
+optional_tools:
+- graphw00f
+- clairvoyance
+- graphql-cop
+fallback_chain:
+  introspection: [curl, jq]
+  fingerprint: [graphw00f]
+  schema_recover: [clairvoyance]
+  hygiene_check: [graphql-cop]
+triggers:
+  surface:
+  - graphql_endpoint
+  - graphql_subscriptions_websocket
+  - graphql_voyager_ui
+  - apollo_studio_link
+  - graphiql_in_production
+  - persisted_query_endpoint
+  pivot:
+  - introspection_to_schema_to_field_authz
+  - node_idor_to_cross_user_data
+  - mutation_authz_gap_to_priv_esc
+  - batch_amplification_to_dos_or_rate_limit_bypass
+hypothesis_templates:
+- id: introspection_open
+  description: "Production GraphQL endpoint exposes introspection - schema disclosure on its own is on the never-submit list; the value is using the schema to find a field/mutation authz gap."
+- id: field_level_authz_gap
+  description: "A type exposes a field (email, address, internal_id, role) that is reachable via a query on an adjacent object owned by the attacker but should only be visible to the field's owner."
+- id: node_idor
+  description: "Relay-style node(id GlobalID) accepts any base64-encoded GlobalID and returns the referenced object without per-type authz checks."
+- id: batch_authz_skip
+  description: "Alias batching submits N parallel sub-queries; the rate-limiter or authz middleware operates at the document level but not per-alias, enabling N-fold amplification or per-alias auth-bypass."
+- id: mutation_authz_skip
+  description: "A mutation exists in the schema (because introspection or a JS bundle exposed it) but is missing from the resolver's authz guard - calling it directly succeeds where the UI never offers it."
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+runtime:
+  primitive_module: secops.services.active_probe
+  primitives:
+    - probe_graphql_introspection

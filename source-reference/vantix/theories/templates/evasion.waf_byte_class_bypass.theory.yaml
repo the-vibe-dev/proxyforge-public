@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: evasion.waf_byte_class_bypass
+title: WAF/IPS byte-class, encoding, or fragmentation bypass changes verdict on identical semantic payload
+version: 1.0.0
+status: active
+summary: >-
+  A network-level WAF/IPS or application-level filter blocks a canonical
+  payload but accepts a semantically equivalent variant produced by case
+  folding, mixed encoding (URL-encoded, double-encoded, Unicode, IDN,
+  charset), comment insertion, parameter pollution, body-format swap
+  (form->JSON, JSON->XML, multipart), HTTP/2 header smuggling, or
+  chunked/compressed transfer-encoding. The downstream parser interprets
+  the variant identically to the blocked canonical, demonstrating
+  filter-vs-parser disagreement.
+vuln_class: evasion
+subclass: waf_filter_disagreement
+severity_default: medium
+mappings:
+  cwe: [CWE-693, CWE-436]
+  owasp: [A05:2021]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [waf_or_filter_present, canonical_payload_blocked, parser_accepts_variant_equivalently]
+detection_logic:
+  predicates:
+    - canonical_payload_returns_block_response
+    - variant_payload_returns_application_processed_response
+    - variant_and_canonical_produce_same_application_state_or_output
+  disconfirming_observations:
+    - variant_also_blocked
+    - variant_processed_but_normalised_to_inert_string
+exploitability_model:
+  factors: [waf_ruleset_version, parser_lenience, transport_layer_features]
+impact_model:
+  dimensions: [filter_bypass, downstream_attack_enablement]
+evidence_requirements:
+  minimum_for_validated:
+    - type: paired_request_response_evidence
+      count: 2
+false_positive_filters:
+  required:
+    - verify_waf_present_and_owned_by_target
+    - verify_no_rate_limit_or_caching_explanation
+    - verify_application_actually_processes_variant
+linked_skills:
+  primary: [payload_crafter]
+  supporting: [web_hunter, api_security, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_payload_family_validation]

@@ -1,0 +1,85 @@
+id: oauth_sso_attacker
+name: OAuth / SSO / SAML Attacker
+version: 1
+summary: OAuth 2.0, OIDC, and SAML attack methodology - redirect_uri attacks, PKCE downgrade, kid/jku/x5u confusion, XSW, comment injection, signature stripping
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- oauth
+- oidc
+- saml
+- sso
+- redirect-uri
+- pkce
+- state-bypass
+- code-interception
+- iss-confusion
+- aud-confusion
+- nonce-replay
+- kid-injection
+- jku-confusion
+- x5u-confusion
+- jwks-poisoning
+- xsw
+- xml-signature-wrapping
+- comment-injection
+- signature-stripping
+- nameid-mutation
+- federation-pivot
+- response-encryption-bypass
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- jq
+- samltool
+- oidc-tester
+fallback_chain:
+  http_request: [curl]
+  saml_decode: [samltool, jq]
+  jwt_decode: [jq]
+triggers:
+  surface:
+  - oauth_authorize_endpoint
+  - oauth_token_endpoint
+  - oidc_discovery_endpoint
+  - jwks_uri
+  - saml_sso_endpoint
+  - saml_acs_endpoint
+  - idp_metadata_url
+  - federated_login_button
+  pivot:
+  - redirect_uri_loose_match_pivot_to_oauth_theft
+  - kid_injection_pivot_to_forged_jwt
+  - xsw_pivot_to_admin_assertion
+  - sso_pivot_to_application_admin
+hypothesis_templates:
+- id: redirect_uri_loose_match
+  description: The OAuth authorize endpoint accepts redirect_uri values that do not exactly match the registered one (prefix-match, subpath-match, query-string-allowed, fragment-allowed) - enables auth-code theft via attacker-controlled endpoint at the matched host.
+- id: pkce_downgrade
+  description: A public client registered with PKCE-required can be coerced into a non-PKCE flow (omit code_challenge), allowing code interception attacks that PKCE was meant to prevent.
+- id: kid_jku_x5u_confusion
+  description: JWT signature verification accepts an attacker-controlled kid, jku, or x5u value pointing at a key the attacker controls, enabling forged tokens.
+- id: saml_xsw
+  description: SAML XML Signature Wrapping - inject an unsigned assertion alongside the signed one; the signature validates against the original but the consumer reads the injected one.
+- id: saml_comment_injection
+  description: NameID containing an HTML comment (admin<!---->@victim.com) is interpreted differently by the signature verifier and the application identity layer, yielding identity confusion.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- impersonation_of_real_user_without_program_authorization
+runtime:
+  primitive_module: secops.services.active_probe
+  primitives:
+    - probe_jwt_alg_none
+    - probe_jwt_impersonation_alg_none

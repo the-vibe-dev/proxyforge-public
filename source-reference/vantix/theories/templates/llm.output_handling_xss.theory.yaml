@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: llm.output_handling_xss
+title: LLM output rendered without sanitization yields XSS or HTML/SVG injection
+version: 1.0.0
+status: active
+summary: Application surfaces (chat UI, email rendering, dashboard widgets) render LLM output as HTML or rich markdown without sanitization. An attacker who can influence model output (prompt injection, retrieved doc, prior turn) achieves XSS or HTML/SVG injection in the consumer surface.
+vuln_class: llm
+subclass: output_handling
+severity_default: high
+mappings:
+  cwe: [CWE-79, CWE-116]
+  llm: [owasp.llm.llm02]
+applicability:
+  target_surfaces: [surface.llm.chat, surface.web.http]
+preconditions:
+  required: [llm_output_rendered_as_html_or_rich_markdown, attacker_can_influence_output_content, no_sanitizer_or_loose_allowlist]
+detection_logic:
+  predicates:
+    - inert_marker_payload_executes_in_dom
+    - svg_event_handler_or_script_renders
+    - markdown_html_passthrough_observed
+  disconfirming_observations:
+    - dompurify_or_equivalent_strips_markup
+    - csp_blocks_inline_script_execution
+    - output_path_renders_as_text_only
+exploitability_model:
+  factors: [sanitizer_state, csp_state, output_surface_privilege]
+impact_model:
+  dimensions: [session_theft, account_takeover, lateral_phishing]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_evidence
+      count: 1
+    - type: dom_execution_evidence
+      count: 1
+    - type: output_surface_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_session_theft_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_payload_actually_renders_in_consumer_surface
+    - verify_no_sanitizer_blocks_execution
+    - verify_attacker_path_to_influence_output
+linked_skills:
+  primary: [llm_redteam, web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

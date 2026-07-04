@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: supply_chain.dep_confusion
+title: Dependency confusion via internal-package name on a public registry
+version: 1.0.0
+status: active
+summary: An internal/private package name is published with a higher version on a public registry (npm, PyPI, RubyGems, Maven Central). Build/install configurations that resolve the public registry without scope-pinning or repository-priority controls fetch the attacker-controlled package and execute its install scripts.
+vuln_class: supply_chain
+subclass: dependency_confusion
+severity_default: high
+mappings:
+  cwe: [CWE-829, CWE-494]
+  ecosystem: [npm, pypi, rubygems, maven]
+applicability:
+  target_surfaces: [surface.cicd.pipeline, surface.code.dependencies]
+preconditions:
+  required: [internal_package_name_referenced_in_manifest, no_scope_or_registry_pinning, public_registry_index_resolves_higher_version]
+detection_logic:
+  predicates:
+    - manifest_lists_internal_name_without_scope
+    - npmrc_or_pip_conf_falls_through_to_public_index
+    - public_registry_returns_index_for_internal_name
+  disconfirming_observations:
+    - private_registry_lockfile_with_integrity_pin
+    - scope_or_index_url_pinned_to_internal_only
+    - ci_uses_offline_or_vendored_install
+exploitability_model:
+  factors: [registry_priority_policy, lockfile_integrity, network_egress]
+impact_model:
+  dimensions: [build_machine_compromise, ci_token_theft, downstream_artifact_poisoning]
+evidence_requirements:
+  minimum_for_validated:
+    - type: manifest_evidence
+      count: 1
+    - type: registry_resolution_evidence
+      count: 1
+    - type: privilege_delta_documented
+      count: 1
+  preferred_for_critical:
+    - type: test_namespace_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_lockfile_does_not_pin_integrity
+    - verify_registry_resolution_falls_through
+    - verify_internal_name_not_already_owned_publicly
+linked_skills:
+  primary: [cicd_redteam, source_reviewer]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

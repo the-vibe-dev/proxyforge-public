@@ -1,0 +1,43 @@
+schema_version: theory.system
+id: saml.assertion_replay_and_xsw
+title: SAML assertion replay, audience confusion, or XML signature wrapping accepted by SP
+version: 1.0.0
+status: active
+summary: "A SAML Service Provider accepts an assertion that has been replayed past its NotOnOrAfter, audience-mismatched (issued for one SP and replayed at another), or signature-wrapped (XSW1-8 — moving the signed assertion into a position the verifier inspects while attacker-injected unsigned assertions are processed by the application). Result: identity spoofing or cross-tenant access."
+vuln_class: federated_auth
+subclass: saml_assertion_misuse
+severity_default: high
+mappings:
+  cwe: [CWE-294, CWE-345, CWE-347]
+  owasp: [A07:2021]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [saml_sp_consumes_assertion, assertion_capture_or_idp_issuance_possible]
+detection_logic:
+  predicates:
+    - replayed_assertion_after_validity_window_authenticates
+    - assertion_for_other_audience_accepted
+    - xsw_variant_with_unsigned_attacker_subject_accepted
+  disconfirming_observations:
+    - sp_pins_audience_and_validity_window
+    - canonicalisation_and_subject_extracted_from_signed_node_only
+    - one_time_assertion_id_cache_blocks_replay
+exploitability_model:
+  factors: [sp_library_version, idp_signing_policy, multi_tenant_routing]
+impact_model:
+  dimensions: [authentication_bypass, cross_tenant_access, identity_spoofing]
+evidence_requirements:
+  minimum_for_validated:
+    - type: assertion_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_session_actually_established
+    - verify_subject_used_by_application_matches_attacker_choice
+    - verify_no_secondary_idp_callback_invalidates
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator, web_hunter]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

@@ -1,0 +1,25 @@
+id: evidence_ledger
+name: Evidence Ledger
+version: 1
+summary: stub - evidence-storage and provenance ledger role; today replaced by shared/evidence_rules.md
+status: active
+roles:
+- researcher
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- stub
+- evidence-ledger
+- planned
+- fallback-shared-evidence-rules-md
+requires_scope: false
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

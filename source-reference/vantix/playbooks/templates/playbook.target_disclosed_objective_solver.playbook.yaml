@@ -1,0 +1,155 @@
+id: playbook.target_disclosed_objective_solver
+name: target_disclosed_objective_solver
+version: "1.0.0"
+status: active
+summary: >
+  H22 — When a target self-discloses a checklist (Juice Shop
+  /api/Challenges, DVWA exercise list, WebGoat lesson plan, HackTheBox
+  box description, internal pentest-prep app's published test catalog),
+  iterate each item and execute the implied probe. Generic across any
+  target with a state-oracle Challenge/Test/Task surface. The
+  orchestrator's plan -> execute -> re-plan loop closes against the
+  per-item unsolved set until exhausted (or budget cap).
+description: >
+  This playbook is the closing seam between "the system saw the list"
+  and "the system actually tried each item". Without it, the
+  state-oracle phase harvests items but only the entries whose
+  descriptions match the narrow _STATE_ITEM_SIGNATURES regex set in
+  clue_miner produce action verbs. With it, the orchestrator sweeps
+  every undone item via the H22 generic primitives.
+modes:
+  allowed:
+    - pentest
+    - bugbounty
+    - ctf
+  requires_scope: true
+objectives:
+  primary:
+    - iterate_state_oracle_undone_items
+  secondary:
+    - re_plan_until_exhausted
+target_requirements:
+  any_of:
+    - state_oracle.has_external_state_items_with_undone_status
+    - target_profile.tech_stack.includes_any_of:
+        - score-board
+        - challenge-tracker
+        - lesson-list
+        - self-disclosed-test-catalog
+global_limits:
+  max_branches: 8
+  max_steps: 16
+  max_retries_per_step: 1
+proof_continuation:
+  feedback_to:
+    - orchestrate
+  re_plan_when:
+    - state_oracle.unsolved_item_count_after_this_run_gt_0
+    - adaptive_revisit.budget_remaining_gt_0
+agents:
+  orchestrator:
+    role: planner
+    responsibilities:
+      - sequence_objective_solver_steps
+      - maintain_scope_state
+      - coordinate_handoffs
+      - gate_on_evidence
+    handoff_artifacts:
+      - run_plan
+      - scope_ref
+      - state_oracle_item_queue
+    guardrails:
+      - use_least_privilege_tools
+      - preserve_evidence_refs
+      - do_not_cross_scope
+      - stop_on_destructive_or_persistence_request
+  executor:
+    role: executor
+    responsibilities:
+      - run_objective_probe
+      - capture_http_exchange
+      - record_evidence_refs
+    handoff_artifacts:
+      - http_exchange
+      - probe_result
+      - evidence_refs
+    guardrails:
+      - use_least_privilege_tools
+      - preserve_evidence_refs
+      - do_not_cross_scope
+      - stop_on_destructive_or_persistence_request
+steps:
+  - id: password_reset_chain
+    title: "Password-reset / forgot-password / change-password chain"
+    agent: executor
+    action_type: probe
+    primitive_module: secops.services.probe_objective_solver
+    primitive_function: probe_password_reset_chain
+    inputs_required:
+      - observed_emails
+      - observed_usernames
+    evidence_emit:
+      kind: password_reset_chain_proof
+      severity: critical
+      cwe: CWE-640
+    sechive_id: sechive.auth.weak_pwreset
+    wstg_id: WSTG-AUTH-09
+  - id: business_logic
+    title: "Business-logic state-machine probe (qty/coupon/continue-code)"
+    agent: executor
+    action_type: probe
+    primitive_module: secops.services.probe_objective_solver
+    primitive_function: probe_business_logic_state_machine
+    evidence_emit:
+      kind: business_logic_proof
+      severity: high
+    sechive_id: sechive.logic.data_validation
+    wstg_id: WSTG-BUSL-02
+  - id: image_metadata
+    title: "Image EXIF / GPS / author / camera-serial mining"
+    agent: executor
+    action_type: probe
+    primitive_module: secops.services.probe_objective_solver
+    primitive_function: probe_image_metadata_mining
+    evidence_emit:
+      kind: image_metadata_leak
+      severity: medium
+    sechive_id: sechive.info.review_page_content
+    wstg_id: WSTG-INFO-05
+  - id: asset_log_keys
+    title: "Leaked credential mining in /assets, /uploads, /ftp, /log"
+    agent: executor
+    action_type: probe
+    primitive_module: secops.services.probe_objective_solver
+    primitive_function: probe_asset_log_key_mining
+    evidence_emit:
+      kind: leaked_credential_in_asset
+      severity: high
+      cwe: CWE-798
+    sechive_id: sechive.info.review_page_content
+    wstg_id: WSTG-INFO-05
+  - id: targeted_login
+    title: "Targeted login dictionary against discovered users"
+    agent: executor
+    action_type: probe
+    primitive_module: secops.services.probe_objective_solver
+    primitive_function: probe_targeted_login_dictionary
+    inputs_required:
+      - observed_emails
+      - observed_usernames
+      - observed_passwords
+    evidence_emit:
+      kind: targeted_user_login_proof
+      severity: critical
+      cwe: CWE-521
+    sechive_id: sechive.auth.weak_password
+    wstg_id: WSTG-AUTH-07
+operator_policy:
+  - "Generic; no Juice-Shop-specific code or fingerprints."
+  - "Real exploits + unredacted evidence per docs/reporting_methodology.md."
+  - "Scope-respecting; every primitive routes through standard rate-limit detector + adaptive throttle."
+  - "One playbook for any target that self-discloses a test catalog."
+risk_tier: active
+opsec: moderate
+safety_level: active
+execution_level: gated

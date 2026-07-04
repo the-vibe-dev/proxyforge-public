@@ -1,0 +1,46 @@
+schema_version: theory.system
+id: llm.markdown_link_exfil
+title: LLM markdown image/link auto-fetch exfiltration
+version: 1.0.0
+status: active
+summary: A chat or document client renders markdown images or links emitted by the LLM, auto-fetching attacker-controlled URLs. Combined with prompt injection, attacker can include sensitive context (system prompt, prior conversation, retrieved doc) into URL parameters and exfiltrate via DNS or HTTP query logs.
+vuln_class: llm
+subclass: data_exfil_via_markdown
+severity_default: high
+mappings:
+  cwe: [CWE-200, CWE-918]
+  llm: [owasp.llm.llm02]
+applicability:
+  target_surfaces: [surface.llm.chat]
+preconditions:
+  required: [client_renders_markdown_images_or_links_with_auto_fetch, attacker_can_influence_llm_output, sensitive_context_addressable_in_conversation]
+detection_logic:
+  predicates:
+    - canary_markdown_image_url_resolves_attacker_host
+    - request_logs_show_url_with_extracted_context
+  disconfirming_observations:
+    - client_does_not_auto_fetch_external_resources
+    - csp_or_image_src_allowlist_blocks_external_fetch
+    - markdown_passthrough_disabled
+exploitability_model:
+  factors: [client_render_policy, csp_image_src, prompt_injection_path]
+impact_model:
+  dimensions: [system_prompt_disclosure, conversation_disclosure, pii_exfil]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_prompt_or_doc_evidence
+      count: 1
+    - type: attacker_host_request_log
+      count: 1
+    - type: extracted_context_sample
+      count: 1
+false_positive_filters:
+  required:
+    - verify_request_actually_arrives_at_attacker_host
+    - verify_extracted_context_sourced_from_sensitive_data
+    - verify_client_renders_markdown_images_in_target_surface
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator, web_hunter]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

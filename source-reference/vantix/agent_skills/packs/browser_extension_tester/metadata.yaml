@@ -1,0 +1,30 @@
+id: browser_extension_tester
+name: Browser Extension Tester
+version: 1
+summary: Manifest analysis, permission review, content script injection, native messaging, storage leaks, and CSP bypass hunting for Chrome/Firefox extensions.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [extensions, manifest-analysis, permissions, content-scripts, native-messaging, cspsec, storage-leaks, message-handling]
+requires_scope: true
+required_tools: []
+optional_tools: [browser_screenshot, browser_execute_script, proxy_list_flows]
+triggers:
+  surface: [extension_codebase_provided, manifest_json_found, content_script_observable]
+hypothesis_templates:
+  - id: ext_perms_over_grant
+    description: Extension requests permissions far exceeding its declared functionality
+  - id: manifest_v2_legacy
+    description: Manifest v2 extension with deprecated or dangerous APIs still in use
+  - id: content_script_xss
+    description: Content script receives untrusted input from web_accessible_resources without sanitization
+  - id: native_msg_protocol_confusion
+    description: Native messaging host receives messages without validating sender identity or message schema
+  - id: storage_secrets_leak
+    description: Extension stores sensitive data (tokens, keys, passwords) in unencrypted chrome.storage.local
+  - id: externally_connectable_bypass
+    description: externally_connectable whitelist permits cross-origin injection or looser matching than documented
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]

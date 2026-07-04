@@ -1,0 +1,52 @@
+id: llm_assisted_hunting
+name: LLM-Assisted Hunting (Operator-Side)
+version: 1
+summary: Operator-side use of an LLM to accelerate hunting — program/target selection from structured platform data, threat-model brainstorming, and scan-finding interpretation. Distinct from ai_application_security (tests an app's LLM) and llm_redteam (model-internal); this pack uses an LLM as a hunting aid and treats every output as an unverified hypothesis.
+roles:
+- orchestrator
+- researcher
+modes:
+- bugbounty
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- llm-assisted
+- program-selection
+- target-ranking
+- threat-model-brainstorm
+- scan-finding-interpretation
+- structured-program-data
+- hypothesis-not-evidence
+- verify-against-scope
+- local-model-for-sensitive-context
+- complexity-signal
+requires_scope: false
+required_tools:
+- jq
+optional_tools:
+- curl
+fallback_chain:
+  program_data: [curl, jq]
+triggers:
+  surface:
+  - structured_program_catalog_available
+  - recon_inventory_present
+  - scanner_finding_needs_interpretation
+  pivot:
+  - program_shortlist_to_threat_model
+  - threat_model_to_prioritized_tests
+hypothesis_templates:
+- id: program_selection_by_style
+  description: Rank public programs from a structured JSON (scope size, bounty status, response efficiency) against the current hunting style; verify every recommendation against live platform scope before acting.
+- id: threat_model_brainstorm
+  description: Given a target's purpose, roles, mechanisms, and observed controls, ask the LLM for a STRIDE model with mechanism/object/boundary/control/safe-validation/impact per threat; mark all assumptions and verify each.
+- id: scan_finding_triage
+  description: Ask the LLM to explain a scanner finding's class, likely source→sink, safe validation, blocking controls, and false-positive likelihood; confirm with browser/proxy evidence.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- trusting_llm_ownership_or_scope_claims
+- pasting_secrets_or_customer_data_into_external_llm

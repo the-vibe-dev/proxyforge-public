@@ -1,0 +1,52 @@
+schema_version: theory.system
+id: concurrency.race.compare_then_use
+title: Compare-then-use race on shared state — value mutated between check and dereference
+version: 1.0.0
+status: active
+summary: A function reads a shared field (pointer, index, length, state enum), validates it, then re-reads or dereferences it without holding a lock or atomic snapshot across both operations. A concurrent writer (worker thread, IO thread, browser thread) mutates the value between the two reads, so the dereference operates on state the validation never approved — typically a freed pointer, a stale length, or an invalid state.
+vuln_class: concurrency
+subclass: data_race
+severity_default: high
+mappings:
+  cwe: [CWE-362, CWE-367, CWE-366]
+applicability:
+  target_surfaces: [surface.binary.native, surface.chromium.renderer, surface.chromium.browser]
+preconditions:
+  required:
+    - shared_field_read_twice_without_snapshot
+    - writer_runs_concurrently_on_other_thread
+    - no_lock_or_atomic_dominates_both_accesses
+detection_logic:
+  predicates:
+    - decompiler_shows_two_loads_of_same_field_around_check
+    - tsan_data_race_log_with_check_and_use_frames
+    - source_grep_pointer_member_check_then_use_outside_lock
+  disconfirming_observations:
+    - sequence_locked_by_mutex_held_across_both_accesses
+    - value_copied_to_local_atomic_load_then_used
+    - thread_affinity_assertion_proves_single_thread
+exploitability_model:
+  factors: [attacker_can_drive_writer_thread, race_window_widenable, post_dereference_writes_freed_state]
+impact_model:
+  dimensions: [memory_corruption, uaf_followon, type_confusion_followon]
+evidence_requirements:
+  minimum_for_validated:
+    - type: crash_dump
+      count: 1
+    - type: symbolized_stack
+      count: 1
+    - type: regression_witness
+      count: 1
+  preferred_for_critical:
+    - type: decompiler_project
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_two_distinct_loads_around_check
+    - confirm_writer_reachable_from_attacker_input
+    - confirm_no_lock_or_atomic_snapshot_dominates
+linked_skills:
+  primary: [crash_triage]
+  supporting: [binary_re]
+linked_playbooks:
+  primary: [playbook.crash_to_root_cause]

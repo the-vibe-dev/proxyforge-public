@@ -1,0 +1,82 @@
+id: cache_smuggling
+name: HTTP Smuggling and Cache Poisoning
+version: 1
+summary: HTTP request smuggling (CL.TE / TE.CL / H2.CL / H2.TE), web cache poisoning via unkeyed inputs, web cache deception, fat-GET attacks, cache key gadget hunting
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: intrusive
+opsec: moderate
+tags:
+- smuggling
+- http-smuggling
+- request-smuggling
+- cl-te
+- te-cl
+- te-te
+- h2-cl
+- h2-te
+- http2-downgrade
+- cache-poisoning
+- unkeyed-input
+- cache-key-gadget
+- web-cache-deception
+- path-suffix-cache
+- fat-get
+- parameter-cloaking
+- header-injection-cache
+- front-end-auth-bypass
+- desync
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- nghttp2-client
+- smuggler
+- web-cache-vulnerability-scanner
+fallback_chain:
+  smuggle_probe: [smuggler, curl]
+  cache_probe: [web-cache-vulnerability-scanner, curl]
+  http2_probe: [nghttp2-client]
+triggers:
+  surface:
+  - cdn_in_front_of_origin
+  - http2_edge
+  - reverse_proxy_chain
+  - cache_with_long_ttl
+  - varnish_cache_layer
+  - cloudflare_or_akamai_edge
+  - static_asset_with_dynamic_content
+  pivot:
+  - smuggle_to_front_end_auth_bypass
+  - poisoned_cache_to_stored_xss
+  - cache_deception_to_pii_exposure
+hypothesis_templates:
+- id: cl_te_desync
+  description: Edge proxy uses Content-Length, origin uses Transfer-Encoding (or vice versa) - chunked vs CL parsing divergence enables request smuggling. Detect with timing-based probes that should hang on the desync side.
+- id: h2_downgrade_smuggle
+  description: HTTP/2 edge translates to HTTP/1.1 origin without normalizing CRLF in headers - attacker injects Transfer-Encoding via HTTP/2 header that becomes a real header at the origin.
+- id: unkeyed_input_cache_poison
+  description: An HTTP header (X-Forwarded-Host, X-Original-URL, X-Forwarded-Scheme) influences the response but is NOT part of the cache key - attacker poisons the cached response for everyone hitting that path.
+- id: web_cache_deception
+  description: Authenticated /account renders user data; cache treats /account.css as static and caches it - attacker forces victim to visit /account.css?nocache=ATTACKER and reads the cached response.
+- id: cache_key_gadget
+  description: Probe with random X-SecHive-Probe-<rand> headers to find any header that influences the response. Cross-check whether it's in the Vary header or the cache key.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- poisoning_shared_cache_beyond_minimum_proof
+- cache_poisoning_targeting_real_users
+sechive_ids: [sechive.input.http_request_smuggling]
+wstg_ids: [WSTG-INPUT-16]
+runtime:
+  primitive_module: secops.services.probe_input_validation
+  primitives:
+    - probe_http_request_smuggling

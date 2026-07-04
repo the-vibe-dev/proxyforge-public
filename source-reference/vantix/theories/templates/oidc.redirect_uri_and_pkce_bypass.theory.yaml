@@ -1,0 +1,44 @@
+schema_version: theory.system
+id: oidc.redirect_uri_and_pkce_bypass
+title: OAuth/OIDC redirect_uri matching, PKCE downgrade, or state/nonce omission yields code or token theft
+version: 1.0.0
+status: active
+summary: An OAuth/OIDC authorization server applies loose `redirect_uri` matching (substring, prefix-only, parameter injection, open-redirect chain through a registered URI), accepts `code_verifier` for a non-PKCE-issued code, treats `state`/`nonce` as optional, or honors a downgraded response mode (form_post -> fragment) — letting an attacker steer an authorization code or implicit token to an attacker-controlled origin and bind it to the victim's session.
+vuln_class: federated_auth
+subclass: oidc_redirect_or_pkce_bypass
+severity_default: high
+mappings:
+  cwe: [CWE-601, CWE-352, CWE-345]
+  owasp: [A01:2021, A07:2021]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [oauth_or_oidc_authorization_endpoint_present, redirect_uri_or_pkce_or_state_handling_under_test]
+detection_logic:
+  predicates:
+    - redirect_uri_substring_or_open_redirect_lands_code_at_attacker
+    - non_pkce_code_exchanged_without_code_verifier_succeeds
+    - missing_state_yields_csrf_login_to_attacker_account
+    - form_post_to_fragment_downgrade_exposes_token_in_url
+  disconfirming_observations:
+    - exact_match_redirect_uri_enforced
+    - pkce_required_for_public_clients
+    - state_and_nonce_required_and_validated
+exploitability_model:
+  factors: [client_type, server_policy, browser_storage_for_tokens]
+impact_model:
+  dimensions: [account_takeover, session_fixation, identity_spoofing]
+evidence_requirements:
+  minimum_for_validated:
+    - type: oauth_flow_capture_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_attacker_account_distinct_from_victim
+    - verify_token_or_code_actually_exchangeable_for_session
+    - verify_no_secondary_origin_check_blocks_use
+linked_skills:
+  primary: [api_security]
+  supporting: [web_hunter, poc_validator]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

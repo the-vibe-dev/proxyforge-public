@@ -1,0 +1,49 @@
+id: session_lifecycle_tester
+name: Session Lifecycle Tester
+version: 1
+summary: Test token invalidation across 9 lifecycle events (password change, MFA enable, email change, logout, rotation) to detect lingering sessions and privilege-escalation chains.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [session-invalidation, token-fixation, mfa-bypass, refresh-token-rotation, jwt-confusion]
+requires_scope: true
+required_tools: []
+optional_tools: [browser_execute_script, browser_screenshot, proxy_list_flows, proxy_get_flow]
+triggers:
+  surface: [session-management-observed, token-refresh-endpoint-found, password-change-functionality-present]
+hypothesis_templates:
+  - id: old_session_post_password_change
+    description: User logs in, obtains session token, changes password, old token still grants access
+  - id: mfa_bypass_via_session_reuse
+    description: User authenticates with password, obtains session, enables MFA, old session bypasses MFA challenge
+  - id: reset_token_reuse
+    description: Password reset token is accepted multiple times; attacker reuses token across multiple password changes
+  - id: invite_token_unlimited_reuse
+    description: Invite token accepted indefinitely; attacker accepts invitation multiple times to escalate permissions
+  - id: refresh_token_no_rotation
+    description: Refresh token never expires or rotates; compromised token grants access indefinitely
+  - id: jwt_audience_confusion
+    description: JWT token issued for one endpoint accepted on another; iss/aud confusion allows privilege escalation
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]
+sechive_ids:
+  - sechive.session.token_entropy
+  - sechive.session.cookie_attributes
+  - sechive.session.fixation
+  - sechive.session.logout_invalidation
+  - sechive.session.timeout
+  - sechive.session.puzzling
+  - sechive.session.concurrent
+wstg_ids: [WSTG-SESSION-01, WSTG-SESSION-02, WSTG-SESSION-03, WSTG-SESSION-06, WSTG-SESSION-07, WSTG-SESSION-08, WSTG-SESSION-11]
+runtime:
+  primitive_module: secops.services.probe_session_lifecycle
+  primitives:
+    - probe_session_token_entropy
+    - probe_cookie_attribute_audit
+    - probe_session_fixation
+    - probe_logout_invalidation
+    - probe_session_timeout
+    - probe_session_puzzling
+    - probe_concurrent_sessions

@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: supply_chain.npm_install_script_rce
+title: npm/yarn/pnpm install-script execution under build privileges
+version: 1.0.0
+status: active
+summary: A direct or transitive npm dependency declares preinstall, install, or postinstall scripts that execute during `npm install` / `yarn` / `pnpm install`. CI and developer environments that do not pass `--ignore-scripts` execute that code under the build user's privileges, accepting any code change a maintainer (or attacker who compromises a maintainer) ships.
+vuln_class: supply_chain
+subclass: install_script_rce
+severity_default: medium
+mappings:
+  cwe: [CWE-94, CWE-829]
+  ecosystem: [npm]
+applicability:
+  target_surfaces: [surface.cicd.pipeline, surface.code.dependencies]
+preconditions:
+  required: [project_uses_npm_or_yarn_or_pnpm, install_runs_without_ignore_scripts, dependency_or_transitive_declares_install_hook]
+detection_logic:
+  predicates:
+    - lockfile_resolves_packages_with_install_hooks
+    - ci_command_runs_install_without_ignore_scripts_flag
+    - dependency_count_exceeds_review_capacity
+  disconfirming_observations:
+    - npmrc_sets_ignore_scripts_true
+    - ci_uses_npm_ci_with_ignore_scripts
+    - vendor_or_offline_install_only
+exploitability_model:
+  factors: [hook_count, maintainer_account_security, install_environment_privilege]
+impact_model:
+  dimensions: [ci_token_theft, developer_workstation_compromise, downstream_artifact_poisoning]
+evidence_requirements:
+  minimum_for_validated:
+    - type: lockfile_evidence
+      count: 1
+    - type: install_command_evidence
+      count: 1
+    - type: hook_inventory
+      count: 1
+  preferred_for_critical:
+    - type: sandbox_install_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_install_actually_runs_hooks
+    - verify_at_least_one_dependency_has_install_hook
+    - verify_no_compensating_sandboxing
+linked_skills:
+  primary: [cicd_redteam, source_reviewer]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

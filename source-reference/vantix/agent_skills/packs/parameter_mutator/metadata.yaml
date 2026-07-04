@@ -1,0 +1,51 @@
+id: parameter_mutator
+name: Parameter Mutator
+version: 1
+summary: Mutation-driven parameter discovery - same-user, other-owned, nonexistent, boundary, UUID-swap, encoding variants. Catches IDOR, authz, business-logic via semantic-diff baseline comparison.
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- parameter-mutation
+- idor-detection
+- authorization-bypass
+- business-logic
+- ownership-leakage
+- semantic-diff
+- baseline-comparison
+- status-code-analysis
+- error-text-analysis
+- timing-analysis
+- side-effect-detection
+requires_scope: true
+required_tools: []
+optional_tools:
+- curl
+triggers:
+  surface:
+  - any_authenticated_endpoint
+  - any_parameter_in_request
+  - object_id_parameter
+hypothesis_templates:
+- id: idor-user-swap
+  description: Endpoint allows user to access another user's data by swapping userId/email/uuid parameter to another account's value.
+- id: authz-boundary-null
+  description: Parameter accepts null/empty where validation expected; bypasses ownership check or defaults to permissive state.
+- id: authz-encoding-bypass
+  description: URL-encoded or double-encoded variant of parameter bypasses validator; endpoint operates on decoded value inconsistently.
+- id: business-logic-duplicate
+  description: Duplicate parameter in same request processed differently by parser layers; one is validated, one is not.
+- id: mass-assignment-object-mutation
+  description: Endpoint parses array/object variants of scalar parameter; array unwrap or object coercion bypasses validation and mutates state.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- production_data_mutation

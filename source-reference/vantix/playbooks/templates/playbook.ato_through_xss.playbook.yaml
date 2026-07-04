@@ -1,0 +1,255 @@
+schema_version: playbook.system
+id: playbook.ato_through_xss
+name: Account Takeover Through Client-Side Injection (Endpoint-First)
+version: 1.0.0
+status: active
+summary: >-
+  Endpoint-first methodology. Identify an account-takeover-capable endpoint,
+  evaluate its controls (CSRF, CORS+preflight, CSP, cookie flags,
+  reauthentication), decide which domain an injection must live on to reach
+  it, then hunt reflected/stored/DOM/prototype injection only on viable
+  domains. Proves execution, delivery, and impact with owned accounts; never
+  self-XSS, never real users.
+owner:
+  team: sechive-core
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - authorized_testing_scope
+  - evidence_gated_execution
+  adds:
+  - endpoint_first_ato_methodology
+  - anti_self_xss_gate
+modes:
+  allowed:
+  - bugbounty
+  - pentest
+  - own-source
+  requires_scope: true
+objectives:
+  primary:
+  - identify_ato_capable_endpoint
+  - evaluate_endpoint_controls
+  - locate_viable_injection_domain
+  - prove_execution_delivery_impact
+  secondary:
+  - record_negative_evidence
+  - document_why_not_self_xss
+target_requirements:
+  surfaces:
+    any:
+    - surface.web.http
+    - surface.client.spa
+    - surface.api.rest
+required_skills:
+  primary:
+  - dom_taint_hunter
+  supporting:
+  - exploit_chainer
+  - web_hunter
+  - poc_validator
+  - report_generator
+  - scope_guard
+theory_filters:
+  preferred_theories:
+  - ato.via_client_side_injection
+  - client.xss_compensating_control_gap
+  - injection.xss.reflected
+  - injection.xss.stored
+  - injection.xss.dom
+  - web.proto_pollution.client_and_server
+proof_continuation:
+  enabled: true
+  max_replans: 3
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 40
+  max_retries_per_step: 3
+  max_branches: 8
+steps:
+- id: scope.preflight
+  title: Confirm authorization, owned accounts, and non-production proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - targeting_real_users
+    - destructive_action_required
+- id: endpoint.identify
+  title: Identify account-takeover-capable endpoints (pw change, recovery email, API key, token exchange, role/MFA/SSO)
+  agent: researcher
+  action_type: analysis
+  skill_ref: web_hunter
+  inputs_from:
+  - scope.preflight
+  evidence_gate:
+    id: gate.endpoint.identified
+    required:
+    - type: ato_endpoint_inventory
+      count: 1
+- id: endpoint.controls
+  title: Evaluate CSRF, CORS+preflight, CSP, cookie flags, reauthentication on each endpoint
+  agent: researcher
+  action_type: analysis
+  skill_ref: dom_taint_hunter
+  inputs_from:
+  - endpoint.identify
+  evidence_gate:
+    id: gate.endpoint.controls
+    required:
+    - type: endpoint_control_evaluation
+      count: 1
+- id: injection.locate
+  title: Determine which in-scope domain an injection must live on to reach the endpoint
+  agent: planner
+  action_type: analysis
+  skill_ref: dom_taint_hunter
+  inputs_from:
+  - endpoint.controls
+  evidence_gate:
+    id: gate.injection.domain
+    required:
+    - type: viable_injection_domain_set
+      count: 1
+    blocked_when:
+    - only_self_xss_path_available
+- id: injection.hunt
+  title: Hunt reflected/stored/DOM/prototype injection only on viable domains
+  agent: executor
+  action_type: dynamic_validation
+  skill_ref: dom_taint_hunter
+  inputs_from:
+  - injection.locate
+  evidence_gate:
+    id: gate.injection.execution
+    required_any:
+    - type: browser_execution_evidence
+      count: 1
+    - type: negative_evidence
+      count: 1
+    blocked_when:
+    - real_user_data_visible
+  loop:
+    type: per_viable_domain
+    max_iterations: 50
+- id: impact.prove
+  title: Prove forced action or token read against an owned victim; document delivery
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - injection.hunt
+  evidence_gate:
+    id: gate.impact.proved
+    required:
+    - type: forced_action_or_token_read_evidence
+      count: 1
+    - type: delivery_evidence
+      count: 1
+    required_any:
+    - type: not_self_xss_justification
+      count: 1
+    blocked_when:
+    - victim_is_real_user
+    - exfiltration_of_real_user_data_required
+- id: closeout
+  title: Promote redacted proof pack with delivery + anti-self-XSS justification
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: report_generator
+  inputs_from:
+  - impact.prove
+  evidence_gate:
+    id: gate.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    - type: not_self_xss_justification
+      count: 1
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+agents:
+  orchestrator:
+    role: planner
+    responsibilities: [select_playbooks, maintain_scope_state, coordinate_handoffs]
+    handoff_artifacts: [run_plan, scope_ref, coverage_matrix]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  planner:
+    role: planner
+    responsibilities: [locate_viable_injection_domain, choose_safe_proof_depth, set_stop_conditions]
+    handoff_artifacts: [viable_injection_domain_set, validation_plan]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  researcher:
+    role: researcher
+    responsibilities: [inventory_ato_endpoints, evaluate_endpoint_controls, record_negative_evidence]
+    handoff_artifacts: [ato_endpoint_inventory, endpoint_control_evaluation]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  executor:
+    role: executor
+    responsibilities: [hunt_injection_on_viable_domains, capture_raw_evidence, honor_rate_limits]
+    handoff_artifacts: [browser_execution_evidence, blocked_record]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  validator:
+    role: validator
+    responsibilities: [prove_forced_action_or_token_read, justify_not_self_xss, confirm_cleanup]
+    handoff_artifacts: [forced_action_or_token_read_evidence, delivery_evidence, not_self_xss_justification]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+  evaluator:
+    role: evaluator
+    responsibilities: [review_evidence_quality, enforce_policy, decide_submission_readiness]
+    handoff_artifacts: [readiness_decision, redaction_log, gap_list]
+    guardrails: [use_least_privilege_tools, preserve_evidence_refs, do_not_cross_scope, stop_on_destructive_or_persistence_request]
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - targeting_real_users
+    - third_party_impact
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+  data_handling:
+    use_test_accounts_and_canaries: true
+    redact_sensitive_values: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - victim_would_be_a_real_user
+  - real_user_data_would_be_accessed
+  - destructive_effect_detected
+  - persistence_or_evasion_required_outside_lab
+
+executable_steps:
+  - playbook_step_id: xss.dom_sweep
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_socketio_challenge_events
+    evidence_emit: { kind: dom_xss_evidence }
+  - playbook_step_id: xss.persisted_collections
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_persisted_xss_via_collections
+    evidence_emit: { kind: persisted_xss_evidence }
+  - playbook_step_id: xss.restful_review
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_restful_xss_review_post
+    evidence_emit: { kind: persisted_xss_evidence }

@@ -1,0 +1,45 @@
+schema_version: theory.system
+id: injection.xss.reflected
+title: Reflected or client-side script execution
+version: 1.0.0
+status: active
+summary: User-controlled input may reach executable browser context through reflection, DOM propagation, or sanitizer-bypass grammar.
+vuln_class: xss_reflected
+subclass: client_execution
+severity_default: high
+mappings:
+  owasp_top10_2025: [A05]
+  wstg: [WSTG-INPV, WSTG-CLNT]
+  cwe: [CWE-79]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [reflected_or_dom_input_present, browser_context_available]
+detection_logic:
+  predicates: [reflection_reaches_security_relevant_context, execution_or_sink_proof, sanitizer_csp_considered, sanitizer_grammar_inferred_when_filtering_observed]
+  disconfirming_observations: [encoded_text_only, inert_reflection, csp_fully_blocks_execution, sanitizer_grammar_closed_with_stable_negative_evidence]
+exploitability_model:
+  factors: [context, user_interaction, csp, sanitizer_strength, surviving_tag_grammar, delimiter_transform, repeatability]
+impact_model:
+  dimensions: [confidentiality, integrity, session_boundary, business_action]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 1
+    - type: browser_screenshot
+      count: 1
+    - type: sanitizer_grammar
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_executable_context, verify_not_encoded_text_only, verify_browser_runtime_effect, close_sanitizer_transform_before_capping]
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator, payload_crafter]
+linked_playbooks:
+  primary: [playbook.web_api_coverage, playbook.web_payload_family_validation]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  learning_sources: [corpus.bb.client_side_injection, corpus.bb.xss_bypass]

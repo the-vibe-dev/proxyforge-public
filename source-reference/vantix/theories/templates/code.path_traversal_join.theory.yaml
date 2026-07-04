@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: code.path_traversal_join
+title: Path traversal via attacker-controlled path segment in file API
+version: 1.0.0
+status: active
+summary: Filesystem APIs (open, read, write, sendfile, archive_extract, static_serve) receive a path built from request input where traversal segments (.., absolute paths, encoded separators) are not normalized + bounded against a base directory.
+vuln_class: path_traversal
+subclass: filesystem_api
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A03]
+  cwe: [CWE-22, CWE-23, CWE-36, CWE-73]
+applicability:
+  target_surfaces: [surface.source.code]
+preconditions:
+  required: [filesystem_api_call_present, attacker_influences_path_component]
+detection_logic:
+  predicates:
+    - path_built_from_input
+    - no_resolve_and_prefix_check
+    - no_decode_then_normalize_then_check
+  disconfirming_observations:
+    - canonicalize_then_startswith_base_check_present
+    - chroot_or_jailed_runtime
+    - path_constrained_to_allowlist_filenames
+exploitability_model:
+  factors: [filesystem_layout_known, read_or_write_or_extract, sensitive_file_reachable]
+impact_model:
+  dimensions: [confidentiality, integrity, rce_via_overwrite, blast_radius]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: path_construction_form
+      count: 1
+    - type: data_flow_path
+      count: 1
+false_positive_filters:
+  required:
+    - verify_input_actually_external
+    - verify_no_canonicalize_and_prefix_guard
+    - verify_decoded_then_normalized_before_check
+linked_skills:
+  primary: [source_reviewer]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.source_audit_loop]

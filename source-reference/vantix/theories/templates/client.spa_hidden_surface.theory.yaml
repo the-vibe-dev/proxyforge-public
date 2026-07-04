@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: client.spa_hidden_surface
+title: Client-side hidden surface exposure
+version: 1.0.0
+status: active
+summary: Single-page app bundles, route tables, generated assets, or config blobs may expose hidden routes, features, API paths, or trust assumptions that need runtime validation.
+vuln_class: client_exposure
+subclass: spa_hidden_surface
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A01, A04, A05]
+  wstg: [WSTG-INFO, WSTG-CONF, WSTG-CLNT]
+  cwe: [CWE-200, CWE-548, CWE-749]
+applicability:
+  target_surfaces: [surface.web.http]
+  required_observations: [javascript_bundle_or_app_shell]
+preconditions:
+  required: [scope_authorizes_testing, current_run_client_asset_evidence]
+  blockers: [route_out_of_scope, target_origin_mismatch]
+detection_logic:
+  predicates:
+    - client_asset_exposes_route_or_feature_literal
+    - route_or_api_is_reachable_or_auth_gated
+    - runtime_validation_identifies_server_boundary
+  disconfirming_observations:
+    - literal_is_dead_code_only
+    - route_not_served_by_target
+    - server_enforces_expected_access_control
+exploitability_model:
+  factors: [route_reachability, auth_state_required, server_side_enforcement, exposed_sink_type]
+impact_model:
+  dimensions: [hidden_function_access, sensitive_metadata, route_discovery, trust_boundary_mapping]
+evidence_requirements:
+  minimum_for_validated:
+    - type: client_asset_artifact
+      count: 1
+    - type: http_exchange
+      count: 1
+false_positive_filters:
+  required: [verify_current_target_asset, verify_runtime_reachability_or_gate, verify_not_answer_lookup]
+linked_skills:
+  primary: [web_hunter]
+  supporting: [api_security, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [runtime_boundary_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [client_route_mining, feature_flag_discovery, runtime_replay]

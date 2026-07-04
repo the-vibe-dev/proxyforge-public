@@ -1,0 +1,245 @@
+name: ProxyForge Nightly Full Suite
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  schedule:
+    - cron: '17 8 * * *'
+  workflow_dispatch:
+    inputs:
+      plan_only:
+        description: Validate the full-suite plan without executing steps.
+        required: false
+        default: false
+        type: boolean
+      skip_browser:
+        description: Skip the Playwright browser workflow step.
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proxyforge-nightly-full-suite-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  source-gate:
+    name: Change-time source gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: '1'
+      FORCE_COLOR: '0'
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium runtime
+        run: npx playwright install --with-deps chromium
+
+      - name: Build source
+        run: npm run build
+
+      - name: Run source release guards
+        run: |
+          npm run release:fuses
+          npm run test:release:fuses
+          node tests/release-readiness.mjs
+          node tests/agent-option-audit.mjs
+          node tests/ci-nightly-policy.mjs
+
+      - name: Run curated fast gate
+        run: npm run test:ci:fast
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
+      - name: Upload source-gate artifacts
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxyforge-source-gate-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            test-results/**/*.json
+            test-results/**/*.md
+
+  native-artifact-gate:
+    name: Native artifact gate (${{ matrix.os }})
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            dist: linux
+            smoke_platform: linux
+            smoke_artifact: release/linux-unpacked/proxyforge
+          - os: windows-latest
+            dist: win
+            smoke_platform: windows
+            smoke_artifact: release/win-unpacked/ProxyForge.exe
+    env:
+      CI: '1'
+      FORCE_COLOR: '0'
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install Linux smoke dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgtk-3-0 libnss3 libxss1 libxtst6 libasound2t64 libgbm1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build native artifact
+        run: npm run dist:${{ matrix.dist }}
+
+      - name: Prepare native receipt directory
+        run: |
+          node -e "require('fs').mkdirSync('test-results', { recursive: true })"
+
+      - name: Verify Electron fuses
+        run: node scripts/electron-fuse-policy.mjs --verify --app "${{ matrix.smoke_artifact }}" > "test-results/electron-fuse-${{ matrix.smoke_platform }}.json"
+
+      - name: Verify packaged license
+        run: npm run release:license -- --verify-artifacts > "test-results/release-license-${{ matrix.smoke_platform }}.txt" 2>&1
+
+      - name: Smoke native artifact
+        run: node scripts/release-smoke.mjs --platform ${{ matrix.smoke_platform }} --artifact "${{ matrix.smoke_artifact }}" --out "test-results/release-smoke-${{ matrix.smoke_platform }}.json"
+
+      - name: Generate artifact checksums
+        shell: bash
+        run: |
+          node <<'NODE'
+          const crypto = require('node:crypto');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const releaseDir = path.resolve('release');
+          const { version } = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const candidates = [
+            `ProxyForge-${version}.AppImage`,
+            `proxyforge_${version}_amd64.deb`,
+            `ProxyForge Setup ${version}.exe`,
+            `ProxyForge ${version}.exe`,
+          ];
+          const lines = candidates
+            .filter((name) => fs.existsSync(path.join(releaseDir, name)))
+            .map((name) => {
+              const data = fs.readFileSync(path.join(releaseDir, name));
+              return `${crypto.createHash('sha256').update(data).digest('hex')}  ${name}`;
+            });
+          fs.writeFileSync(path.join(releaseDir, 'SHA256SUMS.txt'), `${lines.join('\n')}\n`);
+          NODE
+
+      - name: Upload native release receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxyforge-native-${{ matrix.smoke_platform }}-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            release/
+            test-results/release-smoke-${{ matrix.smoke_platform }}.json
+            test-results/**/*.json
+            test-results/**/*.txt
+
+  full-nightly:
+    name: Full nightly regression
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      CI: '1'
+      FORCE_COLOR: '0'
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium runtime
+        run: npx playwright install --with-deps chromium
+
+      - name: Restore retained full-suite history
+        uses: actions/cache/restore@v4
+        with:
+          path: test-results/ci-full-suite-history/
+          key: proxyforge-full-suite-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            proxyforge-full-suite-history-${{ github.ref_name }}-
+
+      - name: Run full suite
+        shell: bash
+        run: |
+          args=()
+          if [[ "${{ inputs.plan_only }}" == "true" ]]; then
+            args+=(--plan-only)
+          fi
+          if [[ "${{ inputs.skip_browser }}" == "true" ]]; then
+            args+=(--skip-browser)
+          fi
+          npm run test:ci:full -- "${args[@]}"
+
+      - name: Save retained full-suite history
+        if: always() && github.event.inputs.plan_only != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: test-results/ci-full-suite-history/
+          key: proxyforge-full-suite-history-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload full-suite artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proxyforge-full-suite-${{ github.run_id }}
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            test-results/ci-full-suite-summary.json
+            test-results/ci-full-suite-plan.json
+            test-results/.last-run.json
+            test-results/ci-full-suite-history/
+            test-results/ci-full-suite-history/dashboard.json
+            test-results/playwright-artifacts/
+            test-results/**/*.json
+            test-results/**/*.md
+            playwright-report/

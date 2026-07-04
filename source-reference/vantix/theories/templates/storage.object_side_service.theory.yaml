@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: storage.object_side_service
+title: Object storage side-service correlation
+version: 1.0.0
+status: active
+summary: Web applications may expose adjacent object or storage services that only become meaningful when correlated with app routes, JavaScript config, object keys, and same-host service inventory.
+vuln_class: storage
+subclass: object_side_service
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A05]
+  wstg: [WSTG-CONF, WSTG-ATHZ]
+  cwe: [CWE-200, CWE-284, CWE-862]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest, surface.storage.object]
+  required_observations: [storage_route_or_config_or_side_service]
+preconditions:
+  required: [scope_authorizes_testing, same_target_or_same_host_correlation]
+  blockers: [out_of_scope_service, destructive_write_required]
+detection_logic:
+  predicates:
+    - object_or_storage_service_reachable
+    - app_config_or_route_exposes_object_names_or_keys
+    - service_allows_unintended_read_or_app_mediated_access
+  disconfirming_observations:
+    - service_not_reachable_from_assessment_environment
+    - object_names_not_derived_from_current_run
+    - authorization_enforced_consistently
+exploitability_model:
+  factors: [service_reachability, object_key_discovery, auth_boundary, app_proxy_behavior, read_or_write_capability]
+impact_model:
+  dimensions: [object_disclosure, unauthorized_listing, app_config_leak, data_integrity]
+evidence_requirements:
+  minimum_for_validated:
+    - type: side_service_correlation
+      count: 1
+    - type: read_only_http_exchange
+      count: 1
+false_positive_filters:
+  required: [verify_scope_boundary, verify_object_key_source, verify_not_public_by_design]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [poc_validator, cloud_security]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

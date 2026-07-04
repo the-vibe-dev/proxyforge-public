@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: web.race.single_packet
+title: Web race condition via HTTP/2 single-packet attack
+version: 1.0.0
+status: active
+summary: A state-changing endpoint validates and then commits without atomicity; multiple concurrent requests aligned to land in the same processing window (using HTTP/2 single-packet attack to defeat network jitter) cause the server to apply the operation more times than it should — coupon double-redemption, balance double-spend, MFA bypass, race-on-uniqueness checks.
+vuln_class: web
+subclass: race_condition
+severity_default: high
+mappings:
+  cwe: [CWE-362, CWE-367]
+  web: [http2]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [endpoint_validates_then_commits_non_atomically, http2_or_low_latency_path_to_endpoint_available]
+detection_logic:
+  predicates:
+    - concurrent_requests_yield_more_state_changes_than_serial
+    - readback_after_burst_shows_invariant_violation
+  disconfirming_observations:
+    - endpoint_uses_db_transaction_with_unique_constraint
+    - endpoint_uses_distributed_lock_for_critical_section
+    - rate_limiter_drops_burst
+exploitability_model:
+  factors: [transaction_atomicity, lock_state, network_path]
+impact_model:
+  dimensions: [financial_loss, auth_bypass, business_logic_invariant_break]
+evidence_requirements:
+  minimum_for_validated:
+    - type: burst_request_capture
+      count: 1
+    - type: invariant_violation_readback
+      count: 1
+  preferred_for_critical:
+    - type: lab_repeated_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_burst_actually_processed_concurrently
+    - verify_invariant_violation_reproducible
+    - verify_no_compensating_lock_state
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

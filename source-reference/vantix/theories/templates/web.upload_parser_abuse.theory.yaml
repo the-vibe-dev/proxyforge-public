@@ -1,0 +1,38 @@
+schema_version: theory.system
+id: web.upload_parser_abuse
+title: Upload or import parser boundary abuse
+version: 1.0.0
+status: active
+summary: Upload, import, archive, or parser endpoints may trust filenames, content types, signatures, paths, or parsed metadata incorrectly.
+vuln_class: web_parser
+subclass: upload_import_boundary
+severity_default: high
+mappings:
+  owasp_top10_2025: [A03, A05]
+  cwe: [CWE-434, CWE-20]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [upload_or_import_route_observed, scoped_test_file_allowed]
+detection_logic:
+  predicates: [baseline_upload_saved, parser_or_storage_delta_observed, retrieval_or_processing_path_known]
+  disconfirming_observations: [file_rejected, no_retrieval_or_processing, parser_delta_not_security_relevant]
+exploitability_model:
+  factors: [parser_type, retrieval_exposure, storage_location, post_processing]
+impact_model:
+  dimensions: [content_execution, file_disclosure, server_side_processing]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+false_positive_filters:
+  required: [verify_allowed_scope, verify_parser_delta, verify_cleanup_or_no_state_change]
+linked_skills:
+  primary: [web_hunter]
+  supporting: [payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_route_family_coverage]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [upload_storage_retrieval, parser_boundary]

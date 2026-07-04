@@ -1,0 +1,54 @@
+id: secret_scanner
+name: Secrets Verification & Validation Scanner
+version: 1
+summary: Leaked credentials discovery with provider-specific confidence scoring, verification-safe classification, and revocation guidance for AWS / GCP / Azure / Stripe / Slack / GitHub / Postgres / SSH / API keys.
+status: active
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- secrets
+- leaked-credentials
+- api-keys
+- verification-safe
+- provider-confidence
+- aws-keys
+- gcp-credentials
+- stripe-keys
+- github-tokens
+- ssh-keys
+- responsible-disclosure
+requires_scope: true
+required_tools: []
+optional_tools:
+- trufflehog
+- gitleaks
+- noseyparker
+triggers:
+  surface:
+  - general
+hypothesis_templates:
+- id: verified-key-in-bundle
+  description: "JS bundle / source map / repo / Docker image contains a live issuer-verifiable token."
+- id: stale-git-history-secret
+  description: "Rotated secret remains in git history and is still accepted by the issuer."
+- id: provider-verified-credential
+  description: "Credential matches provider format AND verification returns a positive signal."
+- id: env-file-credential
+  description: "Committed .env / config file leaks credentials to a live service."
+- id: ci-artifact-credential
+  description: "CI artifact (build log, test output) leaks short-lived but exploitable credentials."
+- id: revocation-pathway-unclear
+  description: "Credential discovery is solid but issuer revocation pathway is undocumented; report includes both the find AND the specific revocation steps."
+forbidden:
+- destructive
+- pivot_off_key_beyond_existence_proof
+- out_of_scope
+- production_data_modification

@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: web.injection.nosql_ldap_xpath_ssi_el
+title: Web injection in non-SQL languages (NoSQL operators, LDAP filters, XPath, SSI, EL/OGNL/SpEL)
+version: 1.0.0
+status: active
+summary: User input is concatenated into a non-SQL query language — Mongo / Couchbase operators, LDAP search filters, XPath expressions, server-side-include directives, or expression languages (EL, OGNL, SpEL, JEXL, Velocity). Operator/metacharacter injection enables auth bypass, blind data extraction, SSRF, or RCE depending on the engine.
+vuln_class: web
+subclass: nonsql_injection
+severity_default: high
+mappings:
+  cwe: [CWE-943, CWE-90, CWE-91, CWE-94, CWE-917]
+  web: [mongo, ldap, xpath, ssi, el]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [user_input_concatenated_into_target_query_language, query_engine_evaluates_input]
+detection_logic:
+  predicates:
+    - operator_or_metacharacter_payload_changes_response_class
+    - boolean_or_blind_inference_yields_signal
+    - el_or_ognl_canary_expression_evaluates
+  disconfirming_observations:
+    - parameterized_query_or_typed_binding_used
+    - input_is_string_compared_only_no_evaluation
+    - sandbox_blocks_expression_evaluation
+exploitability_model:
+  factors: [query_language_capability, sandbox_state, oracle_signal_strength]
+impact_model:
+  dimensions: [auth_bypass, data_extraction, rce]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_request_evidence
+      count: 1
+    - type: response_delta_or_oracle_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_data_extraction_or_rce_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_delta_attributable_to_injection
+    - verify_query_engine_actually_evaluates
+    - verify_no_compensating_parameterization
+linked_skills:
+  primary: [web_hunter]
+  supporting: [source_reviewer, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

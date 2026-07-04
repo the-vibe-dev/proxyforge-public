@@ -1,0 +1,72 @@
+id: crypto_attacker
+name: Crypto Attacker
+version: 1
+summary: Cryptographic protocol and primitive attacker — padding oracle, ECB plaintext recovery, weak RNG, length-extension, IV reuse, hash-collision misuse
+roles:
+- researcher
+- developer
+- executor
+modes:
+- pentest
+- bugbounty
+- ctf
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- crypto
+- padding-oracle
+- ecb
+- rng
+- length-extension
+- iv-reuse
+- hash-collision
+requires_scope: true
+required_tools: []
+optional_tools:
+- padbuster
+- hashcat
+- john
+- hash-identifier
+- hashpump
+fallback_chain:
+  padding_oracle: [padbuster]
+  hash_crack: [hashcat, john]
+  hash_identify: [hash-identifier]
+triggers:
+  surfaces:
+  - encrypted_token
+  - signed_token
+  - cookie_blob
+  - mac_blob
+  - reset_token
+  - coupon_code
+  - export_format
+  - tls_with_legacy_ciphers
+  primitives:
+  - cbc_padding_oracle
+  - ecb_block_repetition
+  - mt19937_or_predictable_rng
+  - md_length_extension
+  - ctr_or_stream_iv_reuse
+  - md5_or_sha1_collision_acceptance
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- guessing_secret_keys
+hypothesis_templates:
+  - id: crypto.cbc_padding_oracle
+    description: A CBC ciphertext with verifier oracle for padding errors yields plaintext byte-by-byte via PadBuster-style attack.
+  - id: crypto.ecb_repetition
+    description: Repeating plaintext blocks produce repeating ciphertext blocks, revealing structure or enabling cut-and-paste forgery.
+  - id: crypto.mt19937_predictable
+    description: Tokens generated from a Mersenne Twister or time-seeded RNG can be predicted from observed outputs.
+  - id: crypto.length_extension
+    description: A MD-construction MAC computed as `H(secret||message)` allows forgery of `H(secret||message||padding||attacker_data)` without knowing the secret.
+  - id: crypto.iv_reuse
+    description: Stream-cipher or CTR-mode reuse of the same IV across messages allows XOR recovery of plaintext differences.
+  - id: crypto.hash_collision_misuse
+    description: Application accepts MD5/SHA1 fingerprints for security-relevant decisions; chosen-prefix collisions yield two messages with the same hash.

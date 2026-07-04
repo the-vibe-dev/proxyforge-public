@@ -1,0 +1,41 @@
+id: api_hunt_orchestrator
+name: API Hunt Orchestrator
+version: 1
+summary: Sequences the API hunting family end-to-end (schema-drift discovery, core API authz, GraphQL/gRPC/SOAP style-specific passes, sequence mining, triage) routed by detected API style.
+roles:
+- orchestrator
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- orchestrator
+- api
+- graphql
+- grpc
+- soap
+- schema-drift
+- end-to-end
+- family-sequencer
+requires_scope: true
+triggers:
+  surface:
+  - openapi_or_sdl_or_proto_discoverable
+  - api_traffic_observed
+  - api_rest_or_graphql_surface_routed
+  pivot:
+  - schema_drift_then_authz
+  - api_style_detected_then_style_matrix
+hypothesis_templates:
+- id: drift_endpoint_unauthorized
+  description: An undocumented or version-skewed operation recovered by schema-drift discovery lacks the authz check its documented sibling enforces.
+- id: rest_acld_rpc_open
+  description: The REST surface is authorization-checked but the GraphQL/gRPC/SOAP twin of the same operation is not.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

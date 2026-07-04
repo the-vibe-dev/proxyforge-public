@@ -1,0 +1,38 @@
+schema_version: theory.system
+id: tls.weak_transport_configuration
+title: Weak transport security configuration
+version: 1.0.0
+status: active
+summary: A scoped host may expose weak certificate, protocol, cipher, redirect, or HSTS posture.
+vuln_class: transport_security
+subclass: weak_tls_configuration
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A02, A05]
+  cwe: [CWE-326, CWE-327, CWE-295]
+applicability:
+  target_surfaces: [surface.web.http, surface.network.tls]
+preconditions:
+  required: [scoped_host, tls_service_observed]
+detection_logic:
+  predicates: [certificate_or_cipher_inventory, weak_policy_or_mismatch_observed, affected_host_confirmed]
+  disconfirming_observations: [modern_protocols_only, hostname_match_valid, compensating_policy_confirmed]
+exploitability_model:
+  factors: [sensitive_traffic, downgrade_feasibility, certificate_validity, policy_requirement]
+impact_model:
+  dimensions: [confidentiality, integrity, compliance]
+evidence_requirements:
+  minimum_for_validated:
+    - type: transport_inventory
+      count: 1
+false_positive_filters:
+  required: [verify_host_scope, verify_current_handshake, distinguish_hygiene_from_exploitability]
+linked_skills:
+  primary: [vuln_scanner]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.transport_security_review]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [certificate_protocol_cipher_inventory]

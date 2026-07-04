@@ -1,0 +1,59 @@
+id: secrets_scanner
+name: Secrets Scanner
+version: 1
+summary: passive scanner for leaked credentials in filesystems, git history, JS bundles, and GitHub orgs with verified-only output where supported
+roles:
+- recon
+- researcher
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- secrets
+- leaked-credentials
+- api-keys
+- tokens
+- passive-scan
+- js-bundle
+- git-history
+- github-org
+- verified-only
+- keyhacks
+requires_scope: false
+required_tools:
+- curl
+optional_tools:
+- trufflehog
+- gitleaks
+fallback_chain:
+  filesystem_scan: [trufflehog, gitleaks]
+  git_scan: [trufflehog, gitleaks]
+  js_bundle_scan: [trufflehog]
+  github_org_scan: [trufflehog]
+  regex_fallback: [curl]
+triggers:
+  surface:
+  - js_bundle
+  - source_map
+  - public_repo
+  - github_org
+  - filesystem_dump
+  - artifact_bucket
+  pivot:
+  - verified_key_to_cloud_enum
+  - verified_key_to_internal_api
+hypothesis_templates:
+- id: verified_key_in_js_bundle
+  description: A frontend JS bundle contains a live, issuer-verifiable token granting access beyond the public client surface.
+- id: stale_secret_in_git_history
+  description: A secret rotated on disk remains in the repository's git history and is still accepted by its issuer.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- pivoting_off_leaked_key_beyond_existence_proof

@@ -1,0 +1,59 @@
+schema_version: theory.system
+id: client.xss_compensating_control_gap
+title: Client-side injection impact enabled by a compensating-control gap
+version: 1.0.0
+status: active
+summary: >-
+  A confirmed client-side injection becomes weaponizable because a
+  compensating control is missing or misconfigured — permissive or absent
+  CSP, reflected-origin CORS with credentials, a JS-readable session cookie
+  (no HttpOnly), an absent or JS-readable CSRF token, WAF as the only layer,
+  or a virtual-DOM dangerous render path. Evaluates whether execution can
+  reach real impact, not whether a string reflects.
+vuln_class: client
+subclass: compensating_control_gap
+severity_default: high
+mappings:
+  owasp_top10_2025: [A05, A03]
+  wstg: [WSTG-CONF-12, WSTG-CLNT-01]
+  cwe: [CWE-1021, CWE-942, CWE-1004, CWE-352]
+applicability:
+  target_surfaces: [surface.web.http, surface.client.spa]
+  required_observations: [client_injection_candidate_present, control_posture_observed]
+preconditions:
+  required: [scope_authorizes_testing, controlled_account_only]
+  blockers: [exfiltration_of_real_user_data_required]
+detection_logic:
+  predicates:
+    - injection.execution_confirmed
+    - control_gap.present  # csp_permissive | cors_reflected_creds | cookie_js_readable | csrf_absent_or_readable | waf_only
+    - impact_path.reachable_under_gap
+  disconfirming_observations:
+    - restrictive_csp_blocks_execution_and_exfil
+    - httponly_and_strong_csrf_block_impact
+    - cors_same_origin_or_preflight_blocks
+    - framework_escaping_prevents_execution
+exploitability_model:
+  factors: [csp_strength, cookie_flags, csrf_posture, cors_posture, cache_behavior, virtual_dom_render]
+impact_model:
+  dimensions: [session_hijack, forced_action, data_exfiltration, privilege_escalation, cache_poison_multiplier]
+evidence_requirements:
+  minimum_for_validated:
+    - type: control_posture_evidence
+      count: 1
+    - type: impact_path_evidence
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_control_actually_absent, verify_browser_validated, verify_impact_not_only_alert]
+linked_skills:
+  primary: [dom_taint_hunter, web_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]
+  supporting: [playbook.client_side_js_secret_and_sink_review]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.xss_bypass, corpus.bb.client_side_injection]

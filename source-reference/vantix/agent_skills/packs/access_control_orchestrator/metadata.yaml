@@ -1,0 +1,39 @@
+id: access_control_orchestrator
+name: Access Control Orchestrator
+version: 1
+summary: Sequences the IDOR/access-control family end-to-end (ID collection, role matrix, parameter mutation, 403 bypass, export authz) with feedback gates so each stage only runs when the prior surfaced a candidate.
+roles:
+- orchestrator
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- orchestrator
+- idor
+- access-control
+- broken-object-level-authz
+- end-to-end
+- family-sequencer
+requires_scope: true
+triggers:
+  surface:
+  - object_ids_in_urls_or_api
+  - multi_user_or_multi_tenant_app
+  - authz_or_idor_surface_routed
+  pivot:
+  - direct_object_ref_denied_then_mutate
+  - hard_denied_then_bypass_matrix
+hypothesis_templates:
+- id: gated_idor_family_sweep
+  description: Collected ID set has a cross-user candidate; baseline authz, then mutation, then bypass-on-deny advance only the candidates each prior gate confirmed.
+- id: export_amplifies_single_object_idor
+  description: A single-object reference that is denied or low-impact becomes high severity when the same objects leak in bulk via an export/pagination endpoint.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

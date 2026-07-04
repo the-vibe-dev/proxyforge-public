@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dist-electron/
+release/
+test-results/
+playwright-report/
+.gitignored/
+planning/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

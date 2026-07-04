@@ -1,0 +1,68 @@
+{
+  "version": "0.1.0-alpha.1",
+  "feature_lanes_from_readme": 35,
+  "workbench_surfaces_from_readme": 20,
+  "workbench_surfaces": [
+    "Dashboard",
+    "Target Map",
+    "Proxy",
+    "Repeater",
+    "Intruder",
+    "Scanner",
+    "Exploit Lab",
+    "Automations",
+    "AI",
+    "Logger",
+    "Organizer",
+    "Search",
+    "Viewer",
+    "Sequencer",
+    "Decoder",
+    "Comparer",
+    "OAST/Collaborator",
+    "Extensions",
+    "Reports",
+    "Settings"
+  ],
+  "ai_providers_named": 3,
+  "agent_control_flows_from_readme": 9,
+  "agent_control_flows": [
+    "persistent MITM logging",
+    "replay",
+    "scanner",
+    "callback",
+    "exploit",
+    "report",
+    "search/view",
+    "Chromium/data-collection",
+    "controlled suggested-action execution"
+  ],
+  "active_check_families_named": 7,
+  "active_check_families": [
+    "security-header",
+    "CORS",
+    "cache-key",
+    "OPTIONS-method",
+    "authenticated-state comparison",
+    "JWT-claim",
+    "GraphQL introspection"
+  ],
+  "intruder_modes_named": 4,
+  "intruder_modes": [
+    "Sniper",
+    "Battering Ram",
+    "Pitchfork",
+    "Cluster Bomb"
+  ],
+  "report_and_ci_exports_named": 6,
+  "report_and_ci_exports": [
+    "Markdown",
+    "HTML",
+    "JSON",
+    "PDF",
+    "SARIF",
+    "JUnit"
+  ],
+  "verification_commands_from_readme": 21,
+  "count_basis": "Derived from the uploaded ProxyForge README; run scripts/count_proxyforge_assets.py in a full checkout for exact live file counts of skills/playbooks/templates."
+}

@@ -1,0 +1,37 @@
+schema_version: theory.system
+id: agentic.cross_context_memory_leak
+title: Agentic memory crosses tenant, role, or run context
+version: 1.0.0
+status: active
+summary: Memory, embeddings, retrieval, or vector-store paths may return stale or unauthorized context across tenants, roles, workspaces, or runs.
+vuln_class: agentic_security
+subclass: memory_isolation
+severity_default: high
+mappings:
+  cwe: [CWE-200, CWE-863]
+applicability:
+  target_surfaces: [surface.agentic.memory]
+preconditions:
+  required: [memory_write_or_retrieval_path_observed, isolation_key_known]
+detection_logic:
+  predicates: [cross_context_query_possible, retrieved_context_not_authorized, retention_or_redaction_gap]
+  disconfirming_observations: [tenant_filter_enforced, deletion_respected, redaction_applied]
+exploitability_model:
+  factors: [data_sensitivity, isolation_key_strength, retrieval_control]
+impact_model:
+  dimensions: [confidentiality, privacy, instruction_integrity]
+evidence_requirements:
+  minimum_for_validated:
+    - type: threat_model_node
+      count: 1
+false_positive_filters:
+  required: [verify_context_boundary, redact_sensitive_memory, verify_current_run_relevance]
+linked_skills:
+  primary: [threat_modeler]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.agentic_system_security_review]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [memory_context_isolation]

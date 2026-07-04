@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: web.saml_xxe_signature_wrap
+title: SAML XXE / signature-wrapping / xmldsig comment-truncation attacks
+version: 1.0.0
+status: active
+summary: "A SAML service provider parses attacker-supplied responses with XXE-vulnerable XML, validates signatures over a different node than it consumes (XSW), or accepts XML-comment-truncated NameIDs / Assertions. Result: file disclosure via XXE, full assertion forgery via XSW, or impersonation via comment truncation."
+vuln_class: web
+subclass: saml_xml
+severity_default: critical
+mappings:
+  cwe: [CWE-611, CWE-347, CWE-345]
+  web: [saml, xml]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [sp_accepts_saml_response, signature_validation_or_xml_parsing_implementation_known_or_observable]
+detection_logic:
+  predicates:
+    - xxe_probe_in_saml_response_yields_file_or_oob_signal
+    - xsw_payload_with_signed_node_outside_consumed_node_accepted
+    - comment_truncation_in_NameID_yields_alternate_subject
+  disconfirming_observations:
+    - parser_disables_external_entities
+    - signature_validator_checks_signed_element_id_matches_consumed_id
+    - parser_strips_or_rejects_comments_in_protected_fields
+exploitability_model:
+  factors: [parser_implementation, signature_validator_quality, idp_trust_model]
+impact_model:
+  dimensions: [account_impersonation, sso_bypass, file_disclosure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_response_evidence
+      count: 1
+    - type: sp_accepted_response_evidence_or_oob_signal
+      count: 1
+  preferred_for_critical:
+    - type: lab_impersonation_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_sp_actually_consumes_attacker_controlled_node
+    - verify_signature_validation_actually_bypassed_or_xxe_actually_resolves
+    - verify_no_compensating_idp_proof
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

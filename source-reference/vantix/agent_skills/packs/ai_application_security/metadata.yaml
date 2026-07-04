@@ -1,0 +1,88 @@
+id: ai_application_security
+name: AI Application Security
+version: 1
+summary: application-layer attacks against LLM-using systems - tool-use confused deputy, RAG poisoning, indirect prompt injection, agent escape, pickle deserialization, embedding inversion, output-handling XSS, cost-DoS
+roles:
+- researcher
+- evaluator
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- ai-application
+- llm-application
+- agentic-ai
+- tool-use-confused-deputy
+- rag-poisoning
+- indirect-prompt-injection
+- langchain-escape
+- llamaindex-escape
+- pickle-deserialization
+- model-file-deserialization
+- safetensors
+- embedding-inversion
+- output-handling-xss
+- markdown-render-xss
+- cost-dos
+- token-amplification
+- prompt-template-leak
+- system-prompt-extraction
+- mcp-tool-confusion
+requires_scope: true
+required_tools:
+- curl
+- jq
+optional_tools:
+- garak
+- promptfoo
+- pyrit
+fallback_chain:
+  model_probe: [curl, jq]
+  llm_redteam_suite: [garak, promptfoo, pyrit]
+triggers:
+  surface:
+  - chatbot_endpoint
+  - llm_agent_with_tools
+  - rag_pipeline
+  - vector_store_endpoint
+  - model_artifact_upload
+  - embedding_search_endpoint
+  - llm_rendered_markdown_output
+  - mcp_server_in_application
+  - email_to_llm_pipeline
+  - calendar_event_to_llm_pipeline
+  - web_page_fetcher_for_llm
+  pivot:
+  - prompt_injection_to_idor_via_agent_tools
+  - prompt_injection_to_data_exfil_via_markdown_image
+  - pickle_upload_to_rce
+  - rag_poison_to_persistent_compromise_other_users
+hypothesis_templates:
+- id: tool_use_confused_deputy
+  description: "An LLM agent has privileged tools (read_file, send_email, db_query). An attacker prompt induces the agent to call a tool with attacker-chosen arguments that the agent's own user could not authorize."
+- id: rag_poison_persistent
+  description: "RAG retrieves from a corpus the attacker can write to (public wiki, ticket comments, user-uploaded docs). Injected content alters LLM behavior for OTHER users who later query."
+- id: indirect_prompt_injection
+  description: "LLM fetches a URL, email, calendar invite, or attached document as part of its workflow. The fetched content contains attacker instructions that override the system prompt or steer tool use."
+- id: pickle_rce
+  description: "Application accepts a model file upload (.pkl, .pt, .pth, .ckpt, .safetensors). Loading the file with torch.load / pickle.load executes attacker-controlled code."
+- id: markdown_render_xss
+  description: "LLM-generated output is rendered as markdown to HTML without sanitization. Image data URIs, anchor href, raw HTML survive into the user's browser."
+- id: embedding_inversion_leak
+  description: "Application exposes embeddings of private text (search index, recommendation system). Embeddings can be inverted to recover the original text via a known-plaintext attack or model query."
+- id: cost_dos_token_amplification
+  description: "Endpoint accepts user-controlled prompts that the application sends to a paid model. Attacker submits prompts engineered to maximize output tokens; cumulative cost exhausts the application's API budget."
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- pivoting_via_extracted_user_data_beyond_proof
+runtime:
+  primitive_module: secops.services.active_probe
+  primitives:
+    - probe_llm_prompt_injection

@@ -1,0 +1,38 @@
+schema_version: theory.system
+id: api.excessive_response_exposure
+title: API exposes excessive response data
+version: 1.0.0
+status: active
+summary: API responses may include sensitive or unauthorized fields beyond the caller, object, or workflow need.
+vuln_class: api_data_exposure
+subclass: excessive_response
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A01, A04]
+  cwe: [CWE-200, CWE-213]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql]
+preconditions:
+  required: [scoped_actor_context, response_field_evidence]
+detection_logic:
+  predicates: [private_field_returned, actor_or_object_context_known, field_not_needed_for_workflow]
+  disconfirming_observations: [public_field, caller_owned_field, field_documented_as_needed]
+exploitability_model:
+  factors: [field_sensitivity, actor_scope, object_relation, endpoint_reachability]
+impact_model:
+  dimensions: [confidentiality, privacy, tenant_boundary]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 1
+false_positive_filters:
+  required: [verify_actor_context, verify_field_sensitivity, redact_raw_values]
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.schema_driven_api_validation]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [response_minimization, field_level_authorization]

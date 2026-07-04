@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: authz.hidden_field_state
+title: Hidden field state trust boundary
+version: 1.0.0
+status: active
+summary: Hidden form fields that carry role, owner, status, or workflow state may reveal a server-side trust boundary when replayed with preserved session context.
+vuln_class: authz
+subclass: hidden_field_state
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A04]
+  wstg: [WSTG-ATHZ-03, WSTG-BUSL]
+  cwe: [CWE-639, CWE-642, CWE-862]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [hidden_field_present, state_or_role_semantic_name]
+preconditions:
+  required: [scope_authorizes_testing, normal_workflow_baseline_available]
+  blockers: [destructive_state_change_required]
+detection_logic:
+  predicates:
+    - hidden_field_controls_security_relevant_state
+    - attacker_can_replay_or_modify_field
+    - server_accepts_or_partially_trusts_modified_value
+  disconfirming_observations:
+    - server_recomputes_state
+    - csrf_or_signature_rejects_mutation
+    - mutation_only_changes_client_ui
+exploitability_model:
+  factors: [field_semantics, auth_requirement, server_validation, replayability, impact_state]
+impact_model:
+  dimensions: [privilege_change, owner_change, workflow_bypass, admin_action]
+evidence_requirements:
+  minimum_for_validated:
+    - type: baseline_http_exchange
+      count: 1
+    - type: mutated_http_exchange
+      count: 1
+    - type: server_side_delta
+      count: 1
+false_positive_filters:
+  required: [verify_not_client_only, verify_same_session_baseline, verify_server_accepted_state]
+linked_skills:
+  primary: [api_security, web_hunter]
+  supporting: [poc_validator, bizlogic_hunter]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

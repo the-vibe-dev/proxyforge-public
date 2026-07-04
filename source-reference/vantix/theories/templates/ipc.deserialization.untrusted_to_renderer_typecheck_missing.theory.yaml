@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: ipc.deserialization.untrusted_to_renderer_typecheck_missing
+title: IPC deserialization passes untrusted bytes to consumer without verifying the declared types match the raw payload
+version: 1.0.0
+status: active
+summary: An IPC layer (Mojo, classic Chrome IPC, custom protobuf-over-pipe) deserializes a struct from the wire and hands the resulting fields to the consumer without verifying that the wire payload actually carried valid types/sizes/handle counts. Variant tags, optional fields, and handle indices can carry attacker-controlled values that the consumer then dereferences. The bug is structural — even when the class shape is right, the contents can be wrong.
+vuln_class: ipc_safety
+subclass: deserialization_typecheck
+severity_default: high
+mappings:
+  cwe: [CWE-502, CWE-704, CWE-345]
+applicability:
+  target_surfaces: [surface.chromium.mojo, surface.chromium.browser, surface.chromium.utility, surface.chromium.network]
+preconditions:
+  required:
+    - ipc_struct_deserialized_from_attacker_input
+    - consumer_dereferences_decoded_field_without_revalidating
+    - decoder_lacks_per_field_validation_predicate
+detection_logic:
+  predicates:
+    - generated_bindings_skip_validation_for_field
+    - decompiler_shows_unchecked_dereference_of_decoded_pointer_or_handle
+    - source_grep_decoded_field_use_without_is_valid_or_typeof_check
+  disconfirming_observations:
+    - per_field_validator_present_in_validation_module
+    - struct_traits_implement_strict_read_with_type_assert
+    - consumer_re_validates_immediately_before_use
+exploitability_model:
+  factors: [field_attacker_controllable, post_decode_use_observably_misbehaves, alternative_typed_payload_constructible]
+impact_model:
+  dimensions: [memory_corruption, type_confusion_followon, info_leak, sandbox_escape_potential]
+evidence_requirements:
+  minimum_for_validated:
+    - type: regression_witness
+      count: 1
+    - type: symbolized_stack
+      count: 1
+  preferred_for_critical:
+    - type: ipc_trace
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_field_actually_attacker_controllable_via_renderer_or_compromised_peer
+    - confirm_no_validator_or_struct_trait_dominates_use
+    - confirm_post_decode_misuse_observable
+linked_skills:
+  primary: [chromium_research]
+  supporting: [binary_re, crash_triage]
+linked_playbooks:
+  primary: [playbook.chromium_vrp_research_loop]

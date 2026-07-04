@@ -1,0 +1,21 @@
+id: client_side_storage_audit
+name: Client-Side Storage Audit
+version: 1
+summary: Post-login Playwright dump of localStorage + sessionStorage; flag JWT/email/PII shapes in non-HttpOnly client storage. WSTG-CLIENT-12.
+roles: [researcher]
+modes: [bugbounty, pentest, ctf]
+execution_level: passive
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [browser-storage, localstorage, sessionstorage, sensitive-data-exposure]
+requires_scope: true
+required_tools: [playwright]
+sechive_ids: [sechive.client.browser_storage]
+wstg_ids: [WSTG-CLIENT-12]
+triggers:
+  surface: [authenticated-spa]
+runtime:
+  primitive_module: secops.services.probe_client_side
+  primitives:
+    - probe_browser_storage_scan

@@ -1,0 +1,41 @@
+schema_version: theory.system
+id: authz.function_level
+title: Function-level authorization bypass
+version: 1.0.0
+status: active
+summary: Exposed routes, verbs, or workflows may allow unauthorized function access.
+vuln_class: authz
+subclass: function_level
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01]
+  wstg: [WSTG-ATHZ, WSTG-BUSL]
+  cwe: [CWE-862, CWE-863]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest, surface.api.graphql]
+preconditions:
+  required: [scope_authorizes_testing, privileged_or_stateful_function_present]
+detection_logic:
+  predicates: [function_reachable, privilege_boundary_exists, unauthorized_invocation_succeeds]
+  disconfirming_observations: [consistent_access_denial, function_is_public_by_design]
+exploitability_model:
+  factors: [reachability, auth_requirement, role_boundary, state_mutation]
+impact_model:
+  dimensions: [integrity, confidentiality, business_action, privilege_boundary]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_function_requires_privilege, verify_subject_boundary, verify_effect_not_stubbed]
+linked_skills:
+  primary: [api_security, bizlogic_hunter]
+  supporting: [web_hunter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  learning_sources: [corpus.bb.idor_ac]

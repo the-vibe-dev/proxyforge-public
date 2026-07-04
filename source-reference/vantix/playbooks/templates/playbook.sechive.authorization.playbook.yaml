@@ -1,0 +1,87 @@
+schema_version: playbook.system
+id: playbook.sechive.authorization
+name: SecHive Authorization Matrix (WSTG 4.5)
+version: 1.0.0
+status: active
+summary: "Path traversal + LFI, IDOR matrix, role injection registration, mass assignment, JWT alg=none."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.authz.directory_traversal
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_path_traversal
+    sechive_id: sechive.authz.directory_traversal
+    wstg_id: WSTG-AUTHZ-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.authz.directory_traversal
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_lfi_via_query_traversal
+    sechive_id: sechive.authz.directory_traversal
+    wstg_id: WSTG-AUTHZ-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.authz.idor
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_authz_matrix_idor
+    sechive_id: sechive.authz.idor
+    wstg_id: WSTG-AUTHZ-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.authz.bypass_schema
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_idor_numeric
+    sechive_id: sechive.authz.bypass_schema
+    wstg_id: WSTG-AUTHZ-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.authz.privilege_escalation
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_role_injection_register
+    sechive_id: sechive.authz.privilege_escalation
+    wstg_id: WSTG-AUTHZ-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.mass_assignment
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_mass_assignment
+    sechive_id: sechive.input.mass_assignment
+    wstg_id: WSTG-INPUT-20
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.crypto.jwt_alg_none
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_jwt_alg_none
+    sechive_id: sechive.crypto.jwt_alg_none
+    wstg_id: WSTG-SESSION-10
+    evidence_emit: { kind: sechive_test_result }

@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: llm.system_prompt_exfil
+title: LLM system-prompt or tool-schema exfiltration
+version: 1.0.0
+status: active
+summary: Through translation, completion, role-play, encoding, or step-by-step probes, the assistant emits the verbatim or near-verbatim system prompt, tool-schema definitions, or operator-only guardrail text — disclosing intellectual property and reducing attacker effort on follow-up attacks.
+vuln_class: llm
+subclass: system_prompt_disclosure
+severity_default: medium
+mappings:
+  cwe: [CWE-200, CWE-540]
+  llm: [owasp.llm.llm07]
+applicability:
+  target_surfaces: [surface.llm.chat, surface.llm.agent]
+preconditions:
+  required: [llm_uses_non_empty_system_prompt_or_tool_schema, assistant_responds_to_meta_queries]
+detection_logic:
+  predicates:
+    - probe_returns_unique_phrase_present_in_system_prompt
+    - tool_schema_or_function_signatures_returned_verbatim
+    - encoded_or_translated_request_yields_disclosure
+  disconfirming_observations:
+    - guardrail_refuses_meta_queries
+    - response_is_paraphrased_only_no_unique_token
+    - tool_schema_redacted_in_responses
+exploitability_model:
+  factors: [guardrail_strength, model_compliance_disposition, probe_diversity]
+impact_model:
+  dimensions: [ip_disclosure, attacker_uplift, jailbreak_design]
+evidence_requirements:
+  minimum_for_validated:
+    - type: probe_payload_evidence
+      count: 1
+    - type: assistant_response_with_unique_string
+      count: 1
+  preferred_for_critical:
+    - type: full_system_prompt_recovery
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_contains_unique_marker_not_paraphrase
+    - verify_marker_actually_in_system_prompt
+    - verify_not_attributable_to_user_provided_text
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

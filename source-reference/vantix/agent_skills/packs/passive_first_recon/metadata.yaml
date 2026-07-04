@@ -1,0 +1,37 @@
+id: passive_first_recon
+name: Passive-First Recon
+version: 1
+summary: Passive-before-brute-force surface collection with per-source cost/latency/unique-yield metadata in the recon data platform
+roles:
+- recon
+- researcher
+modes:
+- bugbounty
+- pentest
+execution_level: passive
+safety_level: passive
+risk_tier: passive
+opsec: low
+tags:
+- recon
+- passive
+- subdomain
+- ct
+- wayback
+- data-platform
+requires_scope: false
+required_tools:
+- curl
+optional_tools:
+- subfinder
+- amass
+- bbot
+- gau
+triggers:
+  surfaces:
+  - surface.recon.passive
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- active_probe

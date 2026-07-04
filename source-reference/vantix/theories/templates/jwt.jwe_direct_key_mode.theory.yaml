@@ -1,0 +1,40 @@
+schema_version: theory.system
+id: jwt.jwe_direct_key_mode
+title: JWE direct-key (alg=dir) or unauthenticated alg accepts attacker-supplied content
+version: 1.0.0
+status: active
+summary: "A JWE-consuming verifier accepts a token using alg=dir with an attacker-known or reused content-encryption key, or accepts an alg variant lacking authentication (e.g., RSA1_5 with a Bleichenbacher-vulnerable padding oracle), allowing the attacker to forge encrypted payloads that decrypt to chosen claims. Verifier acts on the decrypted plaintext as authoritative."
+vuln_class: token_crypto
+subclass: jwe_alg_dir_or_unauthenticated
+severity_default: high
+mappings:
+  cwe: [CWE-347, CWE-310]
+  owasp: [A02:2021]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql]
+preconditions:
+  required: [jwe_in_use, verifier_accepts_dir_or_rsa1_5, key_or_oracle_obtainable]
+detection_logic:
+  predicates:
+    - jwe_with_alg_dir_and_known_or_default_key_decrypts_and_authenticates_as_user
+    - jwe_with_rsa1_5_padding_oracle_yields_chosen_plaintext
+  disconfirming_observations:
+    - verifier_pins_alg_to_authenticated_modes_only
+    - decrypted_payload_subjected_to_independent_signature_check
+exploitability_model:
+  factors: [library_version, supported_alg_set, key_management]
+impact_model:
+  dimensions: [authentication_bypass, integrity_violation, privilege_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: forged_jwe_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_decrypted_claims_actually_authoritative
+    - verify_no_secondary_signed_envelope_check
+linked_skills:
+  primary: [api_security, crypto_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

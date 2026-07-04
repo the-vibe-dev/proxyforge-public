@@ -1,0 +1,22 @@
+id: web_messaging_hunter
+name: Web Messaging (postMessage) Hunter
+version: 1
+summary: Find addEventListener('message', …) handlers in JS source that lack event.origin validation — cross-origin postMessage exploitation surface. WSTG-CLIENT-11.
+roles: [researcher]
+modes: [bugbounty, pentest, ctf]
+execution_level: passive
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [postmessage, web-messaging, cross-origin, client-side]
+requires_scope: true
+required_tools: []
+optional_tools: [browser_execute_script]
+sechive_ids: [sechive.client.web_messaging]
+wstg_ids: [WSTG-CLIENT-11]
+triggers:
+  surface: [js-bundle-with-postmessage-listener]
+runtime:
+  primitive_module: secops.services.probe_client_side
+  primitives:
+    - probe_postmessage_listener_audit

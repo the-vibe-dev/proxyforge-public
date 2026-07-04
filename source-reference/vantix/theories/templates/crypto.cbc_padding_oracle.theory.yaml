@@ -1,0 +1,45 @@
+schema_version: theory.system
+id: crypto.cbc_padding_oracle
+title: CBC padding oracle yields plaintext recovery and forgery
+version: 1.0.0
+status: active
+summary: An endpoint accepts CBC-encrypted input and returns a distinguishable response (different status, different error, different timing) when PKCS#7 padding is invalid. The padding-validity oracle allows byte-by-byte plaintext recovery and arbitrary plaintext forgery without the key.
+vuln_class: crypto
+subclass: padding_oracle
+severity_default: high
+mappings:
+  cwe: [CWE-209, CWE-326]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [endpoint_decrypts_user_supplied_cbc_ciphertext, distinguishable_response_for_padding_validity]
+detection_logic:
+  predicates:
+    - last_byte_oracle_yields_distinguishable_responses
+    - padbuster_or_manual_recovery_succeeds_on_first_block
+  disconfirming_observations:
+    - response_uniform_for_decrypt_failures
+    - mac_then_encrypt_with_constant_time_mac_check
+    - rate_limit_caps_required_request_volume
+exploitability_model:
+  factors: [oracle_distinguishability, mac_use, rate_limits]
+impact_model:
+  dimensions: [plaintext_disclosure, forgery, auth_bypass]
+evidence_requirements:
+  minimum_for_validated:
+    - type: oracle_response_pair
+      count: 1
+    - type: byte_recovery_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_full_plaintext_or_forgery_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_oracle_distinguishable_above_noise
+    - verify_no_mac_blocks_attack
+linked_skills:
+  primary: [crypto_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.crypto_token_review]

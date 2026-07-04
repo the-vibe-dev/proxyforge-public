@@ -1,0 +1,62 @@
+schema_version: theory.system
+id: ato.via_client_side_injection
+title: Account takeover through client-side injection (endpoint-first)
+version: 1.0.0
+status: active
+summary: An account-takeover-capable endpoint (password change without
+  current password, add recovery email, create/return API key, OAuth/token
+  exchange, invite-as-admin, disable MFA, change SSO) is reachable from
+  attacker-controlled JavaScript because its controls (CSRF, CORS+preflight,
+  CSP connect/img, cookie flags, reauthentication) do not block a forced
+  request or response read. The injection is hunted only on domains from
+  which JavaScript can reach that endpoint.
+vuln_class: ato
+subclass: via_client_side_injection
+severity_default: critical
+mappings:
+  owasp_top10_2025: [A01, A07]
+  wstg: [WSTG-ATHN-04, WSTG-SESS-05, WSTG-CLNT-01]
+  cwe: [CWE-79, CWE-352, CWE-639, CWE-287]
+applicability:
+  target_surfaces: [surface.web.http, surface.client.spa, surface.api.rest]
+  required_observations: [ato_capable_endpoint_present, client_injection_path_present]
+preconditions:
+  required: [scope_authorizes_testing, owned_attacker_and_victim_test_accounts]
+  blockers: [targeting_real_users, exfiltration_of_real_user_data_required]
+detection_logic:
+  predicates:
+    - endpoint.ato_capable
+    - endpoint_controls.do_not_block_forced_request_or_response_read
+    - injection.reachable_on_a_domain_that_can_call_endpoint
+    - delivery.to_owned_victim_demonstrated
+  disconfirming_observations:
+    - endpoint_requires_current_password_or_reauth
+    - strong_csrf_or_same_origin_preflight_blocks
+    - response_not_readable_and_no_app_write_primitive
+    - injection_only_self_xss
+exploitability_model:
+  factors: [endpoint_control_strength, injection_class, delivery_naturalness, victim_role_required, csp_exfil_posture]
+impact_model:
+  dimensions: [account_takeover, privilege_escalation, persistent_access, business_logic_harm]
+evidence_requirements:
+  minimum_for_validated:
+    - type: endpoint_control_evaluation
+      count: 1
+    - type: forced_action_or_token_read_evidence
+      count: 1
+    - type: delivery_evidence
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_endpoint_truly_ato_capable, verify_controls_bypassed_in_browser, verify_delivery_not_self_xss, verify_owned_accounts_only]
+linked_skills:
+  primary: [exploit_chainer, dom_taint_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]
+  supporting: [playbook.client_side_js_secret_and_sink_review]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.ato_xss, corpus.bb.xss_bypass]

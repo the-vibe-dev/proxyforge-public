@@ -1,0 +1,79 @@
+id: client_security
+name: Client-Side Security
+version: 1
+summary: "JavaScript route extraction, source-map recovery, DOM sink tainting, postMessage review, CSP/CORS policy enforcement, storage/token leakage detection, service-worker privilege escalation, prototype pollution sinks"
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: intrusive
+opsec: loud
+tags:
+- js-route-extraction
+- source-map-recovery
+- dom-sink-tainting
+- postmessage-review
+- csp-policy-enforcement
+- cors-policy-enforcement
+- storage-token-leakage
+- service-worker-xss
+- prototype-pollution
+- dom-xss
+- client-side-template-injection
+- localstorage-exfil
+- sessionstorage-exfil
+- indexeddb-secrets
+- web-worker-isolation
+requires_scope: true
+required_tools: []
+optional_tools:
+- browserless
+- puppeteer
+- msgpack-unpack
+fallback_chain:
+  source_map_recovery: [curl, grep]
+  dom_analysis: [browserless, puppeteer]
+  policy_parse: [python, curl]
+triggers:
+  surface:
+  - javascript_bundle_present
+  - service_worker_registered
+  - postmessage_handler_discovered
+  - csp_header_present
+  - cors_header_present
+  - localstorage_usage
+  - sessionstorage_usage
+  - indexeddb_usage
+  pivot:
+  - dom_sink_identified_to_xss_poc
+  - prototype_pollution_to_auth_bypass
+  - storage_token_exfil_to_account_takeover
+hypothesis_templates:
+- id: source_map_exposure
+  description: JavaScript source map (.map file) is publicly accessible at a standard location (bundle.js.map, main.map) and contains full source revealing business logic, credentials, API endpoints, or routing patterns
+- id: dom_sink_sink_tainting
+  description: JavaScript DOM sink (innerHTML, eval, Function constructor, document.write) receives tainted input from route parameter, query string, or postMessage channel without sanitization
+- id: postmessage_origin_bypass
+  description: postMessage listener checks origin with loose matching (substring match, missing check) allowing cross-origin communication from attacker-controlled frame to leak state or trigger actions
+- id: csp_bypass_nonce_reuse
+  description: Content-Security-Policy nonce attribute is static or predictable across requests, allowing inline script injection in script tags already marked as nonce-compliant
+- id: service_worker_cache_poison
+  description: Service Worker's Cache API stores user-specific responses with cache keys that include querystring but not user ID, allowing one user to poison another user's cache
+- id: prototype_pollution_sink
+  description: Object.assign, spread operator, or _.extend used unsafely on user input allows attacker to pollute Object.prototype and affect downstream application logic or authentication state
+- id: storage_secret_leak
+  description: JWT token, API key, session cookie, or password-reset token stored in plaintext in localStorage or sessionStorage, accessible to inline JavaScript or service workers
+- id: cors_misconfiguration_wildcard
+  description: CORS Access-Control-Allow-Origin set to wildcard or reflects request origin without validation, combined with credentialed requests allows cross-site API access from attacker frame
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- unscoped_account_creation
+- real_user_targeting
+status: active

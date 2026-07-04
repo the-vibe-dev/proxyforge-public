@@ -1,0 +1,35 @@
+version: 1
+score_formula:
+  surface_match: 0.35
+  evidence_strength: 0.25
+  mode_fit: 0.15
+  tool_readiness: 0.10
+  learning_prior: 0.10
+  operator_intent: 0.05
+statuses:
+  applied: score >= 0.35 and gates allow active use
+  recommended: score >= 0.22 or default-mode skill
+  blocked: scope, authorization, or risk gate prevents active use
+  disabled: operator or default lock prevents use
+gates:
+  bugbounty:
+    require_program_scope: true
+    deny_overrides_allow: true
+    authorized_proof_skills:
+      - payload_crafter
+      - credential_tester
+      - exploit_chainer
+      - poc_validator
+      - web_hunter
+      - api_security
+      - bizlogic_hunter
+      - vuln_scanner
+      - recon_advisor
+    explicit_enable_only:
+      - social_engineer
+      - wireless_pentester
+  private_source_audit:
+    require_user_declared_authorized: true
+    source_in_scope_by_default: true
+  pentest:
+    preserve_default_skill_loading: true

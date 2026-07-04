@@ -1,0 +1,42 @@
+schema_version: theory.system
+id: crypto.hash_collision_misuse
+title: Application uses MD5 or SHA1 for security-relevant identity and is vulnerable to collisions
+version: 1.0.0
+status: active
+summary: Authorization, deduplication, integrity, or signing decisions are made over MD5 or SHA1 fingerprints. Chosen-prefix collisions (Stevens et al.) allow an attacker to construct two distinct documents/binaries/certificates with the same hash, enabling forgery, impersonation, or supply-chain substitution.
+vuln_class: crypto
+subclass: hash_collision
+severity_default: medium
+mappings:
+  cwe: [CWE-328, CWE-327]
+applicability:
+  target_surfaces: [surface.web.http, surface.cicd.pipeline]
+preconditions:
+  required: [security_decision_uses_md5_or_sha1, attacker_can_supply_one_or_both_inputs]
+detection_logic:
+  predicates:
+    - source_or_runtime_evidence_shows_md5_or_sha1_for_auth_or_integrity
+    - chosen_prefix_collision_pair_accepted_in_lab
+  disconfirming_observations:
+    - decision_layered_with_sha2_or_sha3
+    - attacker_cannot_supply_either_pre_image
+    - signing_uses_keyed_construction
+exploitability_model:
+  factors: [attacker_input_control, decision_layering, ecosystem_state]
+impact_model:
+  dimensions: [forgery, impersonation, supply_chain_substitution]
+evidence_requirements:
+  minimum_for_validated:
+    - type: hash_use_evidence
+      count: 1
+    - type: collision_pair_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_hash_actually_used_for_security_decision
+    - verify_attacker_can_supply_inputs
+linked_skills:
+  primary: [crypto_attacker, source_reviewer]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.crypto_token_review]

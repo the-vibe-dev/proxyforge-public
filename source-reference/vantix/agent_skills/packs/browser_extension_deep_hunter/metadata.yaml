@@ -1,0 +1,46 @@
+id: browser_extension_deep_hunter
+name: Browser Extension Deep Hunter
+version: 1
+summary: "Beyond browser_extension_tester: content-script isolation, privileged message origin validation, extension storage leakage, native messaging, cross-extension messaging, externally_connectable abuse, permission overreach."
+status: active
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- browser-extension
+- content-script-isolation
+- message-origin-validation
+- extension-storage
+- native-messaging
+- externally-connectable
+- permission-overreach
+requires_scope: true
+required_tools: []
+optional_tools:
+- chrome-extension-source-viewer
+- ext-deep-inspector
+triggers:
+  surface:
+  - general
+hypothesis_templates:
+- id: content-script-postmessage-trust
+  description: "Content script trusts page postMessage origin without check; page injects messages."
+- id: native-messaging-host-rce
+  description: "Native messaging host validates input poorly; attacker-controlled extension reaches local exec."
+- id: externally-connectable-overbroad
+  description: "externally_connectable matches '<all_urls>'; any page can talk to the extension."
+- id: storage-leak-cross-origin
+  description: "chrome.storage.local readable by content-script in iframe from attacker origin."
+- id: permission-overreach
+  description: "Extension requests 'tabs' + 'cookies' + '<all_urls>' but only needs one origin."
+forbidden:
+- destructive
+- out_of_scope
+- production_user_data_modification

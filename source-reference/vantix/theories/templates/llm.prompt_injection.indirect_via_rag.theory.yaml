@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: llm.prompt_injection.indirect_via_rag
+title: LLM indirect prompt injection via RAG-indexed or user-supplied content
+version: 1.0.0
+status: active
+summary: An attacker-controlled document (RAG-indexed file, uploaded attachment, fetched web page, or email message) carries instructions that the LLM treats as authoritative when retrieved into context, hijacking the assistant on behalf of an unrelated user query.
+vuln_class: llm
+subclass: indirect_prompt_injection
+severity_default: high
+mappings:
+  cwe: [CWE-77, CWE-94]
+  llm: [owasp.llm.llm01]
+applicability:
+  target_surfaces: [surface.llm.rag, surface.llm.chat, surface.llm.agent]
+preconditions:
+  required: [llm_consumes_external_content_into_context, no_strong_instruction_isolation, retrieval_path_or_upload_path_attacker_influenced]
+detection_logic:
+  predicates:
+    - assistant_follows_instructions_embedded_in_retrieved_doc
+    - tool_call_or_response_attributable_to_doc_content
+    - guardrail_does_not_segment_doc_from_system_prompt
+  disconfirming_observations:
+    - retrieval_layer_strips_or_quotes_doc_content
+    - system_prompt_explicitly_refuses_doc_directives
+    - canary_token_in_doc_does_not_propagate
+exploitability_model:
+  factors: [retrieval_pipeline_isolation, instruction_marker_quoting, model_following_strength]
+impact_model:
+  dimensions: [data_exfil_via_assistant, tool_misuse, social_engineering_uplift]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_document_evidence
+      count: 1
+    - type: assistant_response_or_tool_call_trace
+      count: 1
+    - type: privilege_delta_documented
+      count: 1
+  preferred_for_critical:
+    - type: lab_repeated_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_doc_actually_retrieved_into_context
+    - verify_assistant_action_matches_doc_directive
+    - verify_no_session_specific_anomaly
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator, web_hunter]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

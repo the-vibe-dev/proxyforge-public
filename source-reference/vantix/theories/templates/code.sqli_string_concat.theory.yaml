@@ -1,0 +1,51 @@
+schema_version: theory.system
+id: code.sqli_string_concat
+title: SQL injection via string-concatenated query construction in source
+version: 1.0.0
+status: active
+summary: SQL queries are assembled by concatenating, formatting, or interpolating attacker-influenced input rather than using parameterized statements or a safe ORM API. Static evidence may precede or replace runtime validation.
+vuln_class: sql_injection
+subclass: source_string_concat
+severity_default: critical
+mappings:
+  owasp_top10_2025: [A03]
+  cwe: [CWE-89]
+applicability:
+  target_surfaces: [surface.source.code, surface.api.rest]
+preconditions:
+  required: [database_call_present, query_string_built_from_input]
+detection_logic:
+  predicates:
+    - non_parameterized_query_form
+    - input_reaches_query_string
+    - orm_safe_api_not_used
+  disconfirming_observations:
+    - parameterized_call_with_separate_args
+    - input_is_strict_allowlist_constant
+    - query_runs_against_compile_time_constant_only
+exploitability_model:
+  factors: [database_engine_features, error_message_exposure, blind_or_error_based, repeatability]
+impact_model:
+  dimensions: [confidentiality, integrity, data_sensitivity, blast_radius]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: query_construction_form
+      count: 1
+    - type: data_flow_path
+      count: 1
+  preferred_for_critical:
+    - type: runtime_corroboration
+      count: 1
+false_positive_filters:
+  required:
+    - verify_input_actually_external
+    - verify_orm_not_using_safe_api
+    - verify_no_pre_query_validator_or_typed_param
+linked_skills:
+  primary: [source_reviewer, web_hunter, api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.source_audit_loop]
+  supporting: [playbook.web_payload_family_validation]

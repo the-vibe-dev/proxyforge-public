@@ -1,0 +1,42 @@
+schema_version: theory.system
+id: crypto.stream_or_ctr_iv_reuse
+title: Stream-cipher or CTR-mode IV/nonce reuse yields plaintext leakage and tampering
+version: 1.0.0
+status: active
+summary: Two ciphertexts encrypted with the same key and the same IV/nonce under a stream cipher (RC4) or counter mode (AES-CTR, ChaCha20) XOR to produce `P1 ⊕ P2`. Combined with even partial plaintext knowledge or known-plaintext probes, this recovers both messages and enables bit-flipping tampering.
+vuln_class: crypto
+subclass: iv_nonce_reuse
+severity_default: high
+mappings:
+  cwe: [CWE-323, CWE-326]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [stream_or_ctr_mode, same_iv_nonce_observed_across_distinct_messages]
+detection_logic:
+  predicates:
+    - iv_field_repeats_across_observations
+    - xor_of_ciphertexts_yields_recognizable_text
+  disconfirming_observations:
+    - iv_unique_per_message
+    - aead_with_unique_nonce_enforced
+    - per_session_key_rotation
+exploitability_model:
+  factors: [nonce_management, message_corpus_visibility, mac_use]
+impact_model:
+  dimensions: [plaintext_disclosure, tampering, forgery]
+evidence_requirements:
+  minimum_for_validated:
+    - type: ciphertext_pair_with_same_iv
+      count: 1
+    - type: xor_recovery_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_iv_actually_reused_not_random_collision
+    - verify_xor_yields_meaningful_text
+linked_skills:
+  primary: [crypto_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.crypto_token_review]

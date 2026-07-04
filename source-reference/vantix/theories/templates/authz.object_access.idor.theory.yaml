@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: authz.object_access.idor
+title: Object-level authorization bypass
+version: 1.0.0
+status: active
+summary: User-controlled object references may allow unauthorized object access.
+vuln_class: authz
+subclass: object_access
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01]
+  wstg: [WSTG-ATHZ-02, WSTG-ATHZ-03, WSTG-ATHZ-04]
+  cwe: [CWE-639, CWE-862]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest, surface.api.graphql]
+  required_observations: [object_identifier_present, authorization_boundary_possible]
+preconditions:
+  required: [scope_authorizes_testing, object_reference_present]
+  blockers: [credential_use_not_approved, destructive_state_change_required]
+detection_logic:
+  predicates:
+    - object_reference.controlled_by_user
+    - authorization_boundary.exists
+    - modified_reference.crosses_subject_boundary
+  disconfirming_observations:
+    - consistent_403_or_404
+    - object_public_by_design
+    - response_only_contains_caller_owned_data
+exploitability_model:
+  factors: [reachability, auth_requirement, attacker_control, boundary_strength, repeatability]
+impact_model:
+  dimensions: [confidentiality, integrity, tenant_boundary, data_sensitivity, business_action]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_object_not_public, verify_subject_boundary, verify_response_not_cached_or_stubbed]
+linked_skills:
+  primary: [api_security, web_hunter, bizlogic_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+  supporting: [playbook.proof_pack_completion]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.idor_ac]

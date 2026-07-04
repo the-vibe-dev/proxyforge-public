@@ -1,0 +1,94 @@
+schema_version: capability_ontology.system
+required_namespaces:
+  - surface
+  - execution
+  - evidence
+namespaces:
+  surface:
+    description: Target surface or artifact class covered by a skill, theory, or playbook.
+    examples:
+      - surface.web.http
+      - surface.api.rest
+      - surface.api.graphql
+      - surface.mobile.android
+      - surface.mobile.ios
+      - surface.source
+      - surface.cicd
+      - surface.threat_model
+  vuln:
+    description: First-party vulnerability or control family.
+    examples:
+      - vuln.authz.object_access
+      - vuln.authz.function_level
+      - vuln.authn.credential_boundary
+      - vuln.session.state
+      - vuln.injection.sql
+      - vuln.injection.xss
+      - vuln.ssrf.server_side_fetch
+      - vuln.mobile.storage
+      - vuln.supply_chain.software
+      - vuln.supply_chain.agentic_skill
+      - vuln.integrity.data_update
+      - vuln.logging.alerting_failure
+      - vuln.exception.fail_open
+  evidence:
+    description: Evidence families emitted or required by SecHive-native execution.
+    examples:
+      - evidence.http_exchange
+      - evidence.browser_screenshot
+      - evidence.dom_snapshot
+      - evidence.replay_spec
+      - evidence.source_location
+      - evidence.mobile_static_artifact
+      - evidence.mobile_dynamic_trace
+      - evidence.threat_model_node
+      - evidence.log_excerpt
+      - evidence.negative_evidence
+      - evidence.operator_approval
+      - evidence.coverage_matrix
+  execution:
+    description: Execution style and safety posture.
+    examples:
+      - execution.passive
+      - execution.active.gated
+      - execution.source_review
+      - execution.mobile_static
+      - execution.mobile_dynamic
+      - execution.evidence_validation
+      - execution.reporting
+  agent:
+    description: Agent role or orchestration function.
+    examples:
+      - agent.orchestrator
+      - agent.researcher
+      - agent.executor
+      - agent.evaluator
+      - agent.reporter
+      - agent.specialist
+  tool:
+    description: Tool capability class, not a specific binary guarantee.
+    examples:
+      - tool.browser
+      - tool.http_client
+      - tool.static_analyzer
+      - tool.mobile_analyzer
+      - tool.source_reader
+      - tool.replay
+aliases:
+  web: surface.web.http
+  api: surface.api.rest
+  graphql: surface.api.graphql
+  mobile: surface.mobile.android
+  apk: surface.mobile.android
+  source: surface.source
+  cve: vuln.supply_chain.software
+  cve-intel: vuln.supply_chain.software
+  authz: vuln.authz.object_access
+  idor: vuln.authz.object_access
+  xss: vuln.injection.xss
+  sqli: vuln.injection.sql
+  ssrf: vuln.ssrf.server_side_fetch
+  proof: execution.evidence_validation
+  report: execution.reporting
+  browser: tool.browser
+  http: tool.http_client

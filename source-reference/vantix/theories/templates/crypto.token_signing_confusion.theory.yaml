@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: crypto.token_signing_confusion
+title: Token signing or verification confusion
+version: 1.0.0
+status: active
+summary: Signed or encoded tokens may be accepted with unsafe algorithms, confused keys, stale claims, weak audience checks, or server-trusted client claims.
+vuln_class: crypto
+subclass: token_signing_confusion
+severity_default: high
+mappings:
+  owasp_top10_2025: [A02, A07]
+  wstg: [WSTG-ATHN, WSTG-CRYP, WSTG-SESS]
+  cwe: [CWE-347, CWE-345, CWE-287]
+applicability:
+  target_surfaces: [surface.api.rest, surface.web.http]
+  required_observations: [bearer_token_or_signed_id]
+preconditions:
+  required: [owned_or_lab_session, scope_authorizes_token_validation]
+  blockers: [third_party_account_risk, token_secret_not_authorized]
+detection_logic:
+  predicates:
+    - token_format_classified
+    - harmless_claim_or_header_variant_tested
+    - server_acceptance_or_rejection_boundary_observed
+  disconfirming_observations:
+    - token_is_opaque_and_server_bound
+    - modified_tokens_consistently_rejected
+    - no_security_relevant_claims
+exploitability_model:
+  factors: [claim_power, verification_key_source, algorithm_handling, revocation_behavior]
+impact_model:
+  dimensions: [auth_bypass, role_impersonation, session_integrity, replay]
+evidence_requirements:
+  minimum_for_validated:
+    - type: token_analysis
+      count: 1
+    - type: http_exchange
+      count: 2
+false_positive_filters:
+  required: [verify_owned_or_lab_identity, verify_server_acceptance, verify_no_secret_exfiltration]
+linked_skills:
+  primary: [api_security]
+  supporting: [payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [auth_delta_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [jwt_algorithm_confusion, key_confusion, stale_token_replay, claim_trust]

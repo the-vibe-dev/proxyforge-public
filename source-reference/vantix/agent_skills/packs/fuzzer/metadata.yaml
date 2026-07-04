@@ -1,0 +1,54 @@
+id: fuzzer
+name: Fuzz Campaign Intelligence
+version: 1
+summary: "Campaign-level fuzzing: corpus minimization, harness generation, crash dedupe, coverage plateau detection, sanitizer triage (ASAN/UBSAN/MSAN), regression corpus, replay proof."
+status: active
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- fuzzing-campaign
+- corpus-minimization
+- harness-generation
+- crash-dedupe
+- coverage-plateau
+- sanitizer-triage
+- asan-ubsan-msan
+- replay-proof
+- regression-corpus
+- jazzer
+- libfuzzer
+- afl
+requires_scope: true
+required_tools: []
+optional_tools:
+- jazzer
+- libfuzzer
+- afl++
+- honggfuzz
+triggers:
+  surface:
+  - general
+hypothesis_templates:
+- id: corpus-redundancy
+  description: "Seed corpus has redundant inputs; minimization improves coverage-per-execution."
+- id: crash-dedupe-by-stack
+  description: "Crashes group by symbolized stack signature; one bug shows as N crashes if dedupe is missing."
+- id: coverage-plateau-pivot
+  description: "Coverage plateau >2h with no new edges → pivot to different harness / dictionary / structure-aware."
+- id: sanitizer-triage-asan
+  description: "ASAN reports use-after-free / heap overflow / stack overflow; each has distinct exploit potential."
+- id: regression-corpus-pinning
+  description: "Crashing input added to regression corpus; future builds re-run to catch reintroduction."
+forbidden:
+- destructive
+- production_target_fuzz
+- out_of_scope
+- corpus_with_secrets

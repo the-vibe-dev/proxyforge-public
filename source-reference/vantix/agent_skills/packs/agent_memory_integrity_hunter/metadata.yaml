@@ -1,0 +1,44 @@
+id: agent_memory_integrity_hunter
+name: Agent Memory Integrity Hunter
+version: 1
+summary: Poisoned memory, false learning promotion, cross-run contamination, stale bug assumptions, prompt-injected 'known facts', evidence-free finding recall.
+status: active
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- agent-memory
+- memory-poisoning
+- learning-promotion-abuse
+- cross-run-contamination
+- stale-memory
+- evidence-free-recall
+requires_scope: true
+required_tools: []
+optional_tools:
+- memory-inspector
+triggers:
+  surface:
+  - general
+hypothesis_templates:
+- id: memory-poisoning-via-tool-output
+  description: "Tool output stored as 'fact' in memory; attacker controls tool input; memory poisoned."
+- id: learning-promotion-abuse
+  description: "Learning system promotes patterns from poisoned runs; future agents act on fake learning."
+- id: cross-run-contamination
+  description: "Memory not workspace-scoped; one tenant's memory influences another."
+- id: evidence-free-recall
+  description: "Agent recalls a 'finding' from memory without re-checking current state; stale recommendation."
+- id: prompt-injected-known-fact
+  description: "Prompt-injected 'authoritative source' becomes a memory fact agents trust later."
+forbidden:
+- destructive
+- out_of_scope
+- production_memory_modification

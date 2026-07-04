@@ -1,0 +1,599 @@
+schema_version: playbook.system
+id: playbook.source_audit_loop
+name: Source Audit Loop
+version: 1.1.0
+status: active
+summary: End-to-end source-code review loop. Authorize and ingest source, build SBOM and dependency CVE map, run multi-pack
+  SAST and secret scanners, manually triage candidates against false-positive filters, prove reachability, request runtime
+  corroboration for critical findings, and emit a proof pack.
+owner:
+  team: sechive-core
+modes:
+  allowed:
+  - own-source
+  - private-source-audit
+  - pentest
+  - bugbounty
+  requires_scope: true
+objectives:
+  primary:
+  - confirm_source_disclosure_authorization
+  - inventory_languages_frameworks_and_dependencies
+  - run_layered_scanners_and_dedup
+  - triage_to_findings_with_taint_paths
+  - prove_or_argue_reachability
+  - request_runtime_corroboration_for_criticals
+  - emit_proof_pack
+target_requirements:
+  surfaces:
+    any:
+    - surface.source.code
+    - surface.source.git_history
+    - surface.source.container_image
+required_skills:
+  primary:
+  - source_reviewer
+  - scope_guard
+  supporting:
+  - threat_modeler
+  - poc_validator
+  - report_generator
+  - evidence_ledger
+theory_filters:
+  preferred_theories:
+  - code.taint.untrusted_to_sink
+  - code.deserialization.unsafe_format
+  - code.secret_in_repo
+  - code.command_injection_subprocess
+  - code.sqli_string_concat
+  - code.path_traversal_join
+proof_continuation:
+  enabled: true
+  max_replans: 4
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 60
+  max_repo_size_mb: 4096
+  max_runtime_minutes: 120
+steps:
+- id: scope.preflight
+  title: Confirm authorization, target boundaries, and allowed proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - run.target_profile
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - destructive_action_required
+    - unauthorized_third_party
+- id: scope.authorize
+  title: Confirm source-disclosure authorization and ownership
+  agent: planner
+  action_type: scope_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.authorized
+    required:
+    - type: scope_record
+      count: 1
+    blocked_when:
+    - out_of_scope
+    - third_party_repo_unauthorized
+  stop_conditions:
+  - authorization_denied
+- id: ingest.repo
+  title: Clone or unpack source and capture commit/tag
+  agent: executor
+  action_type: ingest
+  inputs_from:
+  - scope.authorize
+  evidence_gate:
+    id: gate.ingest.repo_ready
+    required:
+    - type: source_root_path
+      count: 1
+    - type: revision_id
+      count: 1
+- id: inventory.langs_and_frameworks
+  title: Inventory languages, frameworks, build files, IaC, and Dockerfiles
+  agent: researcher
+  action_type: analysis
+  inputs_from:
+  - ingest.repo
+  evidence_gate:
+    id: gate.inventory.captured
+    required:
+    - type: language_inventory
+      count: 1
+    - type: framework_inventory
+      count: 1
+- id: deps.sbom_and_cves
+  title: Generate SBOM and match CVEs (syft -> grype/osv-scanner; trivy fs as alternate)
+  agent: executor
+  action_type: scanner_run
+  skill_ref: source_reviewer
+  inputs_from:
+  - ingest.repo
+  - inventory.langs_and_frameworks
+  evidence_gate:
+    id: gate.deps.cves
+    required_any:
+    - type: sbom
+      count: 1
+    - type: dep_cve_report
+      count: 1
+  retry:
+    max_attempts: 2
+    backoff: linear
+- id: secrets.scan
+  title: Scan working tree and git history for secrets (trufflehog non-verifying, gitleaks)
+  agent: executor
+  action_type: scanner_run
+  skill_ref: source_reviewer
+  inputs_from:
+  - ingest.repo
+  evidence_gate:
+    id: gate.secrets.candidates
+    required_any:
+    - type: secret_candidate_list
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: sast.semgrep_multi_pack
+  title: Run semgrep with security-audit, owasp-top-ten, and language packs
+  agent: executor
+  action_type: scanner_run
+  skill_ref: source_reviewer
+  inputs_from:
+  - ingest.repo
+  - inventory.langs_and_frameworks
+  evidence_gate:
+    id: gate.sast.semgrep_results
+    required:
+    - type: semgrep_report
+      count: 1
+  retry:
+    max_attempts: 2
+    backoff: linear
+- id: sast.language_specific
+  title: Run language-specific scanners (bandit for Python, njsscan for JS/Node/RN)
+  agent: executor
+  action_type: scanner_run
+  skill_ref: source_reviewer
+  inputs_from:
+  - inventory.langs_and_frameworks
+  evidence_gate:
+    id: gate.sast.language_results
+    required_any:
+    - type: bandit_report
+      count: 1
+    - type: njsscan_report
+      count: 1
+    - type: not_applicable_note
+      count: 1
+- id: triage.candidates
+  title: Dedup, classify, and triage candidates against theory FP filters
+  agent: researcher
+  action_type: analysis
+  skill_ref: source_reviewer
+  inputs_from:
+  - deps.sbom_and_cves
+  - secrets.scan
+  - sast.semgrep_multi_pack
+  - sast.language_specific
+  evidence_gate:
+    id: gate.triage.completed
+    required:
+    - type: candidate_triage_table
+      count: 1
+  loop:
+    max_iterations: 3
+    stop_on:
+    - all_candidates_classified
+    - max_iterations_reached
+- id: taint.reachability
+  title: For each high-severity candidate, prove or argue reachability from a real entrypoint
+  agent: researcher
+  action_type: analysis
+  theory_ref: code.taint.untrusted_to_sink
+  inputs_from:
+  - triage.candidates
+  evidence_gate:
+    id: gate.reachability.documented
+    required_any:
+    - type: reachability_argument
+      count: 1
+    - type: dead_code_proof
+      count: 1
+  loop:
+    max_iterations: 4
+    stop_on:
+    - all_high_candidates_resolved
+- id: runtime.corroborate_criticals
+  title: Request runtime corroboration for critical findings via poc_validator (if authorized environment exists)
+  agent: validator
+  action_type: handoff
+  skill_ref: poc_validator
+  inputs_from:
+  - taint.reachability
+  evidence_gate:
+    id: gate.runtime.corroboration
+    required_any:
+    - type: runtime_corroboration
+      count: 1
+    - type: runtime_unavailable_note
+      count: 1
+    blocked_when:
+    - no_authorized_runtime
+    - target_out_of_scope
+- id: proof.pack
+  title: Compile findings into proof pack with file:line, taint path, sanitizer review, and runtime corroboration
+  agent: reporter
+  action_type: handoff
+  skill_ref: report_generator
+  inputs_from:
+  - triage.candidates
+  - taint.reachability
+  - runtime.corroborate_criticals
+  evidence_gate:
+    id: gate.proof.pack_complete
+    required:
+    - type: proof_pack
+      count: 1
+- id: agent.runtime.closeout
+  title: Promote final evidence through agent handoff, redaction, and proof-readiness checks
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: evidence_ledger
+  inputs_from:
+  - proof.pack
+  - decision_log
+  - coverage_matrix
+  evidence_gate:
+    id: gate.agent.runtime.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    - type: negative_evidence_summary
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    - type: agent_handoff_trace
+      count: 1
+    quality_floor: 0.75
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+    - unresolved_safety_decision
+agents:
+  orchestrator:
+    role: planner
+    responsibilities:
+    - select_playbooks
+    - maintain_scope_state
+    - coordinate_handoffs
+    - prioritize_by_signal
+    handoff_artifacts:
+    - run_plan
+    - scope_ref
+    - coverage_matrix
+    - open_risks
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  planner:
+    role: planner
+    responsibilities:
+    - define_objective
+    - choose_safe_proof_depth
+    - map_dependencies
+    - set_stop_conditions
+    handoff_artifacts:
+    - validation_plan
+    - roe_matrix
+    - candidate_queue
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  researcher:
+    role: researcher
+    responsibilities:
+    - map_surface
+    - generate_hypotheses
+    - rank_theories
+    - record_negative_evidence
+    handoff_artifacts:
+    - observation_bundle
+    - theory_frontier
+    - asset_graph_delta
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  recon:
+    role: researcher
+    responsibilities:
+    - refresh_inventory
+    - correlate_external_signals
+    - flag_scope_ambiguity
+    handoff_artifacts:
+    - asset_graph_delta
+    - service_inventory
+    - scope_question
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  executor:
+    role: executor
+    responsibilities:
+    - run_bounded_tests
+    - capture_raw_evidence
+    - honor_rate_limits
+    - abort_on_guardrail
+    handoff_artifacts:
+    - http_exchange
+    - tool_result
+    - runtime_observation
+    - blocked_record
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  developer:
+    role: builder
+    responsibilities:
+    - build_harnesses
+    - prepare_test_fixtures
+    - instrument_targets
+    - avoid_weaponization
+    handoff_artifacts:
+    - harness_manifest
+    - build_log
+    - fixture_manifest
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  analyst:
+    role: analyst
+    responsibilities:
+    - triage_results
+    - deduplicate_findings
+    - reason_about_root_cause
+    - score_exploitability_defensively
+    handoff_artifacts:
+    - triage_record
+    - root_cause_hypothesis
+    - diff_signal
+    - risk_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  validator:
+    role: validator
+    responsibilities:
+    - validate_replay
+    - minimize_proof
+    - verify_false_positive_filters
+    - confirm_cleanup
+    handoff_artifacts:
+    - validation_result
+    - replay_spec
+    - cleanup_log
+    - negative_evidence
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  evaluator:
+    role: evaluator
+    responsibilities:
+    - review_evidence_quality
+    - enforce_policy
+    - decide_submission_readiness
+    - route_gaps
+    handoff_artifacts:
+    - readiness_decision
+    - risk_decision
+    - gap_list
+    - quality_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  reporter:
+    role: reporter
+    responsibilities:
+    - assemble_proof_pack
+    - redact_sensitive_data
+    - write_disclosure
+    - preserve_replay_steps
+    handoff_artifacts:
+    - proof_pack
+    - report
+    - timeline
+    - remediation_notes
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  specialist:
+    role: domain_specialist
+    responsibilities:
+    - apply_domain_methods
+    - flag_domain_specific_risks
+    - produce_specialist_handoff
+    handoff_artifacts:
+    - specialist_notes
+    - domain_matrix
+    - candidate_findings
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  safety_reviewer:
+    role: safety_reviewer
+    responsibilities:
+    - enforce_authorization
+    - block_destructive_actions
+    - review_sensitive_evidence
+    - confirm_nonproduction_proof
+    handoff_artifacts:
+    - safety_decision
+    - redaction_log
+    - stop_condition_note
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - existing_domain_objectives
+  - existing_evidence_gates
+  - authorized_testing_scope
+  adds:
+  - agent_runtime_contract
+  - standard_agent_roster
+  - scope_roe_preflight
+  - safe_proof_depth
+  - redacted_evidence_ledger_closeout
+agent_runtime:
+  orchestration: planner_researcher_executor_validator_reporter_with_safety_review
+  routing_rules:
+  - start_with_scope_and_roe_gate
+  - route_passive_recon_before_active_testing
+  - require_validator_before_report_promotion
+  - send_scope_ambiguity_to_safety_reviewer
+  - prefer_minimal_benign_proof_over_broad_exploitation
+  handoff_contract:
+    required_fields:
+    - objective
+    - scope_ref
+    - assumptions
+    - evidence_refs
+    - risk_level
+    - next_action
+    - stop_conditions
+    evidence_ref_format: ledger://<artifact-type>/<stable-id>
+    handoff_requires_redaction_check: true
+  memory_policy:
+    write_to:
+    - evidence_ledger
+    - coverage_matrix
+    - decision_log
+    never_store_raw_values:
+    - passwords
+    - session_tokens
+    - api_keys
+    - private_keys
+    - third_party_personal_data
+    secret_representation: type+issuer+last4+hash_prefix_when_allowed
+  parallelization:
+    allowed_for:
+    - passive_enrichment
+    - static_analysis
+    - documentation_review
+    - negative_evidence_collection
+    requires_join_gate: gate.agent.join_quality
+  quality_bars:
+    minimum_replayability: 0.75
+    minimum_scope_confidence: 0.95
+    require_negative_evidence_for_closed_branches: true
+    require_cleanup_note_for_stateful_tests: true
+  high_risk_review_required: false
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - unclear_asset_ownership
+    - third_party_impact
+    - policy_blocked
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+    ctf_or_lab: full_local_validation_allowed_without_third_party_targets
+    high_risk_requires_explicit_roe: false
+  traffic_controls:
+    respect_rate_limits: true
+    backoff_on_errors: true
+    no_broad_scanning_without_active_scan_permission: true
+    log_user_agent_or_test_marker_when_required: true
+  data_handling:
+    collect_minimum_data: true
+    redact_sensitive_values: true
+    use_test_accounts_and_canaries: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - destructive_effect_detected
+  - privilege_boundary_crossed_beyond_roe
+  - real_user_data_would_be_accessed
+  - service_health_degrades
+  - persistence_or_evasion_required_outside_lab
+evidence_contracts:
+  ledger_required: true
+  minimum_artifacts:
+  - scope_record
+  - observation_bundle_or_negative_evidence
+  - validation_result_or_blocked_record
+  - proof_pack_or_closure_note
+  redaction:
+    required_for:
+    - credentials
+    - tokens
+    - cookies
+    - customer_data
+    - internal_hostnames_when_policy_requires
+    preserve:
+    - timestamps
+    - request_ids
+    - status_codes
+    - owned_test_account_ids
+    - hash_prefixes_when_allowed
+  proof_pack:
+    required_sections:
+    - scope
+    - impact
+    - reproduction
+    - evidence
+    - false_positive_checks
+    - cleanup
+    - remediation
+    replay_must_use:
+    - owned_test_account_or_lab_target
+    - bounded_payload
+    - rate_limit_notes

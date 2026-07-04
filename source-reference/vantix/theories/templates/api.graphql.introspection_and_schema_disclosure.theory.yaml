@@ -1,0 +1,40 @@
+schema_version: theory.system
+id: api.graphql.introspection_and_schema_disclosure
+title: GraphQL introspection or schema disclosure exposes attack surface
+version: 1.0.0
+status: active
+summary: A GraphQL endpoint accepts introspection queries (or exposes a SDL/document via debug routes), revealing the full type system, mutations, subscriptions, directives, and field-level metadata that map the application's authorization and state model for an attacker.
+vuln_class: api
+subclass: graphql_introspection
+severity_default: low
+mappings:
+  cwe: [CWE-200]
+  api: [graphql]
+applicability:
+  target_surfaces: [surface.api.graphql]
+preconditions:
+  required: [graphql_endpoint_reachable, introspection_or_sdl_route_returns_schema]
+detection_logic:
+  predicates:
+    - introspection_query_returns_full_schema
+    - sdl_or_debug_route_returns_schema_document
+  disconfirming_observations:
+    - introspection_disabled_in_production
+    - schema_response_redacted_or_persisted_only
+exploitability_model:
+  factors: [environment_flag, downstream_authz_quality]
+impact_model:
+  dimensions: [attack_surface_disclosure, mutation_enumeration]
+evidence_requirements:
+  minimum_for_validated:
+    - type: introspection_response_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_actually_production_endpoint
+    - verify_response_includes_sensitive_types
+linked_skills:
+  primary: [api_security, web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.graphql_attack_surface]

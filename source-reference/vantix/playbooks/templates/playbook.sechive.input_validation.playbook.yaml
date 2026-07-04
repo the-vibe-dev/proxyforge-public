@@ -1,0 +1,117 @@
+schema_version: playbook.system
+id: playbook.sechive.input_validation
+name: SecHive Input Validation Matrix (WSTG 4.7)
+version: 1.0.0
+status: active
+summary: "All 13 input-validation primitives: verb tamper, HPP, LDAP, XPath, SSI, IMAP/SMTP, OS-cmd, format-string, CRLF, smuggling, host-header, CSV."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.input.http_verb_tampering
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_http_verb_tampering
+    sechive_id: sechive.input.http_verb_tampering
+    wstg_id: WSTG-INPUT-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.parameter_pollution
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_http_param_pollution
+    sechive_id: sechive.input.parameter_pollution
+    wstg_id: WSTG-INPUT-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.ldap_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_ldap_injection
+    sechive_id: sechive.input.ldap_injection
+    wstg_id: WSTG-INPUT-06
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.ssi_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_ssi_injection
+    sechive_id: sechive.input.ssi_injection
+    wstg_id: WSTG-INPUT-08
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.xpath_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_xpath_injection
+    sechive_id: sechive.input.xpath_injection
+    wstg_id: WSTG-INPUT-09
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.imap_smtp_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_imap_smtp_injection
+    sechive_id: sechive.input.imap_smtp_injection
+    wstg_id: WSTG-INPUT-10
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.os_command_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_os_command_injection
+    sechive_id: sechive.input.os_command_injection
+    wstg_id: WSTG-INPUT-12
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.format_string
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_format_string_injection
+    sechive_id: sechive.input.format_string
+    wstg_id: WSTG-INPUT-13
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.crlf_response_splitting
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_crlf_response_splitting
+    sechive_id: sechive.input.crlf_response_splitting
+    wstg_id: WSTG-INPUT-15
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.http_request_smuggling
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_http_request_smuggling
+    sechive_id: sechive.input.http_request_smuggling
+    wstg_id: WSTG-INPUT-16
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.host_header_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_host_header_injection
+    sechive_id: sechive.input.host_header_injection
+    wstg_id: WSTG-INPUT-17
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.csv_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_csv_injection
+    sechive_id: sechive.input.csv_injection
+    wstg_id: WSTG-INPUT-21
+    evidence_emit: { kind: sechive_test_result }

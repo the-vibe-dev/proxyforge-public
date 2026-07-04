@@ -1,0 +1,62 @@
+id: webhook_callback_hunter
+name: Webhook Callback Hunter
+version: 1
+summary: Webhook signature bypass, replay attacks, timestamp-window abuse, SSRF through callbacks, event-type confusion, idempotency-key bugs, stale secret acceptance, payment webhook confusion, privilege-escalation via webhook state mutations.
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: intrusive
+opsec: loud
+tags:
+- webhook-signature-bypass
+- hmac-verification
+- timestamp-replay
+- idempotency-key-abuse
+- event-type-confusion
+- stale-secret-acceptance
+- ssrf-via-callback
+- payment-webhook-mismatch
+- webhook-race-condition
+- state-mutation-via-webhook
+requires_scope: true
+required_tools: []
+optional_tools:
+- postman
+- webhook-relay
+fallback_chain:
+  signature_verify: [manual-hmac, custom-python]
+  timing_attack: [curl, custom-script]
+triggers:
+  surface:
+  - payment_provider_webhook_receiver
+  - payment_webhook_endpoint
+  - third_party_webhook_callback
+  - event_notification_handler
+  - idempotency_key_tracking
+  pivot:
+  - signature_bypass_to_unauthorized_event_injection
+  - timestamp_abuse_to_replay_attack
+  - idempotency_bug_to_state_duplication
+hypothesis_templates:
+- id: hmac_signature_bypass
+  description: Webhook signature verification uses weak HMAC algorithm or skips timestamp validation; attacker-controlled event is accepted.
+- id: timestamp_replay_window
+  description: Signature includes timestamp but verification window is >5min; old events can be replayed with valid signature.
+- id: idempotency_key_deduplication_race
+  description: Webhook idempotency-key checked then processed asynchronously; race two requests with same key to trigger duplicate state mutations.
+- id: event_type_confusion
+  description: Event type not validated in signature; attacker sends payment.succeeded event to endpoint expecting order.refunded.
+- id: ssrf_via_webhook_url
+  description: Webhook endpoint accepts attacker-controlled URL; malicious callback parameter triggers SSRF to internal services.
+- id: stale_webhook_secret_acceptance
+  description: Endpoint accepts signatures from revoked or rotated API keys; old secrets remain valid indefinitely.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- production_payment_mutation_beyond_proof

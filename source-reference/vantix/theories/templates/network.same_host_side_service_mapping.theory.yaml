@@ -1,0 +1,45 @@
+schema_version: theory.system
+id: network.same_host_side_service_mapping
+title: Same-host side-service mapping from source or runtime hints
+version: 1.0.0
+status: active
+summary: Source, config, runtime output, or application behavior references localhost/container-local services that may be externally mapped on the same authorized host. The proof path correlates hints to current host inventory and validates only objective-linked read-only candidates.
+vuln_class: network
+subclass: same_host_service_boundary
+severity_default: medium
+mappings:
+  cwe: [CWE-200, CWE-284]
+applicability:
+  target_surfaces: [surface.network.same_host, surface.web.http]
+preconditions:
+  required: [same_host_or_source_local_service_hint, host_scope_authorized]
+detection_logic:
+  predicates:
+    - source_or_runtime_references_local_service
+    - same_host_inventory_has_matching_protocol_or_banner
+    - read_only_validation_links_service_to_objective_or_app_behavior
+  disconfirming_observations:
+    - host_scope_does_not_allow_port_inventory
+    - no_protocol_or_banner_match_after_scoped_inventory
+    - candidate_service_unrelated_to_objective
+impact_model:
+  dimensions: [internal_api_exposure, admin_interface_exposure, app_dependency_boundary, credential_reuse_boundary]
+evidence_requirements:
+  minimum_for_validated:
+    - type: side_service_hint_map
+      count: 1
+    - type: read_only_side_service_proof
+      count: 1
+  alternative_for_negative:
+    - type: mapped_port_negative_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - do_not_expand_to_adjacent_hosts
+    - match_protocol_or_banner_before_auth_attempts
+    - avoid_bruteforce_or_disruptive_service_actions
+linked_skills:
+  primary: [recon_advisor]
+  supporting: [exploit_chainer, poc_validator]
+linked_playbooks:
+  primary: [playbook.same_host_side_service_mapping]

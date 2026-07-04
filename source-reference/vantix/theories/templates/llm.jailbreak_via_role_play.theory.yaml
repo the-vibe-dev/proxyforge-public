@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: llm.jailbreak_via_role_play
+title: LLM safety-policy bypass via role-play, hypothetical, or encoding obfuscation
+version: 1.0.0
+status: active
+summary: The model's safety/usage-policy guardrails are bypassed via role-play scenarios, hypothetical framings, encoding (base64/leet/translation), narrative wrappers, or many-shot demonstration, producing output the policy was intended to refuse.
+vuln_class: llm
+subclass: jailbreak
+severity_default: medium
+mappings:
+  cwe: [CWE-693]
+  llm: [owasp.llm.llm09]
+applicability:
+  target_surfaces: [surface.llm.chat]
+preconditions:
+  required: [model_has_published_or_inferred_policy_constraint, jailbreak_template_succeeds_against_target_policy_class]
+detection_logic:
+  predicates:
+    - policy_violating_response_returned
+    - same_request_without_jailbreak_wrapper_refused
+    - response_quality_meaningful_not_degenerate
+  disconfirming_observations:
+    - response_is_refusal_in_disguise
+    - response_is_low_quality_due_to_encoding_loss
+    - rate_limit_or_safety_classifier_blocks_repeat
+exploitability_model:
+  factors: [guardrail_layer_count, classifier_breadth, policy_clarity]
+impact_model:
+  dimensions: [policy_circumvention, brand_risk, regulatory_exposure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: jailbreak_prompt_evidence
+      count: 1
+    - type: policy_violating_response_sample
+      count: 1
+    - type: control_request_refusal_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_baseline_request_actually_refused
+    - verify_response_is_meaningful_not_garbled
+    - verify_response_violates_documented_policy
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

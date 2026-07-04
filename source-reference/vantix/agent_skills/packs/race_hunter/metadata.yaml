@@ -1,0 +1,72 @@
+id: race_hunter
+name: Race Hunter
+version: 1
+summary: race condition and TOCTOU hunting - HTTP/2 single-packet attacks, last-byte-sync, payment/voucher/quota double-action probes with strict baseline-vs-divergence evidence
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: intrusive
+opsec: loud
+tags:
+- race-condition
+- toctou
+- single-packet-attack
+- http2-coalesce
+- last-byte-sync
+- payment-double-charge
+- voucher-double-redeem
+- balance-underflow
+- otp-window
+- password-reset-window
+- vote-double-cast
+- friend-request-amplification
+- registration-collision
+- compare-then-use
+- filesystem-toctou
+- cache-update-race
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- nghttp2-client
+- vegeta
+- oxdf-race
+fallback_chain:
+  http2_probe: [nghttp2-client, curl]
+  parallel_send: [vegeta, oxdf-race, curl]
+triggers:
+  surface:
+  - http2_origin
+  - payment_endpoint
+  - voucher_redeem
+  - balance_withdraw
+  - otp_verify
+  - password_reset_consume
+  - vote_submit
+  - friend_request_send
+  - follow_action
+  - quota_consume
+  - registration_form_with_unique_constraint
+  pivot:
+  - state_divergence_after_race_to_validated_finding
+  - race_to_balance_underflow_to_critical
+hypothesis_templates:
+- id: single_packet_double_action
+  description: HTTP/2 origin accepts N coalesced requests in one TCP segment dispatched within the same window - one of payment/voucher/balance/vote endpoints completes the operation N times.
+- id: last_byte_sync_double_action
+  description: HTTP/1.1 origin without HTTP/2 - pre-send headers + body-minus-1-byte over N connections, then fire the final byte simultaneously. Same target classes as single-packet.
+- id: compare_then_use_balance
+  description: Balance withdraw flow reads balance, compares to amount, then decrements. Window between read and decrement allows two concurrent withdraws to both pass the comparison.
+- id: otp_window_brute
+  description: OTP verification rate-limits per-OTP not per-account; firing all 10000 candidates in a single window via single-packet bypasses the rate limit.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- production_double_spend_beyond_proof_minimum

@@ -1,0 +1,72 @@
+id: session_boundary_hunter
+name: Session Boundary Hunter
+version: 1
+summary: Refresh token rotation, logout invalidation, device session management, cookie domain/path confusion, SameSite behavior, session fixation, stale privilege after role change, session replay after email/password/MFA change.
+roles:
+  - researcher
+  - executor
+modes:
+  - bugbounty
+  - pentest
+execution_level: gated
+safety_level: passive
+risk_tier: moderate
+opsec: quiet
+status: active
+tags:
+  - session-management
+  - refresh-token
+  - logout-invalidation
+  - session-fixation
+  - device-binding
+  - cookie-domain
+  - samesite-bypass
+  - privilege-stale
+  - token-replay
+  - session-replay
+  - logout-race
+  - cross-device-session
+requires_scope: true
+required_tools: []
+optional_tools:
+  - jwt-cli
+  - redis-cli
+fallback_chain:
+  session_invalidation: [curl]
+  token_rotation_check: [jwt-cli]
+triggers:
+  surface:
+    - auth_login_endpoint
+    - auth_logout_endpoint
+    - auth_refresh_token_endpoint
+    - auth_password_change_endpoint
+    - auth_email_change_endpoint
+    - auth_mfa_change_endpoint
+    - role_assignment_endpoint
+    - permission_change_endpoint
+  pivot:
+    - stale_session_to_privilege_escalation
+    - logout_race_to_ato
+    - refresh_token_reuse_to_indefinite_session
+hypothesis_templates:
+  - id: refresh_token_reuse
+    description: Refresh token accepted multiple times; attacker replays old refresh token after token has been rotated, obtaining new access token.
+  - id: logout_incomplete_invalidation
+    description: Logout deletes session cookie but refresh token persists server-side; attacker uses stored refresh token to obtain new access token.
+  - id: session_fixation_post_login
+    description: Session ID does not change after login; attacker pre-sets sessionId before login, victim logs in with attacker-supplied session ID.
+  - id: privilege_stale_after_role_change
+    description: User's role is downgraded (admin → user), but current access token retains old scopes; user can perform admin actions until token expires.
+  - id: device_session_leak
+    description: Device session list shows other users' sessions, or attacker can terminate arbitrary sessions from device list.
+  - id: cookie_domain_overly_broad
+    description: sessionCookie domain set to .example.com instead of api.example.com; cookie accessible to all subdomains.
+  - id: samesite_none_without_secure
+    description: SameSite=None cookie sent over HTTP (not HTTPS), allowing interception and replay.
+  - id: logout_race_window
+    description: Logout request and simultaneous API request; window where logout is not yet processed and API completes.
+forbidden:
+  - destructive
+  - dos
+  - out_of_scope
+  - production_data_mutation

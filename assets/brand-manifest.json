@@ -1,0 +1,37 @@
+{
+  "brand": "ProxyForge",
+  "version": "0.1.0-alpha.1",
+  "tagline": "Where requests become findings.",
+  "palette": {
+    "midnight": "#0B0D10",
+    "graphite": "#1A1D21",
+    "steel": "#2E3338",
+    "slate": "#5A6068",
+    "ember": "#FF6A00",
+    "flare": "#FF9E1A",
+    "gold": "#FFC24D"
+  },
+  "assets": [
+    "assets/badges/AI-providers.svg",
+    "assets/badges/agent-flows.svg",
+    "assets/badges/exports.svg",
+    "assets/badges/feature-lanes.svg",
+    "assets/badges/license.svg",
+    "assets/badges/platform.svg",
+    "assets/badges/test-gates.svg",
+    "assets/badges/version.svg",
+    "assets/badges/workbenches.svg",
+    "assets/favicon-128.png",
+    "assets/favicon-16.png",
+    "assets/favicon-256.png",
+    "assets/favicon-32.png",
+    "assets/favicon-512.png",
+    "assets/favicon-64.png",
+    "assets/proxyforge-favicon-1024.png",
+    "assets/proxyforge-feature-hero.png",
+    "assets/proxyforge-github-hero.png",
+    "assets/proxyforge-logo-lockup.png",
+    "assets/proxyforge-poster-4x5.png",
+    "assets/proxyforge-social-square.png"
+  ]
+}

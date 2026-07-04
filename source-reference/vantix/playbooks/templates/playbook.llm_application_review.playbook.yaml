@@ -1,0 +1,597 @@
+schema_version: playbook.system
+id: playbook.llm_application_review
+name: LLM Application Review
+version: 1.1.0
+status: active
+summary: Inventory LLM application surfaces (chat, RAG, tools, file/email/browser inputs, output rendering); recover system
+  prompt and tool schema; probe direct and indirect prompt injection; assess tool-boundary enforcement and output handling;
+  bound cost-DoS and embedding/training-data extraction.
+owner:
+  team: sechive-core
+modes:
+  allowed:
+  - pentest
+  - bugbounty
+  - own-source
+  - private-source-audit
+  requires_scope: true
+objectives:
+  primary:
+  - confirm_target_endpoint_in_scope
+  - inventory_llm_surfaces_and_data_flows
+  - recover_system_prompt_and_tool_schema_under_authorization
+  - probe_direct_and_indirect_prompt_injection
+  - assess_tool_boundary_and_output_handling
+  - bound_cost_dos_and_data_extraction
+  - corroborate_critical_paths_in_test_tenant
+target_requirements:
+  surfaces:
+    any:
+    - surface.llm.chat
+    - surface.llm.rag
+    - surface.llm.agent
+    - surface.llm.embedding
+required_skills:
+  primary:
+  - llm_redteam
+  - scope_guard
+  supporting:
+  - web_hunter
+  - threat_modeler
+  - poc_validator
+  - report_generator
+  - evidence_ledger
+theory_filters:
+  preferred_theories:
+  - llm.prompt_injection.indirect_via_rag
+  - llm.system_prompt_exfil
+  - llm.tool_call_confused_deputy
+  - llm.training_data_extraction
+  - llm.jailbreak_via_role_play
+  - llm.embedding_inversion
+  - llm.api_cost_dos
+  - llm.output_handling_xss
+  - llm.markdown_link_exfil
+proof_continuation:
+  enabled: true
+  max_replans: 4
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 60
+  max_runtime_minutes: 120
+steps:
+- id: scope.preflight
+  title: Confirm authorization, target boundaries, and allowed proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - run.target_profile
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - destructive_action_required
+    - unauthorized_third_party
+- id: scope.verify_endpoint
+  title: Confirm target endpoint, tenant/account, and acceptable test channels
+  agent: planner
+  action_type: scope_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.endpoint
+    required:
+    - type: scope_record
+      count: 1
+    blocked_when:
+    - out_of_scope_endpoint
+    - production_only
+  stop_conditions:
+  - authorization_denied
+- id: inventory.surfaces
+  title: "Inventory LLM surfaces \u2014 chat, RAG ingest, tool list, file/email/browser inputs, output rendering, embedding\
+    \ endpoints"
+  agent: researcher
+  action_type: analysis
+  skill_ref: llm_redteam
+  inputs_from:
+  - scope.verify_endpoint
+  evidence_gate:
+    id: gate.surfaces.inventoried
+    required:
+    - type: surface_inventory
+      count: 1
+- id: recover.system_prompt
+  title: Probe for system-prompt and tool-schema disclosure
+  agent: executor
+  action_type: scanner_run
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  evidence_gate:
+    id: gate.system_prompt
+    required_any:
+    - type: system_prompt_recovery_evidence
+      count: 1
+    - type: negative_evidence
+      count: 1
+  retry:
+    max_attempts: 2
+    backoff: linear
+- id: probe.direct_injection
+  title: Run direct prompt-injection battery (garak/promptfoo) against chat surface
+  agent: executor
+  action_type: scanner_run
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  evidence_gate:
+    id: gate.direct_injection
+    required_any:
+    - type: garak_report
+      count: 1
+    - type: promptfoo_eval_report
+      count: 1
+    - type: not_applicable_note
+      count: 1
+- id: probe.indirect_injection
+  title: Probe indirect injection via RAG-indexed document, uploaded file, fetched web page, or email body
+  agent: researcher
+  action_type: analysis
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  evidence_gate:
+    id: gate.indirect_injection
+    required_any:
+    - type: indirect_injection_demo
+      count: 1
+    - type: negative_evidence
+      count: 1
+  loop:
+    max_iterations: 3
+    stop_on:
+    - no_new_paths_found
+- id: probe.tool_boundary
+  title: "Test tool-boundary enforcement \u2014 does untrusted content cause side-effecting tool calls without confirmation?"
+  agent: researcher
+  action_type: analysis
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  - probe.indirect_injection
+  evidence_gate:
+    id: gate.tool_boundary
+    required_any:
+    - type: tool_call_trace
+      count: 1
+    - type: confirmation_flow_evidence
+      count: 1
+    - type: not_applicable_note
+      count: 1
+- id: probe.output_handling
+  title: "Test output rendering \u2014 HTML/markdown injection, markdown image/link auto-fetch exfiltration"
+  agent: researcher
+  action_type: analysis
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  evidence_gate:
+    id: gate.output_handling
+    required_any:
+    - type: output_render_demo
+      count: 1
+    - type: markdown_image_fetch_log
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: probe.cost_and_data
+  title: Bound cost-DoS and embedding/training-data extraction with small, lab-only probes
+  agent: researcher
+  action_type: analysis
+  skill_ref: llm_redteam
+  inputs_from:
+  - inventory.surfaces
+  evidence_gate:
+    id: gate.cost_data
+    required_any:
+    - type: cost_dos_loop_evidence
+      count: 1
+    - type: extraction_lift_evidence
+      count: 1
+    - type: not_applicable_note
+      count: 1
+    blocked_when:
+    - shared_capacity_only
+    - no_authorized_test_endpoint
+- id: corroborate.test_tenant
+  title: Corroborate critical paths against an authorized test tenant or sandbox
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - probe.indirect_injection
+  - probe.tool_boundary
+  - probe.output_handling
+  evidence_gate:
+    id: gate.llm.corroborated
+    required_any:
+    - type: test_tenant_run_evidence
+      count: 1
+    - type: corroboration_unavailable_note
+      count: 1
+    blocked_when:
+    - no_authorized_test_tenant
+    - active_validation_unauthorized
+- id: report.proof_pack
+  title: Compile proof pack with surfaces, payloads, response samples, tool traces, and remediation
+  agent: reporter
+  action_type: handoff
+  skill_ref: report_generator
+  inputs_from:
+  - recover.system_prompt
+  - probe.direct_injection
+  - probe.indirect_injection
+  - probe.tool_boundary
+  - probe.output_handling
+  - probe.cost_and_data
+  - corroborate.test_tenant
+  evidence_gate:
+    id: gate.llm.proof_pack
+    required:
+    - type: proof_pack
+      count: 1
+- id: agent.runtime.closeout
+  title: Promote final evidence through agent handoff, redaction, and proof-readiness checks
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: evidence_ledger
+  inputs_from:
+  - report.proof_pack
+  - decision_log
+  - coverage_matrix
+  evidence_gate:
+    id: gate.agent.runtime.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    - type: negative_evidence_summary
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    - type: agent_handoff_trace
+      count: 1
+    quality_floor: 0.75
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+    - unresolved_safety_decision
+agents:
+  orchestrator:
+    role: planner
+    responsibilities:
+    - select_playbooks
+    - maintain_scope_state
+    - coordinate_handoffs
+    - prioritize_by_signal
+    handoff_artifacts:
+    - run_plan
+    - scope_ref
+    - coverage_matrix
+    - open_risks
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  planner:
+    role: planner
+    responsibilities:
+    - define_objective
+    - choose_safe_proof_depth
+    - map_dependencies
+    - set_stop_conditions
+    handoff_artifacts:
+    - validation_plan
+    - roe_matrix
+    - candidate_queue
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  researcher:
+    role: researcher
+    responsibilities:
+    - map_surface
+    - generate_hypotheses
+    - rank_theories
+    - record_negative_evidence
+    handoff_artifacts:
+    - observation_bundle
+    - theory_frontier
+    - asset_graph_delta
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  recon:
+    role: researcher
+    responsibilities:
+    - refresh_inventory
+    - correlate_external_signals
+    - flag_scope_ambiguity
+    handoff_artifacts:
+    - asset_graph_delta
+    - service_inventory
+    - scope_question
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  executor:
+    role: executor
+    responsibilities:
+    - run_bounded_tests
+    - capture_raw_evidence
+    - honor_rate_limits
+    - abort_on_guardrail
+    handoff_artifacts:
+    - http_exchange
+    - tool_result
+    - runtime_observation
+    - blocked_record
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  developer:
+    role: builder
+    responsibilities:
+    - build_harnesses
+    - prepare_test_fixtures
+    - instrument_targets
+    - avoid_weaponization
+    handoff_artifacts:
+    - harness_manifest
+    - build_log
+    - fixture_manifest
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  analyst:
+    role: analyst
+    responsibilities:
+    - triage_results
+    - deduplicate_findings
+    - reason_about_root_cause
+    - score_exploitability_defensively
+    handoff_artifacts:
+    - triage_record
+    - root_cause_hypothesis
+    - diff_signal
+    - risk_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  validator:
+    role: validator
+    responsibilities:
+    - validate_replay
+    - minimize_proof
+    - verify_false_positive_filters
+    - confirm_cleanup
+    handoff_artifacts:
+    - validation_result
+    - replay_spec
+    - cleanup_log
+    - negative_evidence
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  evaluator:
+    role: evaluator
+    responsibilities:
+    - review_evidence_quality
+    - enforce_policy
+    - decide_submission_readiness
+    - route_gaps
+    handoff_artifacts:
+    - readiness_decision
+    - risk_decision
+    - gap_list
+    - quality_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  reporter:
+    role: reporter
+    responsibilities:
+    - assemble_proof_pack
+    - redact_sensitive_data
+    - write_disclosure
+    - preserve_replay_steps
+    handoff_artifacts:
+    - proof_pack
+    - report
+    - timeline
+    - remediation_notes
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  specialist:
+    role: domain_specialist
+    responsibilities:
+    - apply_domain_methods
+    - flag_domain_specific_risks
+    - produce_specialist_handoff
+    handoff_artifacts:
+    - specialist_notes
+    - domain_matrix
+    - candidate_findings
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  safety_reviewer:
+    role: safety_reviewer
+    responsibilities:
+    - enforce_authorization
+    - block_destructive_actions
+    - review_sensitive_evidence
+    - confirm_nonproduction_proof
+    handoff_artifacts:
+    - safety_decision
+    - redaction_log
+    - stop_condition_note
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - existing_domain_objectives
+  - existing_evidence_gates
+  - authorized_testing_scope
+  adds:
+  - agent_runtime_contract
+  - standard_agent_roster
+  - scope_roe_preflight
+  - safe_proof_depth
+  - redacted_evidence_ledger_closeout
+agent_runtime:
+  orchestration: planner_researcher_executor_validator_reporter_with_safety_review
+  routing_rules:
+  - start_with_scope_and_roe_gate
+  - route_passive_recon_before_active_testing
+  - require_validator_before_report_promotion
+  - send_scope_ambiguity_to_safety_reviewer
+  - prefer_minimal_benign_proof_over_broad_exploitation
+  handoff_contract:
+    required_fields:
+    - objective
+    - scope_ref
+    - assumptions
+    - evidence_refs
+    - risk_level
+    - next_action
+    - stop_conditions
+    evidence_ref_format: ledger://<artifact-type>/<stable-id>
+    handoff_requires_redaction_check: true
+  memory_policy:
+    write_to:
+    - evidence_ledger
+    - coverage_matrix
+    - decision_log
+    never_store_raw_values:
+    - passwords
+    - session_tokens
+    - api_keys
+    - private_keys
+    - third_party_personal_data
+    secret_representation: type+issuer+last4+hash_prefix_when_allowed
+  parallelization:
+    allowed_for:
+    - passive_enrichment
+    - static_analysis
+    - documentation_review
+    - negative_evidence_collection
+    requires_join_gate: gate.agent.join_quality
+  quality_bars:
+    minimum_replayability: 0.75
+    minimum_scope_confidence: 0.95
+    require_negative_evidence_for_closed_branches: true
+    require_cleanup_note_for_stateful_tests: true
+  high_risk_review_required: false
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - unclear_asset_ownership
+    - third_party_impact
+    - policy_blocked
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+    ctf_or_lab: full_local_validation_allowed_without_third_party_targets
+    high_risk_requires_explicit_roe: false
+  traffic_controls:
+    respect_rate_limits: true
+    backoff_on_errors: true
+    no_broad_scanning_without_active_scan_permission: true
+    log_user_agent_or_test_marker_when_required: true
+  data_handling:
+    collect_minimum_data: true
+    redact_sensitive_values: true
+    use_test_accounts_and_canaries: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - destructive_effect_detected
+  - privilege_boundary_crossed_beyond_roe
+  - real_user_data_would_be_accessed
+  - service_health_degrades
+  - persistence_or_evasion_required_outside_lab
+evidence_contracts:
+  ledger_required: true
+  minimum_artifacts:
+  - scope_record
+  - observation_bundle_or_negative_evidence
+  - validation_result_or_blocked_record
+  - proof_pack_or_closure_note
+  redaction:
+    required_for:
+    - credentials
+    - tokens
+    - cookies
+    - customer_data
+    - internal_hostnames_when_policy_requires
+    preserve:
+    - timestamps
+    - request_ids
+    - status_codes
+    - owned_test_account_ids
+    - hash_prefixes_when_allowed
+  proof_pack:
+    required_sections:
+    - scope
+    - impact
+    - reproduction
+    - evidence
+    - false_positive_checks
+    - cleanup
+    - remediation
+    replay_must_use:
+    - owned_test_account_or_lab_target
+    - bounded_payload
+    - rate_limit_notes

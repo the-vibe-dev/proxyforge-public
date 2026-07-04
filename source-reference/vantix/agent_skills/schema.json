@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sechive.local/schemas/skill.system.json",
+  "title": "SecHive Unified Skill Manifest",
+  "description": "The skill contract combines the proven manifest, governance, permission, environment, compatibility, evidence, prompt, proof-continuation, and closure semantics into one runtime system.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "version",
+    "status",
+    "summary",
+    "owner",
+    "provenance",
+    "roles",
+    "modes",
+    "capability_tags",
+    "inputs",
+    "outputs",
+    "evidence_outputs",
+    "validation_hooks",
+    "environment",
+    "permissions",
+    "compatibility",
+    "contract_lineage",
+    "risk_controls",
+    "proof_continuation",
+    "prompt_contract"
+  ],
+  "properties": {
+    "schema_version": {"const": "skill.system"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+    "name": {"type": "string", "minLength": 1},
+    "version": {"type": "string", "minLength": 1},
+    "status": {"enum": ["draft", "active", "deprecated", "revoked"]},
+    "summary": {"type": "string"},
+    "description": {"type": "string"},
+    "owner": {"type": "object"},
+    "provenance": {"type": "object"},
+    "lifecycle": {"type": "object"},
+    "roles": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "modes": {"type": "object"},
+    "capability_tags": {"type": "array", "items": {"type": "string"}, "minItems": 3},
+    "framework_mappings": {"type": "object"},
+    "inputs": {"type": "object"},
+    "outputs": {"type": "object"},
+    "evidence_outputs": {"type": "object"},
+    "validation_hooks": {"type": "object"},
+    "environment": {"type": "object"},
+    "permissions": {"type": "object"},
+    "compatibility": {"type": "object"},
+    "contract_lineage": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "system": {"type": "string"},
+        "posture": {"type": "string", "enum": ["unified"]},
+        "preserves": {"type": "array", "items": {"type": "string"}},
+        "adds": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "selection_hints": {"type": "object"},
+    "risk_controls": {"type": "object"},
+    "proof_continuation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled_by_default": {"type": "boolean"},
+        "unresolved_candidate_policy": {"type": "string"},
+        "closure_statuses": {"type": "array", "items": {"type": "string"}},
+        "route_thin_fallback_required": {"type": "boolean"},
+        "max_replans": {"type": "integer", "minimum": 0},
+        "revisit_phases": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "prompt_contract": {"type": "object"},
+    "extensions": {"type": "object"}
+  }
+}

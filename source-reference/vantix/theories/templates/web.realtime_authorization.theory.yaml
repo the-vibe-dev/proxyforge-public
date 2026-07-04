@@ -1,0 +1,40 @@
+schema_version: theory.system
+id: web.realtime_authorization
+title: Realtime message authorization failure
+version: 1.0.0
+status: active
+summary: Realtime transports may authenticate the handshake but fail to authorize individual messages, objects, or roles.
+vuln_class: api_authz
+subclass: realtime_message_authorization
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A04]
+  cwe: [CWE-862, CWE-863]
+applicability:
+  target_surfaces: [surface.api.realtime, surface.api.rest]
+preconditions:
+  required: [realtime_endpoint_observed, message_shape_observed]
+detection_logic:
+  predicates: [handshake_context_saved, message_actor_or_object_delta, state_change_or_readback]
+  disconfirming_observations: [message_rejected, no_state_or_data_delta, readback_denies_effect]
+exploitability_model:
+  factors: [message_privilege, object_sensitivity, readback_strength]
+impact_model:
+  dimensions: [confidentiality, integrity, authorization]
+evidence_requirements:
+  minimum_for_validated:
+    - type: replay_spec
+      count: 1
+    - type: validation_result
+      count: 1
+false_positive_filters:
+  required: [verify_message_schema, verify_actor_context, verify_effect_with_readback]
+linked_skills:
+  primary: [api_security]
+  supporting: [web_hunter, poc_validator]
+linked_playbooks:
+  primary: [playbook.schema_driven_api_validation]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [message_level_authorization, realtime_readback]

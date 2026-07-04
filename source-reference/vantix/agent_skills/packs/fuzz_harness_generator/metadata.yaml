@@ -1,0 +1,53 @@
+id: fuzz_harness_generator
+name: Fuzz Harness Generator
+version: 1
+summary: Generate Jazzer / property-based test harnesses for resource accounting, signature aggregation, ABI / RLP / proto parsers, exception/revert state rollback. Ships ready-to-run harnesses to operator out-of-band infrastructure; loop reads crash reports from journal. Phase 6 of deep_audit_orchestrator.
+roles:
+- researcher
+- developer
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- fuzzing
+- jazzer
+- property-based-testing
+- harness-generation
+- jvm-fuzzer
+- libfuzzer
+- afl
+- deephunt-phase6
+- crash-triage
+- corpus-management
+requires_scope: true
+required_tools: []
+optional_tools:
+- jazzer
+- foundry
+- echidna
+fallback_chain:
+  jvm_fuzz: [jazzer, kelinci]
+  native_fuzz: [libfuzzer, afl]
+  property: [jqwik, foundry, echidna, proptest]
+triggers:
+  surface:
+  - jvm_target_with_external_input_parser
+  - resource_accounting_or_signature_aggregation_code
+  - abi_rlp_proto_json_parser
+  - exception_path_through_state_mutation
+hypothesis_templates:
+- id: random-input-finds-overflow
+  description: "Random inputs to a math function (resource accounting, fee calc) trigger an unhandled long overflow or BigInteger.divideAndRemainder edge case."
+- id: signature-array-fuzz-finds-edge
+  description: "Random sig-array inputs to a multisig aggregator hit a duplicate-recovery / mismatched-length / canonical-vs-malleable edge case the static reader missed."
+- id: parser-fuzz-finds-state-leak
+  description: "Random bytes to an ABI/RLP/proto parser produce a parser-state that propagates into business logic, e.g., zero-length array passed as 'valid empty input' when caller assumed non-empty."
+forbidden:
+- destructive
+- run_fuzzer_against_production
+- corpus_contains_secrets
+- dos

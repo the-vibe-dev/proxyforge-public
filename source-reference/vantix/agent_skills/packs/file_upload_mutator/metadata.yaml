@@ -1,0 +1,30 @@
+id: file_upload_mutator
+name: File Upload Mutator
+version: 1
+summary: Test file uploads with polyglot, path-traversal, double-extension, MIME-bypass, magic-byte, and SVG-injection variants.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [file-upload, rce, path-traversal, polyglot, mime-bypass, svg-xss]
+requires_scope: true
+required_tools: []
+optional_tools: [custom_file_mutation_harness]
+triggers:
+  surface: [file upload endpoint, user-controlled filename, avatar or document processing, archive extraction]
+hypothesis_templates:
+  - id: double_extension
+    description: Upload file with double extension (avatar.png.php) to bypass extension whitelist
+  - id: path_traversal
+    description: Upload file with path components (../../avatar.png) to traverse upload directory
+  - id: mime_mismatch
+    description: Send PHP payload with image/png MIME type to bypass content-type validation
+  - id: polyglot_file
+    description: Create polyglot file (valid PNG + valid PHP) to bypass magic-byte validation
+  - id: svg_script_injection
+    description: Upload SVG with embedded script tag (image/svg+xml) for stored XSS
+  - id: formula_injection
+    description: Upload CSV with formula (=IMPORTXML) to test formula-injection on export
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]

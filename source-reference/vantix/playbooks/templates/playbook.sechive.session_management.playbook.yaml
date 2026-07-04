@@ -1,0 +1,87 @@
+schema_version: playbook.system
+id: playbook.sechive.session_management
+name: SecHive Session Management (WSTG 4.6)
+version: 1.0.0
+status: active
+summary: "Token entropy, cookie attribute audit, session fixation, logout invalidation, timeout, puzzling, concurrent sessions."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.session.cookie_attributes
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_cookie_attribute_audit
+    sechive_id: sechive.session.cookie_attributes
+    wstg_id: WSTG-SESSION-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.token_entropy
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_session_token_entropy
+    sechive_id: sechive.session.token_entropy
+    wstg_id: WSTG-SESSION-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.fixation
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_session_fixation
+    sechive_id: sechive.session.fixation
+    wstg_id: WSTG-SESSION-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.logout_invalidation
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_logout_invalidation
+    sechive_id: sechive.session.logout_invalidation
+    wstg_id: WSTG-SESSION-06
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.timeout
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_session_timeout
+    sechive_id: sechive.session.timeout
+    wstg_id: WSTG-SESSION-07
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.puzzling
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_session_puzzling
+    sechive_id: sechive.session.puzzling
+    wstg_id: WSTG-SESSION-08
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.concurrent
+    primitive_module: secops.services.probe_session_lifecycle
+    primitive_function: probe_concurrent_sessions
+    sechive_id: sechive.session.concurrent
+    wstg_id: WSTG-SESSION-11
+    evidence_emit: { kind: sechive_test_result }

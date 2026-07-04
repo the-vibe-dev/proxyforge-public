@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: llm.training_data_extraction
+title: LLM training-data or fine-tuning-data extraction via divergence/repetition probes
+version: 1.0.0
+status: active
+summary: Crafted prompts (token repetition, suffix completion, divergence attacks, low-temperature continuation, narrow domain queries) cause the model to emit verbatim training or fine-tuning data, including secrets, customer records, or copyrighted text embedded in tuning corpora.
+vuln_class: llm
+subclass: training_data_extraction
+severity_default: high
+mappings:
+  cwe: [CWE-200]
+  llm: [owasp.llm.llm06]
+applicability:
+  target_surfaces: [surface.llm.chat]
+preconditions:
+  required: [model_or_finetune_exposed_via_chat_or_completion_api, finetune_dataset_contained_sensitive_content_or_uncertain]
+detection_logic:
+  predicates:
+    - divergence_or_repetition_probe_yields_long_verbatim_text
+    - emitted_text_contains_unique_provenance_signal
+    - text_not_attributable_to_user_input_or_public_corpus
+  disconfirming_observations:
+    - emitted_text_is_paraphrase_only
+    - emitted_text_is_attributable_to_known_public_corpus
+    - rate_limit_or_safety_filter_blocks_divergence
+exploitability_model:
+  factors: [finetune_dataset_curation, output_filter, divergence_resistance]
+impact_model:
+  dimensions: [pii_disclosure, ip_disclosure, regulatory_exposure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: probe_payload_evidence
+      count: 1
+    - type: emitted_verbatim_sample
+      count: 1
+    - type: provenance_attribution_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_text_not_in_user_input
+    - verify_text_not_in_public_pretraining_corpora
+    - verify_provenance_signal_unique_to_target_finetune
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

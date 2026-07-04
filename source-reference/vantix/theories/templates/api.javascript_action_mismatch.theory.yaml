@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: api.javascript_action_mismatch
+title: JavaScript action target mismatch
+version: 1.0.0
+status: active
+summary: Visible pages may submit to client-script-defined API targets, so direct replay should use the JavaScript action, method, content type, and parameter shape before treating a workflow as exhausted.
+vuln_class: api
+subclass: javascript_action_mismatch
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A01, A04, A05]
+  wstg: [WSTG-CONF, WSTG-INFO, WSTG-ATHN]
+  cwe: [CWE-20, CWE-306, CWE-862]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [javascript_submit_target_or_ajax_url]
+preconditions:
+  required: [scope_authorizes_testing, current_run_html_or_js_evidence]
+  blockers: [target_origin_mismatch, missing_required_user_action]
+detection_logic:
+  predicates:
+    - client_script_defines_semantic_submit_target
+    - visible_route_differs_or_returns_method_error
+    - replay_with_script_shape_changes_response_class
+  disconfirming_observations:
+    - script_target_unreachable
+    - same_response_as_visible_route
+    - missing_required_cookie_or_csrf_after_baseline
+exploitability_model:
+  factors: [target_reachability, method_accuracy, parser_shape, session_state, response_delta]
+impact_model:
+  dimensions: [auth_flow_completion, hidden_api_access, parser_reachability, state_change]
+evidence_requirements:
+  minimum_for_validated:
+    - type: script_target_artifact
+      count: 1
+    - type: replay_matrix
+      count: 1
+false_positive_filters:
+  required: [verify_same_origin_or_scope, verify_method_and_parser_shape, verify_not_static_literal_only]
+linked_skills:
+  primary: [api_security, web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

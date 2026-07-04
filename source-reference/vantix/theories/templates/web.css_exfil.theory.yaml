@@ -1,0 +1,46 @@
+schema_version: theory.system
+id: web.css_exfil
+title: CSS-injection data exfiltration via attribute selectors and resource fetches
+version: 1.0.0
+status: active
+summary: "A page accepts user-influenced CSS or style attributes. Attacker uses attribute selectors (`input[value^=\"a\"]`) paired with `background: url()` to leak character-by-character matches of sensitive form values, CSRF tokens, or session-bound IDs by triggering attacker-host fetches."
+vuln_class: web
+subclass: css_exfil
+severity_default: medium
+mappings:
+  cwe: [CWE-200]
+  web: [css]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [user_css_or_style_attribute_rendered, sensitive_value_present_in_dom_at_render_time]
+detection_logic:
+  predicates:
+    - injected_selector_with_url_resource_triggers_attacker_fetch_only_for_matching_value
+    - char_by_char_disclosure_via_iterated_selectors
+  disconfirming_observations:
+    - csp_img_src_or_default_src_blocks_external_fetch
+    - sanitizer_strips_style_or_url_value
+    - sensitive_value_not_in_dom
+exploitability_model:
+  factors: [csp_state, render_path, value_lifetime]
+impact_model:
+  dimensions: [token_disclosure, pii_disclosure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: injected_css_evidence
+      count: 1
+    - type: attacker_fetch_log
+      count: 1
+    - type: extracted_value_sample
+      count: 1
+false_positive_filters:
+  required:
+    - verify_fetch_only_triggered_for_match
+    - verify_extracted_value_sourced_from_target_dom
+    - verify_csp_does_not_block_path
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

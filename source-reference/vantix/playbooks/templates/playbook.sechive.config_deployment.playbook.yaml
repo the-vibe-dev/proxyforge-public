@@ -1,0 +1,81 @@
+schema_version: playbook.system
+id: playbook.sechive.config_deployment
+name: SecHive Configuration & Deployment (WSTG 4.2)
+version: 1.0.0
+status: active
+summary: "Audit deployment configuration: info disclosure, verb tampering, path confusion, admin interface enum, RIA crossdomain, subdomain takeover, cloud buckets."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.config.backup_unreferenced
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_info_disclosure
+    sechive_id: sechive.config.backup_unreferenced
+    wstg_id: WSTG-CONFIG-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.http_verb_tampering
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_http_verb_tampering
+    sechive_id: sechive.input.http_verb_tampering
+    wstg_id: WSTG-INPUT-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.config.path_confusion
+    primitive_module: secops.services.probe_config_audit
+    primitive_function: probe_path_confusion
+    sechive_id: sechive.config.path_confusion
+    wstg_id: WSTG-CONFIG-13
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.config.admin_interface_enum
+    primitive_module: secops.services.probe_config_audit
+    primitive_function: probe_admin_interface_enumeration
+    sechive_id: sechive.config.admin_interface_enum
+    wstg_id: WSTG-CONFIG-05
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.config.ria_crossdomain
+    primitive_module: secops.services.probe_config_audit
+    primitive_function: probe_rich_internet_app_crossdomain
+    sechive_id: sechive.config.ria_crossdomain
+    wstg_id: WSTG-CONFIG-08
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.config.security_headers
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_security_headers
+    sechive_id: sechive.config.security_headers
+    wstg_id: WSTG-CONFIG-14
+    evidence_emit: { kind: sechive_test_result }

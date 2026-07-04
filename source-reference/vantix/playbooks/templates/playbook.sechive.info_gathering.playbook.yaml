@@ -1,0 +1,69 @@
+schema_version: playbook.system
+id: playbook.sechive.info_gathering
+name: SecHive Information Gathering (WSTG 4.1)
+version: 1.0.0
+status: active
+summary: "Run universal recon: well-known files, asset enumeration, locale bundles, FTP backup sweep, cert-transparency."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.info.review_metafiles
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_known_canonical_paths
+    sechive_id: sechive.info.review_metafiles
+    wstg_id: WSTG-INFO-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.info.backup_unreferenced
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_static_dir_backup_sweep
+    sechive_id: sechive.info.backup_unreferenced
+    wstg_id: WSTG-CONFIG-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.info.identify_entry_points
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_asset_enumeration
+    sechive_id: sechive.info.identify_entry_points
+    wstg_id: WSTG-INFO-06
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.info.i18n_enum
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_i18n_enumeration
+    sechive_id: sechive.info.i18n_enum
+    wstg_id: WSTG-INFO-04
+    evidence_emit: { kind: sechive_test_result }

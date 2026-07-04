@@ -1,0 +1,150 @@
+id: api_security
+name: API Security
+version: 1
+summary: API discovery, authz, schema, and business-flow testing
+roles:
+- researcher
+- developer
+- executor
+modes:
+- pentest
+- bugbounty
+- ctf
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- api
+- authz
+- schema
+- cms-rest
+- wordpress
+- endpoint-matrix
+- object-authorization
+- property-overposting
+- response-minimization
+- realtime-api
+- adaptive-revisit
+- stateful-workflow
+- javascript-submit-target
+- duplicate-parameter
+- weak-token
+- cross-origin
+- recovery-flow
+- race-condition
+requires_scope: true
+triggers:
+  api_surface:
+  - openapi
+  - swagger
+  - graphql
+  - graphql_endpoint
+  - websocket
+  - sse
+  - jwt
+  - object_id
+  - tenant_id
+  - order_id
+  - user_id
+  - role_claim
+  - workflow_state
+  - reset_token
+  - security_question
+  - method_override
+  - mass_assignment_field
+  - overposted_property
+  - excessive_response_field
+  - route_literal
+  - network_endpoint
+  - javascript_submit_target
+  - hidden_field
+  - post_auth_route
+  - duplicate_parameter
+  - duplicate_json_key
+  - weak_code
+  - callback
+  auth_session:
+  - bearer_token
+  - stale_token
+  - logout_replay
+  - jwt_claims
+  - password_reset
+  - recovery_flow
+  - signed_id
+  - public_key
+  - key_confusion
+  business_api:
+  - checkout
+  - order
+  - wallet
+  - coupon
+  - membership
+  - points
+  - address
+  - captcha
+  - replay_window
+  - concurrent_update
+  browser_boundaries:
+  - csrf_token
+  - cors
+  - origin_header
+  - referer_header
+  - fetch_metadata
+  - websocket_origin
+  - jsonp
+  - callback
+  response_minimization:
+  - private_field
+  - nested_sensitive_object
+  - field_level_authorization
+  property_overposting:
+  - server_owned_field
+  - role_field
+  - owner_field
+  - workflow_state_field
+  graphql:
+  - introspection
+  - query
+  - mutation
+  - persisted_query
+  - relay_node
+  - graphql_error
+  cms_rest:
+  - wp-json
+  - rest_route
+  - wordpress
+  - plugin_namespace
+  parser_ambiguity:
+  - duplicate_parameter
+  - duplicate_json_key
+  - parameter_pollution
+  token_crypto:
+  - jwt
+  - signed_id
+  - bearer_token
+  - weak_code
+  - public_key
+  - key_confusion
+  recovery_flow:
+  - security_question
+  - reset_token
+  - knowledge_factor
+  - osint_signal
+mode_gates:
+  proof:
+    continue_endpoint_families: true
+    route_thin_http_fallback: true
+    continuation_closure_required: true
+hypothesis_templates:
+- id: endpoint_authz_matrix
+  description: Compare owned, unowned, malformed, unauthenticated, and role-varied requests for each object-bearing endpoint family.
+- id: workflow_state_matrix
+  description: Compare normal, skipped, replayed, stale-token, and tampered-state requests for multi-step API flows.
+- id: browser_api_boundary
+  description: Validate CSRF, CORS, WebSocket, and GraphQL boundaries with actor/object/state-aware request pairs.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

@@ -1,0 +1,37 @@
+schema_version: theory.system
+id: agentic.multi_agent_goal_drift
+title: Multi-agent workflow drifts from scope, goal, or proof contract
+version: 1.0.0
+status: active
+summary: Delegated agents may silently expand scope, change objectives, skip closure, or trust peer output without sufficient evidence.
+vuln_class: agentic_security
+subclass: multi_agent_control
+severity_default: medium
+mappings:
+  cwe: [CWE-670, CWE-693]
+applicability:
+  target_surfaces: [surface.agentic.orchestration]
+preconditions:
+  required: [multi_agent_handoff_observed, expected_goal_or_scope_known]
+detection_logic:
+  predicates: [handoff_missing_scope_or_lock, worker_output_promoted_without_evidence, closure_status_missing]
+  disconfirming_observations: [handoff_packet_complete, reviewer_validates_evidence, surface_closed]
+exploitability_model:
+  factors: [tool_access, task_sensitivity, reviewer_strength, auditability]
+impact_model:
+  dimensions: [scope_control, evidence_integrity, operator_trust]
+evidence_requirements:
+  minimum_for_validated:
+    - type: coverage_matrix
+      count: 1
+false_positive_filters:
+  required: [verify_expected_goal, verify_handoff_gap, verify_evidence_promotion_path]
+linked_skills:
+  primary: [swarm_orchestrator, threat_modeler]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.agentic_system_security_review]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [delegation_closure_control]

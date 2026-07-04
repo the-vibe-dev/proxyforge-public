@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: web.proto_pollution.client_and_server
+title: Prototype pollution (client and server) via unsafe object merge / lookup
+version: 1.0.0
+status: active
+summary: A JavaScript application merges or assigns user-controlled JSON into objects without prototype guards. An attacker writes to `__proto__` / `constructor.prototype` / `prototype`, modifying Object.prototype globally. Downstream sinks (template engines, query builders, framework lookups, gadgets in dependencies) inherit attacker-controlled properties leading to XSS, RCE, or auth bypass.
+vuln_class: web
+subclass: prototype_pollution
+severity_default: high
+mappings:
+  cwe: [CWE-1321]
+  web: [javascript, node]
+applicability:
+  target_surfaces: [surface.web.http, surface.client.spa]
+preconditions:
+  required: [user_json_merged_into_object_without_guard, downstream_sink_reads_attacker_controlled_property]
+detection_logic:
+  predicates:
+    - polluting_payload_changes_global_property_observable
+    - canonical_pp_payload_yields_observable_side_effect_via_known_gadget
+  disconfirming_observations:
+    - merge_implementation_blocks_proto_keys
+    - object_create_null_used_for_mergeable_objects
+    - no_downstream_gadget_present
+exploitability_model:
+  factors: [merge_call_site_count, gadget_inventory, framework_version]
+impact_model:
+  dimensions: [client_xss, server_rce_via_gadget, auth_bypass]
+evidence_requirements:
+  minimum_for_validated:
+    - type: polluting_payload_evidence
+      count: 1
+    - type: side_effect_or_gadget_trace
+      count: 1
+  preferred_for_critical:
+    - type: lab_rce_or_xss_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_pollution_actually_persists
+    - verify_downstream_gadget_present
+    - verify_payload_reaches_merge_sink
+linked_skills:
+  primary: [web_hunter]
+  supporting: [source_reviewer, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]
+references:
+  learning_sources: [corpus.bb.client_side_injection]

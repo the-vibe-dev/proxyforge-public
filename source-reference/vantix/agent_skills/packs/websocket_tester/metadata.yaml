@@ -1,0 +1,30 @@
+id: websocket_tester
+name: WebSocket Tester
+version: 1
+summary: Test WebSocket subscriptions, events, and permissions for cross-user leaks, replay attacks, and auth bypasses.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [websocket, realtime, channel-subscription, cross-user-leak, authorization]
+requires_scope: true
+required_tools: []
+optional_tools: [custom_websocket_client]
+triggers:
+  surface: [WebSocket endpoint in scope, realtime channel or subscription model, multi-user application]
+hypothesis_templates:
+  - id: cross_user_subscribe
+    description: Connect as user A, subscribe to user B's private channel
+  - id: event_before_auth
+    description: Send event on WebSocket before authentication completes
+  - id: event_after_logout
+    description: Send event after logout when WebSocket still connected
+  - id: org_id_tampering
+    description: Change org-ID or user-ID in subscription message
+  - id: message_replay
+    description: Replay old messages from other users
+  - id: permission_downgrade
+    description: Send events after permission is removed from user
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]

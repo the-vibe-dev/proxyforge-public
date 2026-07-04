@@ -1,0 +1,93 @@
+schema_version: playbook.system
+id: playbook.sechive.authentication
+name: SecHive Authentication Matrix (WSTG 4.4)
+version: 1.0.0
+status: active
+summary: "Auth surface battery: credential stuffing, default credentials, plain-HTTP creds, SQLi bypass chain, 2FA replay, password reset oracle, browser cache audit, remember-me, alt-channel divergence."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.auth.bypass_schema
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_login_bypass_chain
+    sechive_id: sechive.auth.bypass_schema
+    wstg_id: WSTG-AUTH-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.default_credentials
+    primitive_module: secops.services.probe_authentication
+    primitive_function: probe_default_credentials
+    sechive_id: sechive.auth.default_credentials
+    wstg_id: WSTG-AUTH-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.creds_over_http
+    primitive_module: secops.services.probe_authentication
+    primitive_function: probe_creds_over_http
+    sechive_id: sechive.auth.creds_over_http
+    wstg_id: WSTG-AUTH-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.mfa_bypass
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_2fa_replay
+    sechive_id: sechive.auth.mfa_bypass
+    wstg_id: WSTG-AUTH-11
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.weak_pwreset
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_password_reset_oracle
+    sechive_id: sechive.auth.weak_pwreset
+    wstg_id: WSTG-AUTH-09
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.browser_cache
+    primitive_module: secops.services.probe_authentication
+    primitive_function: probe_browser_cache_sensitive
+    sechive_id: sechive.auth.browser_cache
+    wstg_id: WSTG-AUTH-06
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.remember_me
+    primitive_module: secops.services.probe_authentication
+    primitive_function: probe_remember_me_token
+    sechive_id: sechive.auth.remember_me
+    wstg_id: WSTG-AUTH-05
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.auth.alt_channel_divergence
+    primitive_module: secops.services.probe_authentication
+    primitive_function: probe_auth_alt_channel_divergence
+    sechive_id: sechive.auth.alt_channel_divergence
+    wstg_id: WSTG-AUTH-10
+    evidence_emit: { kind: sechive_test_result }

@@ -1,0 +1,30 @@
+id: export_authz_tester
+name: Export Authz Tester
+version: 1
+summary: Test CSV exports, PDF invoices, receipts, reports, and downloads for authorization bypass via stale URLs and token reuse.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [authorization, export, csv, pdf, download, token-reuse, url-bypass]
+requires_scope: true
+required_tools: []
+optional_tools: [custom_request_harness]
+triggers:
+  surface: [CSV export endpoint, PDF invoice or receipt, downloadable report, signed URL generation]
+hypothesis_templates:
+  - id: download_after_logout
+    description: Use export URL/token after logout
+  - id: cross_user_download
+    description: Use User A's export URL as User B
+  - id: download_after_delete
+    description: Download invoice after the related object is deleted
+  - id: download_after_role_remove
+    description: Use export URL after user's role is downgraded
+  - id: range_request
+    description: Request partial file content via Range header
+  - id: filename_enumeration
+    description: Guess sequential filenames or IDs in export URLs
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]

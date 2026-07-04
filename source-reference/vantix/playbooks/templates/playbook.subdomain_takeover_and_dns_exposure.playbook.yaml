@@ -1,0 +1,485 @@
+schema_version: playbook.system
+id: playbook.subdomain_takeover_and_dns_exposure
+name: Subdomain Takeover and DNS Exposure Review
+version: 1.0.0
+status: active
+summary: Identify dangling DNS, orphaned storage/CDN/app-service bindings, and takeover candidates; validate only with provider-safe,
+  non-public-impact evidence.
+owner:
+  team: sechive-core
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - authorized_testing_scope
+  - evidence_gated_execution
+  adds:
+  - new_suite_coverage
+  - agent_runtime_contract
+  - safe_proof_depth
+  - redacted_evidence_ledger_closeout
+modes:
+  allowed:
+  - bugbounty
+  - pentest
+  requires_scope: true
+objectives:
+  primary:
+  - find_dangling_records
+  - confirm_provider_fingerprints
+  - validate_takeover_safely
+  - document_dns_remediation
+  secondary:
+  - record_negative_evidence
+  - route_followup_playbooks
+target_requirements:
+  surfaces:
+    any:
+    - surface.dns
+    - surface.cloud
+    - surface.web.http
+required_skills:
+  primary:
+  - recon_advisor
+  supporting:
+  - cloud_security
+  - safe_scanner
+  - poc_validator
+  - scope_guard
+  - evidence_ledger
+  - report_generator
+theory_filters:
+  preferred_theories:
+  - dns.dangling_cname
+  - cloud.orphaned_binding
+  - takeover.safe_canary
+proof_continuation:
+  enabled: true
+  max_replans: 3
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 50
+  max_retries_per_step: 3
+  max_branches: 8
+steps:
+- id: scope.preflight
+  title: Confirm authorization, target boundaries, and allowed proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - run.target_profile
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - destructive_action_required
+    - unauthorized_third_party
+- id: dns.inventory
+  title: Inventory DNS records and resolve chains with scope-confidence annotations
+  agent: researcher
+  action_type: passive_recon
+  skill_ref: recon_advisor
+  inputs_from:
+  - scope.preflight
+  evidence_gate:
+    id: gate.dns.inventory
+    required:
+    - type: dns_inventory
+      count: 1
+- id: dangling.fingerprint
+  title: Fingerprint dangling provider patterns and distinguish parked, protected, and claimable states
+  agent: analyst
+  action_type: analysis
+  inputs_from:
+  - dns.inventory
+  evidence_gate:
+    id: gate.dangling.fingerprint
+    required_any:
+    - type: takeover_candidate
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: provider.safety_check
+  title: Check provider rules and program policy before any claim-style validation
+  agent: safety_reviewer
+  action_type: policy_check
+  inputs_from:
+  - dangling.fingerprint
+  evidence_gate:
+    id: gate.provider.safety
+    required:
+    - type: provider_validation_policy
+      count: 1
+    blocked_when:
+    - provider_claim_disallowed
+    - public_impact_risk
+- id: validate.canary
+  title: Validate with benign canary or non-claim proof acceptable to provider and program
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - provider.safety_check
+  evidence_gate:
+    id: gate.takeover.canary
+    required_any:
+    - type: canary_control_evidence
+      count: 1
+    - type: non_claim_takeover_evidence
+      count: 1
+    - type: blocked_record
+      count: 1
+- id: report.dns_fix
+  title: Report impact, evidence, and DNS/provider cleanup steps
+  agent: reporter
+  action_type: report
+  skill_ref: report_generator
+  inputs_from:
+  - validate.canary
+  evidence_gate:
+    id: gate.dns.report
+    required:
+    - type: proof_pack
+      count: 1
+- id: agent.runtime.closeout
+  title: Promote final evidence through agent handoff, redaction, and proof-readiness checks
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: evidence_ledger
+  inputs_from:
+  - report.dns_fix
+  - decision_log
+  - coverage_matrix
+  evidence_gate:
+    id: gate.agent.runtime.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    - type: negative_evidence_summary
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    - type: agent_handoff_trace
+      count: 1
+    quality_floor: 0.75
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+    - unresolved_safety_decision
+agents:
+  orchestrator:
+    role: planner
+    responsibilities:
+    - select_playbooks
+    - maintain_scope_state
+    - coordinate_handoffs
+    - prioritize_by_signal
+    handoff_artifacts:
+    - run_plan
+    - scope_ref
+    - coverage_matrix
+    - open_risks
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  planner:
+    role: planner
+    responsibilities:
+    - define_objective
+    - choose_safe_proof_depth
+    - map_dependencies
+    - set_stop_conditions
+    handoff_artifacts:
+    - validation_plan
+    - roe_matrix
+    - candidate_queue
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  researcher:
+    role: researcher
+    responsibilities:
+    - map_surface
+    - generate_hypotheses
+    - rank_theories
+    - record_negative_evidence
+    handoff_artifacts:
+    - observation_bundle
+    - theory_frontier
+    - asset_graph_delta
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  recon:
+    role: researcher
+    responsibilities:
+    - refresh_inventory
+    - correlate_external_signals
+    - flag_scope_ambiguity
+    handoff_artifacts:
+    - asset_graph_delta
+    - service_inventory
+    - scope_question
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  executor:
+    role: executor
+    responsibilities:
+    - run_bounded_tests
+    - capture_raw_evidence
+    - honor_rate_limits
+    - abort_on_guardrail
+    handoff_artifacts:
+    - http_exchange
+    - tool_result
+    - runtime_observation
+    - blocked_record
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  developer:
+    role: builder
+    responsibilities:
+    - build_harnesses
+    - prepare_test_fixtures
+    - instrument_targets
+    - avoid_weaponization
+    handoff_artifacts:
+    - harness_manifest
+    - build_log
+    - fixture_manifest
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  analyst:
+    role: analyst
+    responsibilities:
+    - triage_results
+    - deduplicate_findings
+    - reason_about_root_cause
+    - score_exploitability_defensively
+    handoff_artifacts:
+    - triage_record
+    - root_cause_hypothesis
+    - diff_signal
+    - risk_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  validator:
+    role: validator
+    responsibilities:
+    - validate_replay
+    - minimize_proof
+    - verify_false_positive_filters
+    - confirm_cleanup
+    handoff_artifacts:
+    - validation_result
+    - replay_spec
+    - cleanup_log
+    - negative_evidence
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  evaluator:
+    role: evaluator
+    responsibilities:
+    - review_evidence_quality
+    - enforce_policy
+    - decide_submission_readiness
+    - route_gaps
+    handoff_artifacts:
+    - readiness_decision
+    - risk_decision
+    - gap_list
+    - quality_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  reporter:
+    role: reporter
+    responsibilities:
+    - assemble_proof_pack
+    - redact_sensitive_data
+    - write_disclosure
+    - preserve_replay_steps
+    handoff_artifacts:
+    - proof_pack
+    - report
+    - timeline
+    - remediation_notes
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  specialist:
+    role: domain_specialist
+    responsibilities:
+    - apply_domain_methods
+    - flag_domain_specific_risks
+    - produce_specialist_handoff
+    handoff_artifacts:
+    - specialist_notes
+    - domain_matrix
+    - candidate_findings
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  safety_reviewer:
+    role: safety_reviewer
+    responsibilities:
+    - enforce_authorization
+    - block_destructive_actions
+    - review_sensitive_evidence
+    - confirm_nonproduction_proof
+    handoff_artifacts:
+    - safety_decision
+    - redaction_log
+    - stop_condition_note
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+agent_runtime:
+  orchestration: planner_researcher_executor_validator_reporter_with_safety_review
+  routing_rules:
+  - start_with_scope_and_roe_gate
+  - route_passive_recon_before_active_testing
+  - require_validator_before_report_promotion
+  - send_scope_ambiguity_to_safety_reviewer
+  - prefer_minimal_benign_proof_over_broad_exploitation
+  handoff_contract:
+    required_fields:
+    - objective
+    - scope_ref
+    - assumptions
+    - evidence_refs
+    - risk_level
+    - next_action
+    - stop_conditions
+    evidence_ref_format: ledger://<artifact-type>/<stable-id>
+    handoff_requires_redaction_check: true
+  memory_policy:
+    write_to:
+    - evidence_ledger
+    - coverage_matrix
+    - decision_log
+    never_store_raw_values:
+    - passwords
+    - session_tokens
+    - api_keys
+    - private_keys
+    - third_party_personal_data
+    secret_representation: type+issuer+last4+hash_prefix_when_allowed
+  parallelization:
+    allowed_for:
+    - passive_enrichment
+    - static_analysis
+    - documentation_review
+    - negative_evidence_collection
+    requires_join_gate: gate.agent.join_quality
+  quality_bars:
+    minimum_replayability: 0.75
+    minimum_scope_confidence: 0.95
+    require_negative_evidence_for_closed_branches: true
+    require_cleanup_note_for_stateful_tests: true
+  high_risk_review_required: false
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - unclear_asset_ownership
+    - third_party_impact
+    - policy_blocked
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+    ctf_or_lab: full_local_validation_allowed_without_third_party_targets
+    high_risk_requires_explicit_roe: false
+  traffic_controls:
+    respect_rate_limits: true
+    backoff_on_errors: true
+    no_broad_scanning_without_active_scan_permission: true
+    log_user_agent_or_test_marker_when_required: true
+  data_handling:
+    collect_minimum_data: true
+    redact_sensitive_values: true
+    use_test_accounts_and_canaries: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - destructive_effect_detected
+  - privilege_boundary_crossed_beyond_roe
+  - real_user_data_would_be_accessed
+  - service_health_degrades
+  - persistence_or_evasion_required_outside_lab
+evidence_contracts:
+  ledger_required: true
+  minimum_artifacts:
+  - scope_record
+  - observation_bundle_or_negative_evidence
+  - validation_result_or_blocked_record
+  - proof_pack_or_closure_note
+  redaction:
+    required_for:
+    - credentials
+    - tokens
+    - cookies
+    - customer_data
+    - internal_hostnames_when_policy_requires
+    preserve:
+    - timestamps
+    - request_ids
+    - status_codes
+    - owned_test_account_ids
+    - hash_prefixes_when_allowed
+  proof_pack:
+    required_sections:
+    - scope
+    - impact
+    - reproduction
+    - evidence
+    - false_positive_checks
+    - cleanup
+    - remediation
+    replay_must_use:
+    - owned_test_account_or_lab_target
+    - bounded_payload
+    - rate_limit_notes

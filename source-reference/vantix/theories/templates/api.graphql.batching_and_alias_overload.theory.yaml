@@ -1,0 +1,44 @@
+schema_version: theory.system
+id: api.graphql.batching_and_alias_overload
+title: GraphQL batching / alias overloading bypasses rate limits and amplifies cost
+version: 1.0.0
+status: active
+summary: A GraphQL server accepts batched queries or many aliases of the same field in a single request, but rate limits, cost analysis, and lockout counters operate per-HTTP-request. An attacker bypasses brute-force, OTP, or coupon-redemption limits and amplifies cost.
+vuln_class: api
+subclass: graphql_batching
+severity_default: high
+mappings:
+  cwe: [CWE-799, CWE-307]
+  api: [graphql]
+applicability:
+  target_surfaces: [surface.api.graphql]
+preconditions:
+  required: [graphql_endpoint_accepts_batched_or_aliased_queries, rate_limit_or_lockout_keyed_per_request]
+detection_logic:
+  predicates:
+    - batched_or_aliased_request_executes_all_subqueries
+    - per_request_counter_increments_by_one_for_n_subqueries
+    - cost_or_latency_scales_linearly_with_alias_count
+  disconfirming_observations:
+    - server_enforces_max_aliases_or_query_complexity
+    - rate_limit_keyed_on_resolver_count
+    - batching_disabled_in_production
+exploitability_model:
+  factors: [complexity_limits, cost_analysis, lockout_keying]
+impact_model:
+  dimensions: [auth_brute_force, otp_brute_force, cost_amplification]
+evidence_requirements:
+  minimum_for_validated:
+    - type: aliased_request_evidence
+      count: 1
+    - type: counter_or_lockout_bypass_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_all_aliases_actually_executed
+    - verify_lockout_or_limit_actually_bypassed
+linked_skills:
+  primary: [api_security, web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.graphql_attack_surface]

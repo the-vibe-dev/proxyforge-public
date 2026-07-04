@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sechive.local/schemas/playbook.system.json",
+  "title": "SecHive Unified Playbook Manifest",
+  "description": "The playbook contract combines framework coverage, agents, agent runtime, safety guardrails, steps, evidence gates, branches, loops, retries, proof-continuation, and closure semantics into one runtime system.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "modes",
+    "objectives",
+    "target_requirements",
+    "global_limits",
+    "steps"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "playbook.system"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^playbook\\.[a-z0-9][a-z0-9_.-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3
+    },
+    "version": {
+      "type": "string",
+      "default": "1.0.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "active",
+        "deprecated",
+        "revoked"
+      ],
+      "default": "active"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "contract_lineage": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "system": {
+          "type": "string"
+        },
+        "posture": {
+          "type": "string",
+          "enum": [
+            "unified"
+          ]
+        },
+        "preserves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "adds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modes": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "allowed"
+      ]
+    },
+    "objectives": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "target_requirements": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "framework_coverage": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "required_skills": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    },
+    "theory_filters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "proof_continuation": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "max_replans": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require_candidate_closure": {
+          "type": "boolean"
+        },
+        "route_thin_fallback": {
+          "type": "boolean"
+        },
+        "final_closure_note_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "global_limits": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "max_steps"
+      ]
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "id",
+          "title",
+          "agent",
+          "action_type",
+          "evidence_gate"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "agent": {
+            "type": "string"
+          },
+          "action_type": {
+            "type": "string"
+          },
+          "inputs_from": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skill_ref": {
+            "type": "string"
+          },
+          "skill_selection": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "theory_ref": {
+            "type": "string"
+          },
+          "theory_selection": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "evidence_gate": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id"
+            ]
+          },
+          "branches": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "loop": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "retry": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "stop_conditions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "agent_runtime": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Runtime guidance for multi-agent routing, handoff, tool use, memory, and evidence promotion."
+    },
+    "safety_model": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Authorization, production-safety, data-handling, and stop-condition constraints."
+    },
+    "evidence_contracts": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Expected evidence ledger objects, redaction rules, proof-pack quality bars, and replay contracts."
+    },
+    "execution_environment": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional environment setup, versions, channel requirements, or sandbox requirements."
+    },
+    "policy_references": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional - paths to additional policy / scope packets the playbook requires the reviewer to load before finalizing (e.g. Chrome VRP submission rules). Open shape; specific keys per-playbook."
+    }
+  },
+  "x_vantix_revision": "2026-05-12-agent-suite"
+}

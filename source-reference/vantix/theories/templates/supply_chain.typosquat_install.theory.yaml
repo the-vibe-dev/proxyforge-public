@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: supply_chain.typosquat_install
+title: Typosquat package install executes attacker-controlled script
+version: 1.0.0
+status: active
+summary: A misspelled, hyphen-swap, or look-alike package name resolves to an attacker-published package on a public registry. Install runs postinstall / setup.py / Rakefile code under developer or CI privilege.
+vuln_class: supply_chain
+subclass: typosquat
+severity_default: medium
+mappings:
+  cwe: [CWE-829, CWE-1357]
+  ecosystem: [npm, pypi, rubygems]
+applicability:
+  target_surfaces: [surface.cicd.pipeline, surface.code.dependencies]
+preconditions:
+  required: [manifest_or_command_references_typosquat_name, public_registry_resolves_typosquat]
+detection_logic:
+  predicates:
+    - osv_or_cve_database_flags_typosquat
+    - registry_metadata_shows_recent_first_release_with_no_history
+    - install_script_present_and_runs_at_install_time
+  disconfirming_observations:
+    - org_uses_curated_internal_mirror_only
+    - ci_runs_with_npm_ignore_scripts_or_pip_no_build_isolation
+exploitability_model:
+  factors: [install_script_policy, mirror_state, developer_workflow]
+impact_model:
+  dimensions: [developer_workstation_compromise, ci_token_theft]
+evidence_requirements:
+  minimum_for_validated:
+    - type: manifest_or_command_evidence
+      count: 1
+    - type: typosquat_metadata_evidence
+      count: 1
+  preferred_for_critical:
+    - type: test_install_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_typosquat_actually_published_and_resolves
+    - verify_install_script_executes_under_normal_workflow
+    - verify_no_curated_mirror_blocks_resolution
+linked_skills:
+  primary: [cicd_redteam, source_reviewer]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

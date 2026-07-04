@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: supply_chain.gh_actions_self_hosted_runner_takeover
+title: GitHub Actions self-hosted runner takeover via fork-PR job execution
+version: 1.0.0
+status: active
+summary: A public repository registers a self-hosted runner that is not ephemeral and not isolated. Fork pull requests cause runner jobs to execute attacker-controlled code on the runner host, which retains state, network access to internal infrastructure, and reusable credentials across runs.
+vuln_class: supply_chain
+subclass: self_hosted_runner
+severity_default: critical
+mappings:
+  cwe: [CWE-269, CWE-668]
+  ecosystem: [github_actions]
+applicability:
+  target_surfaces: [surface.cicd.gha, surface.cicd.runner]
+preconditions:
+  required: [public_repository_registers_self_hosted_runner, runner_accepts_fork_pr_jobs, runner_not_ephemeral_or_isolated]
+detection_logic:
+  predicates:
+    - workflow_uses_self_hosted_label
+    - repository_visibility_public
+    - runner_image_persists_state_between_runs
+  disconfirming_observations:
+    - runner_group_restricted_to_first_party_workflows
+    - actions_runner_controller_with_per_job_ephemeral_pods
+    - require_approval_for_first_time_contributors_enabled
+exploitability_model:
+  factors: [runner_isolation_model, network_path, credential_persistence]
+impact_model:
+  dimensions: [runner_compromise, internal_network_pivot, ci_secret_exfil]
+evidence_requirements:
+  minimum_for_validated:
+    - type: workflow_runner_label_evidence
+      count: 1
+    - type: runner_topology_evidence
+      count: 1
+    - type: privilege_delta_documented
+      count: 1
+  preferred_for_critical:
+    - type: test_repo_runner_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_repository_actually_public
+    - verify_fork_pr_actually_dispatched_to_runner
+    - verify_runner_actually_persistent
+linked_skills:
+  primary: [cicd_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

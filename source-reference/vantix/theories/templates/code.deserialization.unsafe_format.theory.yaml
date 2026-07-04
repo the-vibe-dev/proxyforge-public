@@ -1,0 +1,52 @@
+schema_version: theory.system
+id: code.deserialization.unsafe_format
+title: Unsafe deserialization of untrusted input
+version: 1.0.0
+status: active
+summary: Application deserializes attacker-influenced bytes via a format whose parser can construct arbitrary objects or invoke methods (Java native, Python pickle/yaml.load, Ruby Marshal, .NET BinaryFormatter/ViewState, PHP unserialize, Node node-serialize/funcster, JSON.NET TypeNameHandling).
+vuln_class: deserialization
+subclass: untrusted_polymorphic_input
+severity_default: critical
+mappings:
+  owasp_top10_2025: [A08]
+  cwe: [CWE-502]
+applicability:
+  target_surfaces: [surface.source.code, surface.api.rest, surface.api.rpc]
+preconditions:
+  required: [deserializer_call_present, attacker_influences_byte_stream]
+detection_logic:
+  predicates:
+    - dangerous_format_detected
+    - input_path_traceable_from_request
+    - no_typed_allowlist_or_signature_check
+  disconfirming_observations:
+    - type_allowlist_present_and_strict
+    - signed_envelope_validated_before_parse
+    - deserializer_only_used_on_internal_constants
+exploitability_model:
+  factors: [gadget_chain_availability, classpath_or_runtime_libs, network_exposure, authentication_required]
+impact_model:
+  dimensions: [rce, integrity, confidentiality, blast_radius]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: format_identification
+      count: 1
+    - type: input_path_argument
+      count: 1
+  preferred_for_critical:
+    - type: gadget_chain_candidate
+      count: 1
+    - type: runtime_corroboration
+      count: 1
+false_positive_filters:
+  required:
+    - verify_input_actually_external
+    - verify_deserializer_not_safe_variant
+    - verify_no_pre_parse_signature_or_type_filter
+linked_skills:
+  primary: [source_reviewer, reverse_engineer]
+  supporting: [poc_validator, payload_crafter]
+linked_playbooks:
+  primary: [playbook.source_audit_loop]

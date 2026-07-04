@@ -1,0 +1,54 @@
+schema_version: theory.system
+id: authz.surface_parity_client
+title: Authorization parity gap across desktop / mobile / extension client APIs
+version: 1.0.0
+status: active
+summary: A backend mechanism reachable from multiple clients (browser,
+  desktop app, mobile app, browser extension) enforces object/role
+  authorization on the well-tested browser path but a client-specific code
+  path, legacy endpoint, or device/app-id-gated route omits or weakens the
+  same check. The less-tested client surface yields IDOR or action access.
+vuln_class: authz
+subclass: surface_parity
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01]
+  wstg: [WSTG-ATHZ-02, WSTG-ATHZ-04]
+  cwe: [CWE-862, CWE-639, CWE-1059]
+applicability:
+  target_surfaces: [surface.desktop.app, surface.mobile.app, surface.browser.extension, surface.api.rest]
+  required_observations: [multi_client_for_same_backend, client_specific_endpoint_or_header]
+preconditions:
+  required: [scope_authorizes_testing, owned_test_accounts_available, proxy_capture_authorized]
+  blockers: [credential_use_not_approved, destructive_state_change_required]
+detection_logic:
+  predicates:
+    - same_mechanism.reachable_from_multiple_clients
+    - client_specific_path.authz_weaker_than_browser_path
+    - cross_subject_request_on_client_path.succeeds
+  disconfirming_observations:
+    - identical_authz_enforced_on_all_client_paths
+    - client_path_requires_additional_proof_of_ownership
+    - difference_is_only_cosmetic_headers
+exploitability_model:
+  factors: [surface_obscurity, authz_divergence, identifier_control, install_time_endpoint_exposure]
+impact_model:
+  dimensions: [confidentiality, integrity, tenant_boundary, privilege_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: cross_surface_request_pair
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_browser_path_enforces, verify_client_path_diverges, verify_other_account_boundary]
+linked_skills:
+  primary: [access_control_bypass, authz_matrix_tester]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.api_authz_idor_matrix]
+  supporting: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.idor_ac]

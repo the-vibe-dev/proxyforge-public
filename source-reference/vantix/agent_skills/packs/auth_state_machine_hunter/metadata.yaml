@@ -1,0 +1,67 @@
+id: auth_state_machine_hunter
+name: Auth State Machine Hunter
+version: 1
+summary: Uncover authentication bugs hidden in state transitions, not individual endpoints. Covers registration, login, logout, password reset, email/phone changes, recovery, MFA setup/removal.
+roles:
+  - researcher
+  - executor
+modes:
+  - bugbounty
+  - pentest
+execution_level: gated
+safety_level: passive
+risk_tier: moderate
+opsec: quiet
+status: active
+tags:
+  - auth-state-machine
+  - state-transition
+  - registration-flow
+  - login-flow
+  - password-reset
+  - email-verification
+  - mfa-setup
+  - session-state
+  - token-lifecycle
+  - account-recovery
+  - almost-authenticated
+  - recent-auth-abuse
+requires_scope: true
+required_tools: []
+optional_tools:
+  - jwt-cli
+fallback_chain:
+  state_replay: [curl]
+  graph_generation: [graphviz]
+triggers:
+  surface:
+    - auth_endpoint_registration
+    - auth_endpoint_login
+    - auth_endpoint_password_reset
+    - auth_endpoint_email_change
+    - auth_endpoint_phone_change
+    - auth_endpoint_logout
+    - mfa_setup_flow
+    - account_recovery_endpoint
+    - invite_acceptance_flow
+  pivot:
+    - state_divergence_in_flow_to_ato
+    - privilege_escalation_via_state_skip
+hypothesis_templates:
+  - id: skip_verification_state
+    description: Registration requires email verification but an attacker can log in and perform authenticated actions before verification completes.
+  - id: password_reset_reuse
+    description: Password reset token accepted multiple times within validity window - reset password, then use same token again.
+  - id: logout_incomplete
+    description: Logout invalidates session cookie but JWT in localStorage persists, or refresh token not revoked on server.
+  - id: state_overlap_transition
+    description: Two simultaneous conflicting state transitions (e.g., email change + password reset) both succeed, resulting in inconsistent account state.
+  - id: account_recovery_privilege
+    description: Account recovery restores access but does not reset permissions; user retains admin/org role from before compromise.
+  - id: mfa_removal_without_reauth
+    description: User can disable MFA without re-entering password or current MFA factor.
+forbidden:
+  - destructive
+  - dos
+  - out_of_scope
+  - production_data_mutation

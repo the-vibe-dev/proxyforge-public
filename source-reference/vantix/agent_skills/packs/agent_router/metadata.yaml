@@ -1,0 +1,38 @@
+id: agent_router
+name: Agent Router
+version: 1
+summary: Multi-agent router by surface, bug class, confidence, evidence requirements, model tier, cost, and risk. Maintains audit log of routing decisions.
+status: active
+roles:
+- orchestrator
+- dispatcher
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- agent-router
+- multi-agent
+- cost-aware
+- confidence-escalation
+- risk-tier-routing
+- audit-log
+- hypothesis-dispatch
+- model-tier-selection
+optional_tools: []
+requires_scope: false
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+hypothesis_templates:
+- "Finding class={{class}} with confidence={{conf}} routes to {{pack}} on model {{tier}}."
+- "Surface {{surface}} with evidence {{evidence_class}} routes to {{pack}} pack."
+- "Cost-per-finding {{cost}} exceeds budget {{budget}}; downgrade to {{cheaper_pack}}."
+- "Risk tier {{risk}} on {{program}} routes to {{safe_pack}} instead of {{aggressive_pack}}."
+- "Confidence {{conf}} < {{threshold}} escalates {{finding}} from Haiku to Opus model."
+- "Routing audit entry {{id}} logs decision {{decision}} with {{metadata}}."

@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: api.weak_token_format
+title: Weak opaque code or token format
+version: 1.0.0
+status: active
+summary: Coupon, invitation, continuation, reset, order, or workflow codes may be predictable, weakly encoded, date-derived, replayable, or insufficiently bound to server state.
+vuln_class: api
+subclass: weak_token_format
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A02, A04, A07]
+  wstg: [WSTG-SESS, WSTG-CRYP, WSTG-BUSL]
+  cwe: [CWE-330, CWE-345, CWE-384]
+applicability:
+  target_surfaces: [surface.api.rest, surface.web.http]
+  required_observations: [opaque_code_or_workflow_token]
+preconditions:
+  required: [multiple_current_run_examples_or_known_plaintext, scope_authorizes_validation]
+  blockers: [insufficient_examples, real_user_token_risk]
+detection_logic:
+  predicates:
+    - token_alphabet_length_or_structure_classified
+    - binding_to_user_action_time_or_state_tested
+    - derived_or_replayed_value_changes_server_behavior
+  disconfirming_observations:
+    - tokens_are_random_and_server_bound
+    - expired_or_wrong_context_tokens_rejected
+    - no_authorization_or_integrity_effect
+exploitability_model:
+  factors: [entropy, binding_strength, replay_window, business_value]
+impact_model:
+  dimensions: [workflow_integrity, discount_or_value_abuse, unauthorized_action, replay]
+evidence_requirements:
+  minimum_for_validated:
+    - type: token_analysis
+      count: 1
+    - type: http_exchange
+      count: 2
+false_positive_filters:
+  required: [verify_current_run_examples, verify_server_side_effect, verify_data_minimization]
+linked_skills:
+  primary: [api_security]
+  supporting: [web_hunter, payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [weak_encoding, predictable_code, replayable_workflow_token]

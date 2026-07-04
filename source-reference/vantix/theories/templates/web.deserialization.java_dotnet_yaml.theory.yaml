@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: web.deserialization.java_dotnet_yaml
+title: Web deserialization RCE via Java / .NET / YAML / Pickle / JSON-with-types sinks
+version: 1.0.0
+status: active
+summary: A web endpoint deserializes attacker-controlled bytes via Java native serialization, .NET BinaryFormatter / SoapFormatter / NetDataContract, ViewState, YAML with type tags, Python pickle, or JSON.NET with TypeNameHandling. With a known gadget chain present in the application's classpath, this yields remote code execution.
+vuln_class: web
+subclass: deserialization
+severity_default: critical
+mappings:
+  cwe: [CWE-502]
+  web: [java, dotnet, ruby, python]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [endpoint_deserializes_user_bytes, format_supports_arbitrary_object_construction, gadget_chain_present_in_dependencies]
+detection_logic:
+  predicates:
+    - probe_with_inert_marker_object_yields_class_loading_or_error_signal
+    - ysoserial_or_marshalsec_payload_triggers_callback
+    - viewstate_mac_disabled_or_known_machineKey
+  disconfirming_observations:
+    - endpoint_only_accepts_safe_format_or_uses_allowlist
+    - viewstate_mac_enforced_with_unknown_machineKey
+    - sandbox_or_jvm_options_block_known_gadget
+exploitability_model:
+  factors: [format_capability, gadget_inventory, sandbox_state]
+impact_model:
+  dimensions: [rce, lateral_movement, data_exfil]
+evidence_requirements:
+  minimum_for_validated:
+    - type: payload_evidence
+      count: 1
+    - type: callback_or_class_loading_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_rce_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_endpoint_actually_deserializes_user_bytes
+    - verify_gadget_chain_actually_in_classpath
+    - verify_no_compensating_allowlist
+linked_skills:
+  primary: [web_hunter, source_reviewer]
+  supporting: [poc_validator, payload_crafter]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

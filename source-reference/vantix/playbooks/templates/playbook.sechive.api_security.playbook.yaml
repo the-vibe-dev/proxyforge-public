@@ -1,0 +1,75 @@
+schema_version: playbook.system
+id: playbook.sechive.api_security
+name: SecHive API Security Matrix (WSTG 4.12)
+version: 1.0.0
+status: active
+summary: "GraphQL introspection, IDOR matrix, forged-owner POST, mass assignment, JSONP callback exec."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.api.graphql
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_graphql_introspection
+    sechive_id: sechive.api.graphql
+    wstg_id: WSTG-API-99
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.api.bola
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_authz_matrix_idor
+    sechive_id: sechive.api.bola
+    wstg_id: WSTG-API-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.authz.idor
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_idor_numeric
+    sechive_id: sechive.authz.idor
+    wstg_id: WSTG-AUTHZ-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.mass_assignment
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_mass_assignment
+    sechive_id: sechive.input.mass_assignment
+    wstg_id: WSTG-INPUT-20
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.api.excessive_data_exposure
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_jsonp_callback_exec
+    sechive_id: sechive.api.excessive_data_exposure
+    wstg_id: WSTG-API-03
+    evidence_emit: { kind: sechive_test_result }

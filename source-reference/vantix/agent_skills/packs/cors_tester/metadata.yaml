@@ -1,0 +1,30 @@
+id: cors_tester
+name: CORS Tester
+version: 1
+summary: Test every API endpoint with 12 Origin variants (attacker.example, null, domain-confusion, subdomain, http/https mismatches) to detect Access-Control-Allow-Credentials + Origin leaks.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [cors, cross-origin-resource-sharing, origin-confusion, access-control-bypass, credential-leak]
+requires_scope: true
+required_tools: []
+optional_tools: [browser_execute_script, browser_screenshot, proxy_list_flows, proxy_get_flow]
+triggers:
+  surface: [cors-header-present, preflight-request-observed, api-endpoint-found]
+hypothesis_templates:
+  - id: wildcard_with_credentials
+    description: "Access-Control-Allow-Origin: * combined with Access-Control-Allow-Credentials: true — impossible CORS state"
+  - id: origin_confusion_subdomain
+    description: Target.com allows requests from any *.target.com; attacker can register sub.target.com and read authenticated data
+  - id: origin_confusion_domain_suffix
+    description: Target.com checks if request Origin ends with 'target.com', allowing attacker.target.com.attacker.example
+  - id: null_origin_allowed
+    description: "null origin (cross-origin redirect, data: URL, file:// URL) grants authenticated access"
+  - id: http_to_https_confusion
+    description: HTTP request to HTTPS endpoint allowed, or HTTP and HTTPS considered equivalent
+  - id: case_insensitive_origin_bypass
+    description: Origin check case-insensitive; attacker.EXAMPLE.com or HTTPS://ATTACKER.EXAMPLE.com allowed
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]

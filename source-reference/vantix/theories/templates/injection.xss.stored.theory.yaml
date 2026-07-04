@@ -1,0 +1,56 @@
+schema_version: theory.system
+id: injection.xss.stored
+title: Stored cross-site scripting via persisted user-controlled field
+version: 1.0.0
+status: active
+summary: A user-controlled value (profile/display name, project or file name,
+  comment, post, description) is persisted and later rendered to other users
+  without context-correct output encoding, executing attacker script in a
+  victim's authenticated session. Higher blast radius than reflected because
+  victims encounter it through normal application use.
+vuln_class: injection
+subclass: xss_stored
+severity_default: high
+mappings:
+  owasp_top10_2025: [A03]
+  wstg: [WSTG-INPV-02]
+  cwe: [CWE-79]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [user_writable_field_present, value_rendered_to_other_users]
+preconditions:
+  required: [scope_authorizes_testing, owned_test_account_available, controlled_canary_only]
+  blockers: [real_user_data_in_blast_radius, destructive_state_change_required]
+detection_logic:
+  predicates:
+    - canary.persisted_to_store
+    - canary.rendered_in_other_user_context
+    - render_context.output_encoding_absent_or_wrong
+  disconfirming_observations:
+    - value_html_encoded_at_every_render_location
+    - render_only_visible_to_authoring_account
+    - framework_auto_escape_blocks_execution
+exploitability_model:
+  factors: [render_blast_radius, victim_class, output_context, csp_strength, delivery_naturalness]
+impact_model:
+  dimensions: [session_hijack, forced_action, data_exfiltration, privilege_escalation, victim_population]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: render_evidence
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_executes_not_only_reflects, verify_visible_to_a_real_other_victim_class, verify_not_self_xss]
+linked_skills:
+  primary: [dom_taint_hunter, web_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+  supporting: [playbook.client_side_js_secret_and_sink_review]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.client_side_injection]

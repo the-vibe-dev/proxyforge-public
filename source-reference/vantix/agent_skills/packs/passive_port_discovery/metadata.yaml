@@ -1,0 +1,34 @@
+id: passive_port_discovery
+name: Passive Port Discovery
+version: 1
+summary: Passive-then-active port discovery verifying only passively-claimed ports and only under scope plus active-enabled
+roles:
+- recon
+- researcher
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- recon
+- ports
+- passive
+- active
+- scope-gated
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- naabu
+triggers:
+  surfaces:
+  - surface.recon.passive
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- active_probe_without_scope
+- production_probe

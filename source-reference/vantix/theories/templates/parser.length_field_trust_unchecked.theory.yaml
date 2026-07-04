@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: parser.length_field_trust_unchecked
+title: Parser trusts a length field from the input without validating against actual buffer remaining
+version: 1.0.0
+status: active
+summary: A parser reads a length / size / count field from attacker-supplied input (header, frame, tag-length-value record) and uses that value to drive a copy, advance, or allocation without comparing it to the bytes actually remaining in the input buffer. When the declared length exceeds the real input, the consumer reads past the end (info leak / OOB read) or writes a truncated/oversized destination (heap overflow).
+vuln_class: parser_safety
+subclass: length_field_trust
+severity_default: high
+mappings:
+  cwe: [CWE-130, CWE-805, CWE-126]
+applicability:
+  target_surfaces: [surface.binary.native, surface.chromium.network, surface.chromium.media, surface.chromium.pdfium, surface.chromium.blink, surface.chromium.skia]
+preconditions:
+  required:
+    - length_field_read_from_attacker_input
+    - length_used_to_drive_copy_or_advance_or_alloc
+    - no_compare_against_remaining_buffer_dominates_use
+detection_logic:
+  predicates:
+    - decompiler_shows_load_of_length_then_memcpy_or_advance_with_no_clamp
+    - source_grep_le16_le32_be32_followed_by_memcpy_without_remaining_check
+    - asan_heap_buffer_overflow_or_oob_read_in_parser_frame
+  disconfirming_observations:
+    - clamp_to_remaining_buffer_dominates_use
+    - declared_length_compared_to_total_minus_offset
+    - parser_uses_safe_typed_reader_with_built_in_bounds_check
+exploitability_model:
+  factors: [length_field_attacker_controllable, output_target_predictable, post_use_reads_or_writes_observable]
+impact_model:
+  dimensions: [memory_corruption, info_leak, oob_read, oob_write]
+evidence_requirements:
+  minimum_for_validated:
+    - type: regression_witness
+      count: 1
+    - type: symbolized_stack
+      count: 1
+  preferred_for_critical:
+    - type: decompiler_project
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_length_actually_exceeds_remaining_input_in_witness
+    - confirm_no_dominating_clamp_or_remaining_check
+    - confirm_post_advance_or_copy_observably_oob
+linked_skills:
+  primary: [binary_re]
+  supporting: [crash_triage]
+linked_playbooks:
+  primary: [playbook.crash_to_root_cause]

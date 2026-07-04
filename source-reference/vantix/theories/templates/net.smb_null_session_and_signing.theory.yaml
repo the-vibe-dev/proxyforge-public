@@ -1,0 +1,44 @@
+schema_version: theory.system
+id: net.smb_null_session_and_signing
+title: SMB null session, anonymous share access, or unsigned/relayable SMB
+version: 1.0.0
+status: active
+summary: SMB on TCP/445 permits null/anonymous sessions (enumerate users, groups, shares, policies via RPC), exposes anonymously readable shares, or runs without SMB signing required (enabling NTLM relay). Each posture either discloses information or enables follow-on credential relay attacks.
+vuln_class: network_protocol
+subclass: smb_posture
+severity_default: high
+mappings:
+  cwe: [CWE-200, CWE-287]
+  protocol: [smb, ntlm]
+applicability:
+  target_surfaces: [surface.network.smb]
+preconditions:
+  required: [smb_reachable_on_445, anonymous_or_unsigned_posture]
+detection_logic:
+  predicates:
+    - enum4linux_or_rpcclient_null_session_succeeds
+    - smbclient_anonymous_lists_shares
+    - smb_signing_not_required
+  disconfirming_observations:
+    - smb_signing_required_and_enforced
+    - anonymous_logon_disabled_via_lsa_policy
+    - host_only_serves_authenticated_smb_3_with_epa
+exploitability_model:
+  factors: [signing_state, account_lockout, share_acl_quality]
+impact_model:
+  dimensions: [info_disclosure, ntlm_relay_path, ad_recon_uplift]
+evidence_requirements:
+  minimum_for_validated:
+    - type: enum4linux_or_rpcclient_evidence
+      count: 1
+    - type: smb_signing_state_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_anonymous_session_actually_returns_data
+    - verify_signing_state_matches_advertised
+linked_skills:
+  primary: [recon_advisor, ad_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.network_protocol_review]

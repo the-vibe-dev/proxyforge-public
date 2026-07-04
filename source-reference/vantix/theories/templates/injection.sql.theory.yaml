@@ -1,0 +1,39 @@
+schema_version: theory.system
+id: injection.sql
+title: SQL injection or query parser boundary weakness
+version: 1.0.0
+status: active
+summary: User-controlled input may alter database query semantics or timing.
+vuln_class: sql_injection
+subclass: query_parser
+severity_default: critical
+mappings:
+  owasp_top10_2025: [A05]
+  wstg: [WSTG-INPV]
+  cwe: [CWE-89]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [input_parameter_present, scope_authorizes_active_validation]
+detection_logic:
+  predicates: [paired_control_and_variant, database_specific_signal, response_or_timing_delta]
+  disconfirming_observations: [generic_error_handler_only, stable_negative_control, no_reproducible_delta]
+exploitability_model:
+  factors: [attacker_control, sink_power, blind_or_error_based, repeatability]
+impact_model:
+  dimensions: [confidentiality, integrity, data_sensitivity, blast_radius]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_not_generic_error, verify_paired_control, verify_reproducible_signal]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

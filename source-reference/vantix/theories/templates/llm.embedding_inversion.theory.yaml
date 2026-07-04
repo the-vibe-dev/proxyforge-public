@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: llm.embedding_inversion
+title: LLM embedding inversion / membership inference via exposed embedding endpoint
+version: 1.0.0
+status: active
+summary: An embedding endpoint is exposed without rate or scope controls. An attacker can submit candidate texts and recover sensitive training/fine-tuning content via inversion (text reconstruction from embeddings) or membership inference (deciding whether a record was in the training set).
+vuln_class: llm
+subclass: embedding_disclosure
+severity_default: medium
+mappings:
+  cwe: [CWE-200]
+  llm: [owasp.llm.llm06]
+applicability:
+  target_surfaces: [surface.llm.embedding]
+preconditions:
+  required: [embedding_endpoint_reachable_to_attacker, no_strong_rate_or_quota_limits, embedding_space_corresponds_to_sensitive_corpus]
+detection_logic:
+  predicates:
+    - inversion_attack_recovers_recognizable_text
+    - membership_inference_distinguishes_seen_vs_unseen_with_meaningful_lift
+    - embedding_dimensions_or_metadata_disclose_corpus_size
+  disconfirming_observations:
+    - rate_limit_or_quota_caps_query_volume
+    - embedding_quantization_or_noise_blocks_inversion
+    - membership_inference_lift_within_random_baseline
+exploitability_model:
+  factors: [rate_limits, embedding_dimension, training_corpus_sensitivity]
+impact_model:
+  dimensions: [pii_disclosure, ip_disclosure, regulatory_exposure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: query_log_evidence
+      count: 1
+    - type: inversion_or_inference_lift_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_extraction_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_lift_above_random_baseline
+    - verify_recovered_content_corresponds_to_target_corpus
+    - verify_endpoint_actually_open_to_attacker
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

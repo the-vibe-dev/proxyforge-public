@@ -1,0 +1,44 @@
+schema_version: theory.system
+id: api.graphql.depth_and_complexity_dos
+title: GraphQL deeply nested or high-complexity queries cause cost-DoS
+version: 1.0.0
+status: active
+summary: A GraphQL schema exposes recursive or cross-referencing types (friends.friends.friends...) without depth, complexity, or query-cost limits. Attacker submits deeply nested or fan-out queries that trigger N+1 resolution, exhausting database or worker capacity.
+vuln_class: api
+subclass: graphql_dos
+severity_default: medium
+mappings:
+  cwe: [CWE-770, CWE-400]
+  api: [graphql]
+applicability:
+  target_surfaces: [surface.api.graphql]
+preconditions:
+  required: [schema_contains_recursive_or_n_to_many_relationships, no_depth_or_complexity_limit]
+detection_logic:
+  predicates:
+    - small_query_yields_disproportionate_db_calls_or_latency
+    - depth_above_threshold_succeeds
+    - complexity_above_threshold_succeeds
+  disconfirming_observations:
+    - server_enforces_max_depth_below_attack_threshold
+    - cost_analysis_rejects_query
+    - persisted_queries_only
+exploitability_model:
+  factors: [recursion_inventory, cost_analysis, dataloader_state]
+impact_model:
+  dimensions: [availability, cost_amplification]
+evidence_requirements:
+  minimum_for_validated:
+    - type: deep_query_evidence
+      count: 1
+    - type: backend_cost_signal_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_no_compensating_depth_or_complexity_limit
+    - verify_query_actually_executed
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.graphql_attack_surface]

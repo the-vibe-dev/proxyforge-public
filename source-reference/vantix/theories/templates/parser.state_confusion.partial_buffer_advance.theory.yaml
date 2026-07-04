@@ -1,0 +1,51 @@
+schema_version: theory.system
+id: parser.state_confusion.partial_buffer_advance
+title: Parser advances state without consuming the corresponding bytes (or vice versa) on partial input
+version: 1.0.0
+status: active
+summary: An incremental parser maintains both a state machine and a byte-position cursor. On partial / fragmented input, the state transitions but the cursor is not advanced (or the cursor is advanced but the state is not committed). On the next chunk, the parser interprets bytes against the wrong state, treats lengths as types, type tags as data, or re-reads partially consumed records — producing decoded content the underlying input never represented.
+vuln_class: parser_safety
+subclass: state_confusion
+severity_default: high
+mappings:
+  cwe: [CWE-704, CWE-1284]
+applicability:
+  target_surfaces: [surface.binary.native, surface.chromium.network, surface.chromium.media, surface.chromium.blink]
+preconditions:
+  required:
+    - incremental_parser_with_explicit_state_and_cursor
+    - state_or_cursor_can_diverge_on_partial_input
+    - subsequent_chunk_handler_reuses_diverged_state
+detection_logic:
+  predicates:
+    - decompiler_shows_state_transition_without_corresponding_cursor_advance
+    - source_grep_state_assignment_inside_branch_that_skips_consume
+    - tsan_or_asan_finding_with_partial_input_replay
+    - regression_test_replays_chunk_split_and_diverges_from_atomic_replay
+  disconfirming_observations:
+    - parser_uses_atomic_state_cursor_pair_committed_together
+    - chunk_boundary_is_explicit_message_boundary
+    - parser_buffers_until_full_record_before_dispatch
+exploitability_model:
+  factors: [chunk_split_attacker_controllable, post_state_use_reads_typed_field, output_observable_to_attacker]
+impact_model:
+  dimensions: [memory_corruption, type_confusion_followon, info_leak]
+evidence_requirements:
+  minimum_for_validated:
+    - type: regression_witness
+      count: 1
+    - type: symbolized_stack
+      count: 1
+  preferred_for_critical:
+    - type: decompiler_project
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_chunk_split_actually_changes_decoded_output
+    - confirm_no_atomic_commit_dominates_state_and_cursor
+    - confirm_attacker_can_drive_chunk_boundary
+linked_skills:
+  primary: [binary_re]
+  supporting: [crash_triage]
+linked_playbooks:
+  primary: [playbook.crash_to_root_cause]

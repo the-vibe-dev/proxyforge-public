@@ -1,0 +1,39 @@
+schema_version: theory.system
+id: agentic.tool_confused_deputy
+title: Agentic tool boundary confused deputy
+version: 1.0.0
+status: active
+summary: Untrusted instructions or peer outputs may cause an agent to invoke tools with authority the requester should not control.
+vuln_class: agentic_security
+subclass: tool_boundary
+severity_default: high
+mappings:
+  cwe: [CWE-266, CWE-863]
+applicability:
+  target_surfaces: [surface.agentic.tooling]
+preconditions:
+  required: [agent_tool_path_observed, authority_boundary_known]
+detection_logic:
+  predicates: [untrusted_input_reaches_tool_decision, approval_or_scope_gap, tool_action_or_plan_evidence]
+  disconfirming_observations: [approval_blocks_action, tool_args_sanitized, untrusted_content_quoted_only]
+exploitability_model:
+  factors: [tool_privilege, mutation_potential, approval_strength, auditability]
+impact_model:
+  dimensions: [integrity, authorization, audit_bypass]
+evidence_requirements:
+  minimum_for_validated:
+    - type: threat_model_node
+      count: 1
+    - type: validation_result
+      count: 1
+false_positive_filters:
+  required: [verify_instruction_source, verify_tool_authority, verify_scope_or_approval_gap]
+linked_skills:
+  primary: [threat_modeler]
+  supporting: [swarm_orchestrator, poc_validator]
+linked_playbooks:
+  primary: [playbook.agentic_system_security_review]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [agent_tool_governance]

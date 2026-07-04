@@ -1,0 +1,68 @@
+id: access_control_bypass
+name: Access Control Bypass
+version: 1
+summary: 403/401 bypass matrix covering header injection, path encoding, suffix tricks, and method tampering; identifies misconfigured edge proxy plus origin servers
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+- ctf
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- 403-bypass
+- 401-bypass
+- access-control
+- header-injection
+- path-normalization
+- method-tampering
+- proxy-rewrite
+- x-original-url
+- x-forwarded-for
+- nginx-spring-boot
+- admin-panel-exposure
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- httpx
+- byp4xx
+fallback_chain:
+  status_probe: [curl, httpx]
+  bypass_battery: [byp4xx, curl]
+triggers:
+  surface:
+  - status_403
+  - status_401
+  - admin_route
+  - api_internal_route
+  - debug_route
+  - reverse_proxy_present
+  pivot:
+  - bypass_lands_in_privileged_endpoint
+  - bypass_reveals_internal_api_schema
+hypothesis_templates:
+- id: proxy_rewrite_bypass
+  description: The edge proxy enforces ACL on the public URL but rewrites to a backend that trusts X-Original-URL / X-Rewrite-URL.
+- id: path_normalization_divergence
+  description: The proxy and origin normalize path segments differently, allowing dot-segment or encoded-slash bypass.
+- id: method_acl_gap
+  description: ACL is keyed on method (e.g., GET-only) while the origin accepts the same route under POST/PUT/PATCH/TRACE.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+sechive_ids:
+  - sechive.config.path_confusion
+  - sechive.config.admin_interface_enum
+wstg_ids: [WSTG-CONFIG-13, WSTG-CONFIG-05]
+runtime:
+  primitive_module: secops.services.probe_config_audit
+  primitives:
+    - probe_path_confusion
+    - probe_admin_interface_enumeration

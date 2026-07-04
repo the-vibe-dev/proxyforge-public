@@ -1,0 +1,37 @@
+id: authz_matrix_tester
+name: Authorization Matrix Tester
+version: 1
+summary: Systematically test 13 role types × 16 actions × object-ownership × HTTP-method matrix to detect privilege escalation and authorization bypass.
+roles: [researcher, executor]
+modes: [bugbounty, pentest]
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [authz, privilege-escalation, role-based-access, acl-bypass, multi-account-testing]
+requires_scope: true
+required_tools: []
+optional_tools: [browser_screenshot, browser_execute_script, proxy_list_flows, proxy_get_flow]
+triggers:
+  surface: [multi-role-system-identified, rbac-model-suspected, account-separation-required]
+hypothesis_templates:
+  - id: lower_priv_user_admin_action
+    description: User with lower privilege can invoke admin-only action (e.g., read-only user creates billing record)
+  - id: role_bypass_method_override
+    description: DELETE on object allowed only for owner, but POST with same intent succeeds for other roles
+  - id: removed_user_persistent_access
+    description: Removed or suspended member retains access via cached token or state-machine gap
+  - id: cross_org_role_leak
+    description: External collaborator inherits permissions meant only for org members
+  - id: object_owner_change_escalation
+    description: Non-owner can modify object ownership field to gain exclusive access
+  - id: invited_but_unconfirmed_permission_grant
+    description: Invited user gains permissions before email acceptance/verification completes
+forbidden: [destructive, dos, out_of_scope, production_data_mutation]
+runtime:
+  primitive_module: secops.services.active_probe
+  primitives:
+    - probe_authz_matrix_idor
+  extras_module: secops.services.probe_extras
+  extras_primitives:
+    - probe_forged_owner_post

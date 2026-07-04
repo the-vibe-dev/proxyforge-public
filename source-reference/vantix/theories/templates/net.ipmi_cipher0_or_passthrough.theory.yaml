@@ -1,0 +1,40 @@
+schema_version: theory.system
+id: net.ipmi_cipher0_or_passthrough
+title: IPMI 2.0 cipher 0 or RAKP hash exposure on BMC
+version: 1.0.0
+status: active
+summary: A baseboard management controller (BMC) on UDP/623 accepts IPMI 2.0 cipher 0 (no auth, no encryption), or returns RAKP HMAC over the user password to any unauthenticated requester. Either path yields full BMC compromise — power control, KVM, virtual media, host pivot.
+vuln_class: network_protocol
+subclass: ipmi_bmc
+severity_default: critical
+mappings:
+  cwe: [CWE-287, CWE-916]
+  protocol: [ipmi, rakp]
+applicability:
+  target_surfaces: [surface.network.udp]
+preconditions:
+  required: [ipmi_reachable_on_udp_623, cipher_0_enabled_or_rakp_hash_responds]
+detection_logic:
+  predicates:
+    - ipmitool_with_cipher_0_authenticates
+    - rakp_hmac_returned_for_arbitrary_username
+  disconfirming_observations:
+    - cipher_suite_policy_excludes_cipher_0
+    - bmc_isolated_to_management_vlan
+exploitability_model:
+  factors: [cipher_policy, network_segmentation, password_strength]
+impact_model:
+  dimensions: [host_compromise, kvm_takeover, persistence_below_os]
+evidence_requirements:
+  minimum_for_validated:
+    - type: ipmitool_or_rakp_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_bmc_actually_reachable_to_attacker
+    - verify_cipher_or_rakp_response_genuine
+linked_skills:
+  primary: [recon_advisor]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.network_protocol_review]

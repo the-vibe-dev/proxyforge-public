@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: supply_chain.unsigned_artifact_consumption
+title: Consumer pulls release artifacts without verifying signatures or provenance
+version: 1.0.0
+status: active
+summary: A consumer application or deployment pipeline pulls release binaries, container images, or installer scripts without verifying cosign/sigstore signatures or SLSA provenance. Any party who can compromise the publisher's release path (CI token, registry credentials, account takeover) can substitute a malicious artifact undetected.
+vuln_class: supply_chain
+subclass: unsigned_artifact
+severity_default: high
+mappings:
+  cwe: [CWE-345, CWE-494]
+  ecosystem: [oci, github_releases, generic]
+applicability:
+  target_surfaces: [surface.cicd.pipeline, surface.code.dependencies]
+preconditions:
+  required: [artifact_pull_step_present, no_cosign_or_provenance_verification_step]
+detection_logic:
+  predicates:
+    - install_or_deploy_script_pulls_artifact_directly
+    - no_cosign_verify_or_attestation_check
+    - artifact_url_uses_redirectable_or_mutable_tag
+  disconfirming_observations:
+    - cosign_verify_with_pinned_identity_in_pipeline
+    - slsa_provenance_attestation_validated
+    - immutable_digest_pinned_in_lockfile
+exploitability_model:
+  factors: [publisher_account_security, registry_immutability, network_path]
+impact_model:
+  dimensions: [downstream_compromise, build_poisoning, runtime_compromise]
+evidence_requirements:
+  minimum_for_validated:
+    - type: pull_step_evidence
+      count: 1
+    - type: missing_verification_evidence
+      count: 1
+  preferred_for_critical:
+    - type: cosign_verify_failure_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_no_other_step_validates_signature
+    - verify_artifact_actually_consumed_at_runtime
+    - verify_publisher_actually_signs_releases
+linked_skills:
+  primary: [cicd_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

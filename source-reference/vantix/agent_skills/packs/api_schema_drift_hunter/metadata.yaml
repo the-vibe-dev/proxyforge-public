@@ -1,0 +1,61 @@
+id: api_schema_drift_hunter
+name: API Schema Drift Hunter
+version: 1
+summary: Documented vs. observed API surface discrepancy. OpenAPI/GraphQL schema gaps, undocumented endpoints, method/parameter mismatch, overposting candidates, deprecated endpoint candidates from multiple sources.
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: low
+opsec: quiet
+tags:
+- api-schema
+- openapi
+- graphql
+- protobuf-drift
+- undocumented-endpoints
+- parameter-mismatch
+- overposting
+- deprecated-candidates
+- api-reconnaissance
+- surface-expansion
+requires_scope: true
+required_tools: []
+optional_tools:
+- curl
+- jq
+- graphql-voyager
+- semgrep
+triggers:
+  surface:
+  - openapi_spec_url
+  - graphql_endpoint
+  - protobuf_schema_url
+  - api_documentation
+  - frontend_bundle
+  - mobile_app_binary
+  pivot:
+  - schema_drift_to_hidden_endpoint_discovery
+  - overposting_to_privilege_escalation
+hypothesis_templates:
+- id: documented_but_unlinked_endpoint
+  description: Endpoint exists in OpenAPI spec but is not linked from any public API documentation - attacker finds endpoint via spec, calls it without public awareness.
+- id: undocumented_live_endpoint
+  description: Endpoint not in OpenAPI spec but lives in production - attacker discovers via traffic analysis or fuzzing, exploits undocumented behavior.
+- id: method_parameter_mismatch
+  description: OpenAPI spec says endpoint accepts GET only, but production accepts POST with additional parameters - attacker uses undocumented method/params for privilege escalation or data leak.
+- id: overposting_candidate_from_schema
+  description: Schema defines fields that client interface does not expose - attacker sends request with overposting-eligible fields to modify system state.
+- id: deprecated_endpoint_still_live
+  description: Endpoint marked as deprecated in schema but still processed in production - attacker uses deprecated endpoint to bypass validation or access legacy functionality.
+- id: schema_version_confusion
+  description: Multiple API versions documented but client uses old schema - attacker exploits version mismatch to call new endpoint with old client constraints.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- unauthorized_access_beyond_poc

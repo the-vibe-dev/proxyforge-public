@@ -1,0 +1,57 @@
+schema_version: theory.system
+id: code.taint.untrusted_to_sink
+title: Untrusted source reaches a security-sensitive sink without sanitization
+version: 1.0.0
+status: active
+summary: A statically observable data-flow path connects user-controlled input to a sensitive sink (exec, query, deserializer, file path, template, response writer) without an effective sanitizer on every path.
+vuln_class: taint_flow
+subclass: source_to_sink
+severity_default: high
+mappings:
+  owasp_top10_2025: [A03]
+  cwe: [CWE-20, CWE-74, CWE-77, CWE-89, CWE-94, CWE-78, CWE-22, CWE-502, CWE-918]
+applicability:
+  target_surfaces: [surface.source.code]
+  required_inputs: [source_tree_or_archive]
+preconditions:
+  required: [source_disclosure_authorized, scope_includes_owning_party]
+detection_logic:
+  predicates:
+    - identified_taint_source
+    - reached_sensitive_sink_in_same_call_graph
+    - no_effective_sanitizer_on_at_least_one_path
+  disconfirming_observations:
+    - sanitizer_on_every_path
+    - sink_reached_only_from_constant_input
+    - dead_code_branch_only
+exploitability_model:
+  factors: [attacker_control_of_source, sink_power, framework_default_protections, runtime_corroboration]
+impact_model:
+  dimensions: [confidentiality, integrity, availability, blast_radius_if_exploited]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: sink_location
+      count: 1
+    - type: data_flow_path
+      count: 1
+    - type: sanitizer_review
+      count: 1
+  preferred_for_critical:
+    - type: runtime_corroboration
+      count: 1
+false_positive_filters:
+  required:
+    - verify_source_actually_attacker_controlled
+    - verify_sink_executable_in_production_config
+    - verify_no_global_filter_or_middleware_blocks_path
+    - verify_path_not_only_in_test_or_example_code
+linked_skills:
+  primary: [source_reviewer]
+  supporting: [poc_validator, threat_modeler]
+linked_playbooks:
+  primary: [playbook.source_audit_loop]
+  supporting: [playbook.proof_pack_completion]
+promotion_rules:
+  finding_allowed_when: [data_flow_documented, false_positive_filters_passed, reachability_argument_recorded]

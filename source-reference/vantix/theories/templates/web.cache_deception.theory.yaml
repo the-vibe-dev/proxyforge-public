@@ -1,0 +1,46 @@
+schema_version: theory.system
+id: web.cache_deception
+title: Web cache deception via path-confusion suffix
+version: 1.0.0
+status: active
+summary: The cache layer caches based on file extension (.css, .js, .png) while the application router strips or ignores the extension. An attacker tricks a victim into requesting an authenticated path with a static-looking suffix; the cache stores the personalized response and serves it to subsequent unauthenticated requests.
+vuln_class: web
+subclass: cache_deception
+severity_default: high
+mappings:
+  cwe: [CWE-345, CWE-200]
+  web: [cdn, http_cache]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [cache_keys_or_cache_decision_uses_extension, app_router_ignores_or_strips_extension, authenticated_response_contains_sensitive_data]
+detection_logic:
+  predicates:
+    - request_to_authenticated_path_with_static_suffix_returns_personalized_body
+    - same_path_anonymous_returns_cached_personalized_body
+  disconfirming_observations:
+    - cache_layer_excludes_paths_with_set_cookie_or_authorization
+    - app_router_returns_404_for_extension_suffix
+    - cache_decision_excludes_authenticated_responses
+exploitability_model:
+  factors: [cache_decision_logic, app_router_behavior, victim_clickability]
+impact_model:
+  dimensions: [account_data_disclosure, csrf_token_theft, session_disclosure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: authenticated_request_evidence
+      count: 1
+    - type: anonymous_observe_evidence
+      count: 1
+    - type: cache_hit_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_actually_cached_after_authenticated_fetch
+    - verify_anonymous_request_observes_personalized_data
+    - verify_no_compensating_cache_control_directive
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: supply_chain.gh_actions_pwn_request
+title: GitHub Actions pwn_request — pull_request_target with PR-HEAD checkout grants write GITHUB_TOKEN to fork code
+version: 1.0.0
+status: active
+summary: A workflow triggered by `pull_request_target` (or `workflow_run` chained to a fork-PR) checks out and executes code from the pull-request HEAD. Because `pull_request_target` runs in the base-repo context, GITHUB_TOKEN has write scope and repository secrets are exposed to attacker-controlled code.
+vuln_class: supply_chain
+subclass: gha_pwn_request
+severity_default: critical
+mappings:
+  cwe: [CWE-269, CWE-829]
+  ecosystem: [github_actions]
+applicability:
+  target_surfaces: [surface.cicd.gha]
+preconditions:
+  required: [workflow_uses_pull_request_target_or_workflow_run_chain, workflow_checks_out_pr_head_ref, fork_pr_can_modify_executable_paths]
+detection_logic:
+  predicates:
+    - actionlint_or_static_review_flags_pull_request_target_with_pr_head_checkout
+    - workflow_runs_build_or_test_steps_against_pr_head
+    - secrets_or_write_token_scoped_to_workflow
+  disconfirming_observations:
+    - workflow_gates_on_repository_owner_or_label
+    - permissions_set_to_read_only_at_workflow_or_job_level
+    - environment_protection_rule_with_required_reviewers
+exploitability_model:
+  factors: [token_permissions, secret_scope, branch_protection_rules]
+impact_model:
+  dimensions: [repo_takeover, secret_exfil, downstream_artifact_poisoning]
+evidence_requirements:
+  minimum_for_validated:
+    - type: workflow_path_and_lines
+      count: 1
+    - type: trigger_and_checkout_pattern
+      count: 1
+    - type: token_or_secret_scope_evidence
+      count: 1
+  preferred_for_critical:
+    - type: test_repo_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_actually_pull_request_target_not_pull_request
+    - verify_pr_head_actually_checked_out
+    - verify_no_owner_or_label_gate
+linked_skills:
+  primary: [cicd_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.cicd_pipeline_attack_paths]

@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: web.dom_clobbering
+title: DOM clobbering via name/id-injected HTML overwriting JavaScript globals
+version: 1.0.0
+status: active
+summary: A page accepts user-influenced HTML (with sanitization that allows certain tags + name/id attributes) and references DOM elements by name/id from JavaScript without scope guards. Attacker-injected `<a id="config">`, `<form name="document">`, or similar collides with `window.config` / `document.X`, replacing object references with HTMLElement instances.
+vuln_class: web
+subclass: dom_clobbering
+severity_default: high
+mappings:
+  cwe: [CWE-79]
+  web: [dom, javascript]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [user_html_with_name_or_id_attributes_rendered, javascript_reads_global_or_document_property_without_check]
+detection_logic:
+  predicates:
+    - injected_id_overrides_window_or_document_property
+    - resulting_property_value_used_in_a_sink
+    - sanitizer_allows_id_or_name_on_target_tag
+  disconfirming_observations:
+    - sanitizer_strips_id_and_name_attributes
+    - script_uses_local_or_module_scoped_references
+    - csp_blocks_resulting_sink
+exploitability_model:
+  factors: [sanitizer_allowlist, sink_inventory, csp_state]
+impact_model:
+  dimensions: [client_xss, config_override, csrf_token_replacement]
+evidence_requirements:
+  minimum_for_validated:
+    - type: injected_html_evidence
+      count: 1
+    - type: clobbered_property_evidence
+      count: 1
+    - type: sink_trace
+      count: 1
+false_positive_filters:
+  required:
+    - verify_property_actually_clobbered
+    - verify_sanitizer_passes_required_attributes
+    - verify_sink_consumes_clobbered_value
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]
+references:
+  learning_sources: [corpus.bb.client_side_injection]

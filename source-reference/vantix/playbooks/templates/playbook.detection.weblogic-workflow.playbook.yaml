@@ -1,0 +1,91 @@
+agents:
+  executor:
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+    handoff_artifacts:
+    - http_exchange
+    - detector_result
+    - evidence_refs
+    responsibilities:
+    - run_detector
+    - capture_http_exchange
+    - record_evidence_refs
+    role: executor
+  orchestrator:
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+    handoff_artifacts:
+    - run_plan
+    - scope_ref
+    - detector_queue
+    responsibilities:
+    - sequence_detection_steps
+    - maintain_scope_state
+    - coordinate_handoffs
+    - gate_on_evidence
+    role: planner
+global_limits:
+  max_branches: 8
+  max_retries_per_step: 1
+  max_steps: 3
+id: playbook.detection.weblogic-workflow
+modes:
+  allowed:
+  - bugbounty
+  - pentest
+  - ctf
+  requires_scope: true
+name: WebLogic Security Checks
+objectives:
+  primary:
+  - run_detection_chain
+  secondary:
+  - validate_hits
+owner:
+  team: sechive-core
+required_skills:
+  primary:
+  - detection_library
+  supporting:
+  - scope_guard
+schema_version: playbook.system
+status: active
+steps:
+- action_type: policy_check
+  agent: orchestrator
+  evidence_gate:
+    blocked_when:
+    - target_out_of_scope
+    id: gate.scope
+    required:
+    - count: 1
+      type: scope_record
+  id: scope.preflight
+  skill_ref: scope_guard
+  title: Confirm authorization and target scope
+- action_type: run_detector
+  agent: executor
+  evidence_gate:
+    id: gate.detect.001
+    required:
+    - count: 1
+      type: http_exchange
+  id: detect.001
+  inputs_from:
+  - scope.preflight
+  skill_ref: detection_library
+  skill_selection:
+    detector_id: vdt.http.weblogic-detect
+  title: Run detector vdt.http.weblogic-detect
+summary: A simple workflow that runs all WebLogic related detection-corpus on a given target.
+target_requirements:
+  surfaces:
+    any:
+    - surface.web.http
+version: 1.0.0

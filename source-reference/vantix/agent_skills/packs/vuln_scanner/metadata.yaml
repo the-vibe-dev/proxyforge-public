@@ -1,0 +1,93 @@
+id: vuln_scanner
+name: Vulnerability Scanner
+version: 1
+summary: safe vulnerability scan planning and output triage
+roles:
+- researcher
+- executor
+modes:
+- pentest
+- bugbounty
+- ctf
+- koth
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- vuln
+- scanner
+- detection-engine
+- wordpress
+- backup-exposure
+- cve-intel
+- plugin-version
+- live-intel
+- evidence-triggered-search
+- adaptive-revisit
+- scanner-safety
+- transport-review
+- enterprise-protocol
+requires_scope: true
+triggers:
+  intel_seeds:
+  - service_version
+  - product_version
+  - framework_version
+  - dependency_manifest
+  - package_lock
+  - plugin_version
+  - route_namespace
+  - error_banner
+  - stack_trace
+  - source_map
+  - debug_route
+  - config_endpoint
+  - exposed_log
+  - graphql_error
+  - websocket_handshake
+  - changelog
+  - readme
+  module_safety:
+  - passive_inventory
+  - safe_probe
+  - active_validation
+  - brute_force
+  - destructive
+  transport:
+  - tls
+  - certificate
+  - cipher
+  - protocol
+  - hsts
+  enterprise_protocol:
+  - protocol_banner
+  - router_string
+  - version_fingerprint
+  - admin_command
+  - brute_force
+  cms_plugin:
+  - wordpress
+  - wp-content
+  - plugin
+  - backup
+  - migration
+  - readme
+  - changelog
+  - version
+  - cve
+mode_gates:
+  proof:
+    live_on_miss: true
+    requery_on_new_version: true
+    continuation_closure_required: true
+hypothesis_templates:
+- id: version_to_entrypoint
+  description: Pair observed version evidence with reachable entrypoint and enabling configuration before validation.
+- id: disclosure_to_route_or_secret
+  description: Classify disclosed logs, source maps, config, and stack traces into route, version, secret, token, host, or workflow evidence before chaining.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

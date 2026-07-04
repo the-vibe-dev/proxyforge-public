@@ -1,0 +1,57 @@
+schema_version: theory.system
+id: ssrf.server_side_fetch
+title: Server-side URL fetch boundary weakness
+version: 1.0.0
+status: active
+summary: >-
+  User-controlled URL input — OR an absolute-URI request line
+  (`GET http://host/ HTTP/1.1` with a real Host header) that a server/proxy
+  treats as a forward instruction — may cause a server-side fetch across an
+  unintended boundary. If the full request (including non-GET methods) is
+  forwarded, this is a bidirectional internal HTTP proxy, not a read-only
+  GET. Impact ceiling is set by the quality of the internal hostname list
+  driven through it: target-specific historical hostnames (certificate
+  transparency, JS bundles, API/redirect/error responses, passive/historical
+  DNS) that now return NXDOMAIN publicly but may still resolve internally —
+  not generic wordlists or raw RFC1918 IP scans.
+vuln_class: ssrf
+subclass: server_side_fetch
+severity_default: high
+mappings:
+  owasp_top10_2025: [A05, A10]
+  wstg: [WSTG-INPV]
+  cwe: [CWE-918]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [url_or_fetch_parameter_present, scope_authorizes_active_validation]
+detection_logic:
+  predicates: [server_side_fetch_confirmed, attacker_controlled_url, boundary_or_oracle_observed]
+  alt_primitives:
+    - absolute_uri_request_line_forwarded   # GET http://host/ HTTP/1.1 + Host header
+    - full_request_method_forwarded         # POST/PUT/PATCH/DELETE reach the internal target, not just GET
+  disconfirming_observations: [client_side_fetch_only, url_preview_without_server_request, blocked_by_allowlist]
+exploitability_model:
+  factors: [egress_reachability, internal_boundary, response_oracle, repeatability, internal_hostname_intel_quality]
+  impact_lever: >-
+    enumerate via target-specific HISTORICAL hostnames (CT logs, JS bundles,
+    API/redirect/error bodies, passive/historical DNS) that are publicly
+    NXDOMAIN but may resolve internally — 'dead outside, live inside'. Generic
+    wordlists / RFC1918 IP scans set a low ceiling.
+impact_model:
+  dimensions: [confidentiality, internal_service_access, cloud_metadata, business_action]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_server_side_fetch, verify_attacker_url_control, verify_not_client_side_only]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [cloud_security, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

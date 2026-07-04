@@ -1,0 +1,73 @@
+id: asset_graph_builder
+name: Asset Graph Builder
+version: 1
+summary: Scope normalization, asset enumeration, and graphing - walks domain → subdomain → IP → ASN → URL → API → JS → mobile → repo → historical surfaces with per-asset confidence scoring and scope validation
+roles:
+- researcher
+- recon
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- scope-normalization
+- asset-enumeration
+- domain-walk
+- subdomain-discovery
+- ip-resolution
+- asn-classification
+- url-crawling
+- api-extraction
+- js-bundling
+- mobile-discovery
+- repo-enumeration
+- historical-urls
+- login-surface
+- asset-confidence-scoring
+- scope-validation
+- out-of-bounds-detection
+requires_scope: true
+required_tools: []
+optional_tools:
+- subfinder
+- amass
+- httpx
+- detection-engine
+fallback_chain:
+  subdomain_enum: [subfinder, amass]
+  url_crawl: [httpx, curl]
+  api_extraction: [manual_inspection]
+triggers:
+  surface:
+  - program_scope_definition
+  - root_domain_identified
+  - subdomain_list_available
+  - new_api_endpoint_discovered
+  - js_bundle_analyzed
+  - mobile_app_package_found
+  - public_repo_enumerated
+  - historical_url_discovered
+  pivot:
+  - asset_to_confidence_score_to_prioritized_hunt
+  - asset_to_scope_classification_to_include_exclude
+hypothesis_templates:
+- id: passive_subdomain_enum
+  description: Passive subdomain enumeration via certificate transparency, DNS history, and public datasets reveals additional targets not listed in explicit scope.
+- id: ip_to_asn_classification
+  description: Resolved IPs map to ASN and cloud provider; targets on shared infrastructure (CDN, shared hosting) may be out-of-scope per program exclusions.
+- id: url_crawl_api_discovery
+  description: Crawling discovered domains yields additional API endpoints, admin surfaces, and internal staging URLs with varying scope applicability.
+- id: js_extraction_endpoint_surface
+  description: Client-side JavaScript bundles contain hardcoded API endpoints, event domains, analytics services, and third-party vendor integrations requiring scope confirmation.
+- id: historical_url_revival
+  description: Wayback/Commoncrawl captures reveal retired endpoints, older API versions, and legacy login surfaces that may still be live and in scope.
+- id: repo_to_secrets_and_endpoints
+  description: Public organization repositories expose internal endpoint paths, API keys in code, and deployment targets expanding the attack surface.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- third_party_recon

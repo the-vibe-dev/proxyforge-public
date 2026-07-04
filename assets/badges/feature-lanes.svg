@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="199" height="28" role="img" aria-label="feature lanes: 35">
+  <title>feature lanes: 35</title>
+  <linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient>
+  <clipPath id="r"><rect width="199" height="28" rx="4" fill="#fff"/></clipPath>
+  <g clip-path="url(#r)">
+    <rect width="141" height="28" fill="#1A1D21"/>
+    <rect x="141" width="58" height="28" fill="#FF6A00"/>
+    <rect width="199" height="28" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="10" font-weight="700">
+    <text x="70.5" y="18" fill="#010101" fill-opacity=".25">FEATURE LANES</text>
+    <text x="70.5" y="17">FEATURE LANES</text>
+    <text x="170.0" y="18" fill="#010101" fill-opacity=".25">35</text>
+    <text x="170.0" y="17">35</text>
+  </g>
+</svg>

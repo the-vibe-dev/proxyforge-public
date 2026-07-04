@@ -1,0 +1,69 @@
+schema_version: theory.system
+id: injection.sql.blind_oracle
+title: Blind SQL injection oracle with bounded proof escalation
+version: 1.0.0
+status: active
+summary: >-
+  User-controlled input reaches a SQL query and creates an observable boolean,
+  error, response-size, or timing oracle even when direct output is absent. The
+  proof path should infer the minimal query shape and produce objective-specific
+  evidence without broad extraction. When the injectable input is a login or
+  credential field, the objective is an authenticated session via SQL auth
+  bypass (single-query tautology/comment closure, two-stage fetch-then-compare
+  forged-row UNION with a known-hash injection, or boolean reconstruction then
+  forge/replay) — extracting a password hash and routing it to offline cracking
+  is a parallel last-resort branch, not the proof path, and most login SQLi is
+  unsolvable by cracking by design.
+vuln_class: web
+subclass: blind_sql_injection
+severity_default: high
+mappings:
+  cwe: [CWE-89]
+  owasp: [A03:2021-Injection]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.http]
+preconditions:
+  required: [input_reaches_sql_query, stable_observable_response_class]
+detection_logic:
+  predicates:
+    - true_false_predicate_changes_response_class
+    - sql_syntax_or_projection_error_differs_from_baseline
+    - bounded_timing_probe_repeats_above_noise_floor
+    - injectable_input_is_login_or_credential_field
+  objective_selectors:
+    - when: injectable_input_is_login_or_credential_field
+      objective: auth_bypass
+      preferred_playbook_step: auth.bypass
+  disconfirming_observations:
+    - response_delta_caused_by_validation_not_query
+    - timing_signal_not_repeatable
+    - parameterized_query_or_strict_type_binding_confirmed
+exploitability_model:
+  factors: [oracle_stability, query_shape_confidence, output_channel, auth_state, objective_linkage]
+impact_model:
+  dimensions: [auth_bypass, data_exposure, object_access, proof_marker_recovery]
+  primary_objective_when_login_surface: auth_bypass
+evidence_requirements:
+  minimum_for_validated:
+    - type: sql_oracle_matrix
+      count: 1
+    - type: response_delta_or_oracle_evidence
+      count: 1
+  preferred_for_high:
+    - type: data_minimizing_sql_proof
+      count: 1
+  preferred_for_auth_bypass:
+    - type: authenticated_session_evidence
+      count: 1
+    - type: auth_or_object_state_delta
+      count: 1
+false_positive_filters:
+  required:
+    - compare_baseline_true_false_and_broken_syntax
+    - repeat_noisy_timing_once_before_promotion
+    - avoid_full_extraction_when_redacted_proof_suffices
+linked_skills:
+  primary: [web_hunter]
+  supporting: [payload_crafter, poc_validator, exploit_chainer]
+linked_playbooks:
+  primary: [playbook.web_blind_sql_oracle_escalation]

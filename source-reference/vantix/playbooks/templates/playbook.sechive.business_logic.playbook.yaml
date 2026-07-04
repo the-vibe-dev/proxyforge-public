@@ -1,0 +1,81 @@
+schema_version: playbook.system
+id: playbook.sechive.business_logic
+name: SecHive Business Logic Matrix (WSTG 4.10)
+version: 1.0.0
+status: active
+summary: "Negative numeric tamper, forged-owner POST, CSV formula injection, continue-code apply, coupon brute, change-password-no-current, admin delete feedback."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.logic.data_validation
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_negative_numeric_tamper
+    sechive_id: sechive.logic.data_validation
+    wstg_id: WSTG-LOGIC-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.logic.forge_requests
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_forged_owner_post
+    sechive_id: sechive.logic.forge_requests
+    wstg_id: WSTG-LOGIC-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.input.csv_injection
+    primitive_module: secops.services.probe_input_validation
+    primitive_function: probe_csv_injection
+    sechive_id: sechive.input.csv_injection
+    wstg_id: WSTG-INPUT-21
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.logic.function_use_limits
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_continue_code_apply
+    sechive_id: sechive.logic.function_use_limits
+    wstg_id: WSTG-LOGIC-05
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.logic.payment_functionality
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_coupon_brute
+    sechive_id: sechive.logic.payment_functionality
+    wstg_id: WSTG-LOGIC-10
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.logic.misuse_defenses
+    primitive_module: secops.services.probe_extras
+    primitive_function: probe_change_password_no_current
+    sechive_id: sechive.logic.misuse_defenses
+    wstg_id: WSTG-LOGIC-07
+    evidence_emit: { kind: sechive_test_result }

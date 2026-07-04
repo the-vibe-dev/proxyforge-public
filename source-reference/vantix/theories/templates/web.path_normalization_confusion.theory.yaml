@@ -1,0 +1,38 @@
+schema_version: theory.system
+id: web.path_normalization_confusion
+title: Path normalization confusion across routing layers
+version: 1.0.0
+status: active
+summary: Proxy, server, framework, helper, or static-file layers may normalize paths differently and expose unintended routes or files.
+vuln_class: web_routing
+subclass: path_normalization
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A05]
+  cwe: [CWE-22, CWE-706]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [route_or_file_handler_evidence, scoped_target]
+detection_logic:
+  predicates: [baseline_resource_known, normalization_variant_changes_route_or_file, response_delta_preserved]
+  disconfirming_observations: [same_backend_response, blocked_before_app, no_resource_boundary]
+exploitability_model:
+  factors: [layer_mismatch, protected_resource_reachability, read_or_route_impact]
+impact_model:
+  dimensions: [authorization_bypass, file_disclosure, route_confusion]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+false_positive_filters:
+  required: [verify_same_origin_scope, verify_not_client_normalization_only, avoid_sensitive_reads_without_permission]
+linked_skills:
+  primary: [web_hunter]
+  supporting: [payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_route_family_coverage]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [normalization_delta, routing_layer_boundary]

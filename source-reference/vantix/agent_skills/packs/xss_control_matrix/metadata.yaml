@@ -1,0 +1,65 @@
+id: xss_control_matrix
+name: XSS Compensating-Control Matrix and Impact Planner
+version: 1
+summary: After a client-side injection executes, decide whether it reaches real impact by mapping the compensating-control matrix (CSP, CORS+preflight, CSRF posture, cookie flags, WAF, output-encoding context, virtual-DOM render, cache) and planning delivery + impact before deep payload work. Refuses self-XSS and alert-only findings.
+roles:
+- researcher
+- evaluator
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- xss-compensating-controls
+- csp-analysis
+- cors-preflight-reality
+- cookie-flags
+- csrf-posture
+- waf-as-only-layer
+- output-encoding-context
+- virtual-dom-render
+- cache-poison-multiplier
+- impact-first
+- delivery-planning
+- anti-self-xss
+- execution-delivery-impact
+- session-hijack
+- forced-action
+requires_scope: true
+required_tools:
+- curl
+optional_tools: []
+fallback_chain:
+  control_probe: [curl]
+triggers:
+  surface:
+  - client_injection_candidate_present
+  - reflected_or_stored_or_dom_value
+  - spa_application
+  pivot:
+  - injection_to_session_hijack
+  - injection_to_forced_action
+  - injection_to_ato_endpoint
+hypothesis_templates:
+- id: permissive_or_absent_csp
+  description: CSP missing or allows inline/eval and unrestricted connect-src, so an executed payload can both run and exfiltrate.
+- id: js_readable_session_cookie
+  description: Session cookie lacks HttpOnly, so an executed payload can read and (CSP permitting) exfiltrate the token.
+- id: cors_reflected_origin_with_credentials
+  description: Endpoint reflects Origin and allows credentials, so injected JS on a viable domain reads a sensitive cross-origin response.
+- id: csrf_absent_or_js_readable
+  description: State-changing endpoint has no CSRF token or a JS-readable one, so an executed payload can force the action.
+- id: waf_is_only_layer
+  description: A WAF blocks naive payloads but no output encoding/CSP exists, so the finding is one bypass away from impact (do not bypass without authorization).
+- id: cache_poison_multiplier
+  description: Reflected injection on a cacheable response turns a single payload into a stored-impact multiplier (document only; do not poison without authorization).
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- persistence
+- waf_bypass_research_without_authorization
+- real_user_data_exfiltration

@@ -1,0 +1,182 @@
+{
+  "patterns": [
+    {
+      "id": "react-router",
+      "name": "React Router",
+      "version": "v5/v6",
+      "signals": [
+        "__reactFiber",
+        "window.__REACT_DEVTOOLS_GLOBAL_HOOK__",
+        "data-reactroot",
+        "/react-router"
+      ],
+      "routeAttributes": ["to", "href"],
+      "clickTargets": ["a[to]", "a[href^='/']", "button[type='button']", "[role='link']", "[role='button']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__REACT_ROUTER_HISTORY__?.entries"
+    },
+    {
+      "id": "react-router-hash",
+      "name": "React Router (Hash)",
+      "version": "v5/v6",
+      "signals": ["#/", "hashbang"],
+      "clickTargets": ["a[href^='#/']", "[role='link']"],
+      "historyApi": "hashchange",
+      "hashRouting": true,
+      "routeExtractorHint": null
+    },
+    {
+      "id": "vue-router",
+      "name": "Vue Router",
+      "version": "v3/v4",
+      "signals": [
+        "window.__vue_router__",
+        "__VUE__",
+        "__VUE_HMR_RUNTIME__",
+        "router-view",
+        "router-link"
+      ],
+      "routeAttributes": ["to"],
+      "clickTargets": ["router-link", "a[href^='/']", "[role='link']", "[role='button']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__vue_router__?.getRoutes()"
+    },
+    {
+      "id": "vue-router-hash",
+      "name": "Vue Router (Hash mode)",
+      "version": "v3/v4",
+      "signals": ["vue-router", "mode: 'hash'"],
+      "clickTargets": ["a[href^='#']", "[role='link']"],
+      "historyApi": "hashchange",
+      "hashRouting": true,
+      "routeExtractorHint": null
+    },
+    {
+      "id": "next-js",
+      "name": "Next.js",
+      "version": "12/13/14/15",
+      "signals": [
+        "__NEXT_DATA__",
+        "next/router",
+        "__next",
+        "_nextjs_",
+        "window.__NEXT_LOADED_PAGES__"
+      ],
+      "routeAttributes": ["href"],
+      "clickTargets": ["a[href^='/']", "a[href^='/_next']", "[role='link']", "button"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__NEXT_DATA__?.page"
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "version": "14/15/16/17/18",
+      "signals": [
+        "window.ng",
+        "__ngContext__",
+        "ng-version",
+        "angular.json",
+        "zone.js"
+      ],
+      "routeAttributes": ["routerLink"],
+      "clickTargets": ["[routerLink]", "a[href^='/']", "button[type='button']", "[role='link']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "ng.getComponent(document.querySelector('router-outlet'))?.router?.config"
+    },
+    {
+      "id": "svelte-kit",
+      "name": "SvelteKit",
+      "version": "1.x/2.x",
+      "signals": [
+        "__sveltekit_",
+        "window.__sveltekit_base",
+        "svelte-announcer"
+      ],
+      "routeAttributes": ["href"],
+      "clickTargets": ["a[href^='/']", "a[data-sveltekit-preload-data]", "[role='link']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__sveltekit_base"
+    },
+    {
+      "id": "astro",
+      "name": "Astro",
+      "version": "3.x/4.x",
+      "signals": [
+        "astro:page-load",
+        "window.Astro",
+        "__astro_",
+        "data-astro-"
+      ],
+      "routeAttributes": ["href"],
+      "clickTargets": ["a[href^='/']", "[role='link']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": null
+    },
+    {
+      "id": "nuxt",
+      "name": "Nuxt",
+      "version": "3.x",
+      "signals": [
+        "window.__nuxt",
+        "__NUXT__",
+        "__nuxt_",
+        "nuxt-link"
+      ],
+      "routeAttributes": ["to", "href"],
+      "clickTargets": ["nuxt-link", "a[href^='/']", "[role='link']"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__nuxt?.options?.router?.routes"
+    },
+    {
+      "id": "remix",
+      "name": "Remix",
+      "version": "1.x/2.x",
+      "signals": [
+        "window.__remixContext",
+        "RemixBrowser",
+        "remix-utils"
+      ],
+      "routeAttributes": ["to", "href"],
+      "clickTargets": ["a[href^='/']", "[role='link']", "Form[action]"],
+      "historyApi": "pushState",
+      "hashRouting": false,
+      "routeExtractorHint": "window.__remixContext?.routeModules"
+    }
+  ],
+  "eventHandlerSelectors": [
+    "button",
+    "button[type='button']",
+    "button[type='submit']",
+    "[role='button']",
+    "[role='link']",
+    "[onclick]",
+    "[data-action]",
+    "[data-href]",
+    "[data-url]",
+    "input[type='submit']",
+    "a[href]",
+    "form"
+  ],
+  "navigationEventTypes": [
+    "click",
+    "submit",
+    "keydown",
+    "hashchange",
+    "popstate"
+  ],
+  "excludePatterns": [
+    "javascript:void",
+    "mailto:",
+    "tel:",
+    "data:",
+    "#",
+    "javascript:;"
+  ]
+}

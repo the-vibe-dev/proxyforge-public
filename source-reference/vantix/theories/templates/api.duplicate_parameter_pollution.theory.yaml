@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: api.duplicate_parameter_pollution
+title: Duplicate parameter parser ambiguity
+version: 1.0.0
+status: active
+summary: APIs may validate one occurrence of a duplicated parameter or key while a later parser, ORM, or business action consumes another occurrence.
+vuln_class: api
+subclass: duplicate_parameter_pollution
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A03, A04]
+  wstg: [WSTG-INPV, WSTG-ATHZ]
+  cwe: [CWE-20, CWE-235, CWE-444]
+applicability:
+  target_surfaces: [surface.api.rest, surface.web.http]
+  required_observations: [api_parameter_or_json_body]
+preconditions:
+  required: [scope_authorizes_active_validation, baseline_request_captured]
+  blockers: [state_change_unbounded, missing_readback]
+detection_logic:
+  predicates:
+    - duplicate_parameter_request_preserved
+    - validator_and_action_show_different_value_precedence
+    - state_or_response_delta_matches_action_value
+  disconfirming_observations:
+    - duplicate_parameters_rejected
+    - same_value_precedence_across_validation_and_action
+    - no_security_invariant_involved
+exploitability_model:
+  factors: [parser_stack_count, affected_field_power, readback_available, auth_state]
+impact_model:
+  dimensions: [authorization_bypass, object_integrity, workflow_integrity, data_modification]
+evidence_requirements:
+  minimum_for_validated:
+    - type: replay_spec
+      count: 1
+    - type: http_exchange
+      count: 2
+false_positive_filters:
+  required: [verify_raw_request_bytes, verify_security_relevant_field, verify_persistent_or_authorization_delta]
+linked_skills:
+  primary: [api_security]
+  supporting: [web_hunter, payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [http_parameter_pollution, duplicate_json_key, parser_precedence]

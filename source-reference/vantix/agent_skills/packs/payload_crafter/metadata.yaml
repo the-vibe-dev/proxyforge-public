@@ -1,0 +1,79 @@
+id: payload_crafter
+name: Payload Crafter
+version: 1
+summary: Locked advisory skill for safe non-destructive PoC payload design in explicitly authorized contexts.
+roles:
+- researcher
+- developer
+modes:
+- pentest
+- bugbounty
+- ctf
+execution_level: advisory
+safety_level: locked
+risk_tier: safe
+opsec: quiet
+tags:
+- payload
+- validation
+- detection
+- evidence-guided-mutation
+- proof-mode
+requires_scope: true
+disabled_by_default: true
+requires_operator_approval: true
+triggers:
+  mutation_families:
+  - blocked_character
+  - parser_error
+  - no_visible_output
+  - timing_delta
+  - body_length_delta
+  - filter_bypass_needed
+  - xss_context
+  - verifier_oracle
+  - sanitizer_grammar
+  - whitespace_collapse
+  - allowed_tag_discovery
+  - delimiter_transform
+  - dom_sink
+  - url_fetch
+  - upload_parser
+  - json_type_confusion
+  - no_sql_operator_shape
+  - sql_boolean_oracle
+  - sql_query_shape
+  - sql_projection_width
+  - sql_comment_style
+  - redirect_allowlist
+  - path_normalization
+mode_gates:
+  proof:
+    allow_when_full_capability_acknowledged: true
+    advisory_only_until_validator_executes: true
+forbidden:
+- real_target_payload_generation_without_roe
+- persistence
+- credential_theft
+- evasion_for_unapproved_contexts
+- out_of_scope
+risk_caps:
+  max_execution_level_without_approval: advisory
+tool_requirements:
+  required: []
+  optional: []
+output_contract:
+  produces:
+  - safe_payload_constraints
+  - evidence_trigger
+  - baseline
+  - compact_variants
+  - sanitizer_grammar
+  - expected_delta
+  - non_destructive_validation_notes
+  - detection_guidance
+  - stop_conditions
+token_budget: 1200
+ui:
+  label: Payload design
+  locked: true

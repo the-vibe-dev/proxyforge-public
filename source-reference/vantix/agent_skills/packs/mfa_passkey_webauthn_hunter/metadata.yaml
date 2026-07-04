@@ -1,0 +1,68 @@
+id: mfa_passkey_webauthn_hunter
+name: MFA Passkey WebAuthn Hunter
+version: 1
+summary: WebAuthn RP ID mismatch, origin confusion, fallback downgrade, recovery-code bypass, MFA removal without reauth, remembered-device abuse, backup factor enrollment abuse, push fatigue attacks.
+roles:
+  - researcher
+  - executor
+modes:
+  - bugbounty
+  - pentest
+execution_level: gated
+safety_level: passive
+risk_tier: moderate
+opsec: quiet
+status: active
+tags:
+  - webauthn
+  - passkey
+  - mfa-bypass
+  - mfa-enrollment
+  - rp-id-confusion
+  - origin-confusion
+  - recovery-code-bypass
+  - fallback-downgrade
+  - remembered-device-abuse
+  - backup-factor-abuse
+  - push-fatigue
+  - totp-window-abuse
+requires_scope: true
+required_tools: []
+optional_tools:
+  - webauthn-toolkit
+  - jwt-cli
+fallback_chain:
+  webauthn_test: [curl]
+  recovery_code_enum: [curl]
+triggers:
+  surface:
+    - webauthn_registration_endpoint
+    - webauthn_assertion_endpoint
+    - mfa_recovery_code_endpoint
+    - mfa_backup_factor_endpoint
+    - mfa_remembered_device_endpoint
+    - mfa_setup_flow
+    - mfa_removal_endpoint
+  pivot:
+    - rp_id_mismatch_to_webauthn_bypass
+    - fallback_factor_to_mfa_circumvent
+hypothesis_templates:
+  - id: rp_id_mismatch
+    description: WebAuthn RP ID check is case-insensitive, treats subdomains as equivalent, or accepts origin with trailing slash mismatch.
+  - id: origin_confusion
+    description: RP ID binding does not prevent cross-origin assertion attacks; credential registered for attacker.com can assert on victim.com.
+  - id: fallback_downgrade
+    description: User enrolled in passkey; attacker logs in without passkey via fallback SMS/email code and disables passkey before login completes.
+  - id: recovery_code_brute
+    description: Recovery codes lack rate-limiting or use weak enumeration space (6 digits, predictable format).
+  - id: backup_factor_enrollment_race
+    description: During MFA enrollment, attacker races to add their own backup factor (second auth method) before user finishes.
+  - id: push_fatigue_bypass
+    description: Notification spam causes user to approve malicious push notification; no rate-limit on push attempts.
+  - id: totp_window_abuse
+    description: TOTP validation accepts +/- 2 windows (2 minutes) instead of +/- 0-1 windows, allowing brute with 20x wider success range.
+forbidden:
+  - destructive
+  - dos
+  - out_of_scope
+  - production_data_mutation

@@ -1,0 +1,107 @@
+id: auth_tester
+name: Auth Tester
+version: 1
+summary: "Identity and session-management testing — password reset, invite flow, MFA bypass, passkey/WebAuthn, magic link validation, email change, account linking, session fixation, logout invalidation, OAuth/OIDC state-machine awareness"
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: gated
+safety_level: active
+risk_tier: intrusive
+opsec: loud
+tags:
+- password-reset
+- invite-flow
+- mfa-bypass
+- passkey-webauthn
+- magic-link
+- email-change
+- account-linking
+- session-fixation
+- logout-invalidation
+- oauth-oidc
+- state-machine-testing
+- token-reuse
+- timing-attack
+- account-enumeration
+- privilege-escalation
+requires_scope: true
+required_tools: []
+optional_tools:
+- chromium
+- oathtool
+- yubico-pam
+fallback_chain:
+  mfa_bypass: [curl, openssl]
+  session_analysis: [curl, grep]
+  oauth_flow: [curl]
+triggers:
+  surface:
+  - password_reset_form
+  - mfa_challenge
+  - oauth_provider_integration
+  - magic_link_sent
+  - invite_endpoint
+  - passkey_enrollment
+  pivot:
+  - password_reset_to_account_takeover
+  - mfa_bypass_to_authentication_escape
+  - oauth_flaw_to_privilege_escalation
+hypothesis_templates:
+- id: password_reset_token_reuse
+  description: Password reset token can be used multiple times or does not expire, allowing attacker to reset victim account after initial use or brute-force token space
+- id: magic_link_prediction
+  description: Magic link token is predictable (sequential, based on user ID, low entropy) allowing attacker to generate valid links for arbitrary users
+- id: mfa_bypass_null
+  description: MFA prompt can be skipped by submitting empty response, removing the form field, or setting a flag in the request (missing server-side enforcement)
+- id: mfa_race_condition
+  description: MFA challenge can be bypassed by sending login request and MFA verify request simultaneously, causing race condition where verify executes before challenge is validated
+- id: session_fixation
+  description: Application accepts a session ID set by the client (via cookie or URL parameter) and does not regenerate it after authentication, allowing attacker to pre-set session
+- id: logout_token_reuse
+  description: Session token remains valid after logout, allowing attacker to reuse a logged-out token to access the application
+- id: oauth_state_bypass
+  description: OAuth callback does not validate the 'state' parameter, allowing attacker to trigger authorization with attacker-controlled state and hijack the session
+- id: email_change_unverified
+  description: Application allows email change without verification, sending new verification link to attacker's email instead of requiring old email confirmation
+- id: account_linking_bypass
+  description: Account linking flow does not verify the user's identity before linking a new OAuth provider, allowing account takeover
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- unauthorized_user_targeting
+- session_hijacking
+status: active
+sechive_ids:
+  - sechive.auth.bypass_schema
+  - sechive.auth.creds_over_http
+  - sechive.auth.default_credentials
+  - sechive.auth.remember_me
+  - sechive.auth.browser_cache
+  - sechive.auth.alt_channel_divergence
+wstg_ids:
+  - WSTG-AUTH-01
+  - WSTG-AUTH-02
+  - WSTG-AUTH-04
+  - WSTG-AUTH-05
+  - WSTG-AUTH-06
+  - WSTG-AUTH-10
+runtime:
+  primitive_module: secops.services.active_probe
+  primitives:
+    - probe_credential_stuffing
+    - probe_empty_registration
+    - probe_brute_force_gap
+    - probe_login_bypass_chain
+  extras_module: secops.services.probe_authentication
+  extras_primitives:
+    - probe_creds_over_http
+    - probe_default_credentials
+    - probe_remember_me_token
+    - probe_browser_cache_sensitive
+    - probe_auth_alt_channel_divergence

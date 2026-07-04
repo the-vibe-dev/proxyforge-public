@@ -1,0 +1,212 @@
+{
+  "name": "proxyforge",
+  "version": "0.1.0-alpha.1",
+  "private": true,
+  "description": "Cross-platform authorized web security testing workbench.",
+  "license": "MIT",
+  "author": {
+    "name": "ProxyForge Maintainers",
+    "email": "security-advisories@users.noreply.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/the-vibe-dev/proxyforge-public.git"
+  },
+  "homepage": "https://github.com/the-vibe-dev/proxyforge-public#readme",
+  "bugs": {
+    "url": "https://github.com/the-vibe-dev/proxyforge-public/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=9.0.0"
+  },
+  "packageManager": "npm@9.2.0",
+  "main": "dist-electron/main.js",
+  "bin": {
+    "proxyforge": "dist-electron/headlessRunner.js",
+    "proxyforge-agent": "scripts/proxyforge-agent.mjs"
+  },
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on tcp:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "web:dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit -p tsconfig.app.json && vite build && tsc -p electron/tsconfig.json && node scripts/sync-electron-entrypoints.mjs",
+    "docs:pages": "node scripts/build-github-pages.mjs",
+    "preview": "vite preview --host 127.0.0.1",
+    "dist:linux": "npm run build && electron-builder --linux AppImage deb --publish never",
+    "dist:win": "npm run build && electron-builder --win nsis portable --publish never",
+    "dist:win:zip": "npm run build && electron-builder --win zip --config.win.signAndEditExecutable=false --publish never",
+    "release:smoke": "node scripts/release-smoke.mjs",
+    "release:smoke:linux": "node scripts/release-smoke.mjs --platform linux --artifact release/linux-unpacked/proxyforge --out test-results/release-smoke-linux.json",
+    "release:smoke:windows": "node scripts/release-smoke.mjs --platform windows --artifact release/win-unpacked/ProxyForge.exe --out test-results/release-smoke-windows.json",
+    "release:live:source": "node scripts/live-validation.mjs --lane linux",
+    "release:live:windows": "node scripts/live-validation.mjs --lane windows",
+    "release:trust": "npm run build && node scripts/release-trust.mjs --out test-results/release-trust",
+    "release:fuses": "node scripts/electron-fuse-policy.mjs --check-config",
+    "release:license": "node tests/release-package-license.mjs",
+    "release:preflight": "node scripts/release-publish-preflight.mjs",
+    "test:cert": "npm run build && node tests/cert-manager.mjs",
+    "test:scanner": "npm run build && node tests/scanner-passive-engine.mjs && node tests/active-scanner.mjs && node tests/scanner-live-calibration.mjs",
+    "test:insertion-points": "npm run build && node tests/insertion-point-engine.mjs",
+    "test:crawler": "npm run build && node tests/crawl-engine.mjs",
+    "test:crawl-audit": "npm run build && node tests/crawl-audit.mjs",
+    "test:sequencer": "npm run build && node tests/sequencer-engine.mjs",
+    "test:intercept": "npm run build && node tests/intercept-engine.mjs",
+    "test:browser-launcher": "npm run build && node tests/browser-launcher.mjs",
+    "test:session-cookie-jar": "npm run build && node tests/session-cookie-jar.mjs",
+    "test:session-refresh": "npm run build && node tests/session-profile-refresh.mjs",
+    "test:session-macro": "npm run build && node tests/session-macro-engine.mjs",
+    "test:session-replay": "npm run build && node tests/session-replay-engine.mjs",
+    "test:intruder": "npm run build && node tests/intruder-engine.mjs",
+    "test:intruder-oast-correlation": "npm run build && node tests/intruder-oast-correlation.mjs",
+    "test:repeater": "npm run build && node tests/repeater-transport.mjs && node tests/repeater-desync-race-engine.mjs",
+    "test:repeater-oast-workflow": "npm run build && node tests/repeater-oast-workflow.mjs",
+    "test:proxy-listener": "npm run build && node tests/proxy-listener-engine.mjs",
+    "test:connect": "npm run build && node tests/connect-tunnel.mjs",
+    "test:mitm": "npm run build && node tests/https-mitm.mjs",
+    "test:proxy-history": "npm run build && node tests/proxy-history-engine.mjs",
+    "test:websocket": "npm run build && node tests/websocket-engine.mjs",
+    "test:callback-listener": "npm run build && node tests/callback-listener-service.mjs",
+    "test:extensions": "npm run build && node tests/extension-engine.mjs",
+    "test:extension-third-party-compatibility": "npm run build && node tests/extension-third-party-compatibility-engine.mjs",
+    "test:automation": "npm run build && node tests/automation-engine.mjs",
+    "test:automation-service-smoke": "npm run build && node tests/automation-service-smoke.mjs",
+    "test:project": "npm run build && node tests/project-parity-engine.mjs",
+    "test:project-import-compatibility": "npm run build && node tests/project-import-compatibility-engine.mjs",
+    "test:customer-scale-interop": "npm run build && node tests/customer-scale-interop-engine.mjs",
+    "test:project-store-v2": "npm run build && node tests/project-store-v2.mjs",
+    "test:project-store-crash-recovery": "npm run build && node tests/project-store-crash-recovery.mjs",
+    "test:project-lifecycle": "npm run build && node tests/project-lifecycle-ipc-contract.mjs",
+    "test:ipc-contract-security": "npm run build && node tests/ipc-contract-security.mjs",
+    "test:project-settings": "npm run build && node tests/project-store-settings-workflow.mjs",
+    "test:project-cookie-jar": "npm run build && node tests/project-store-cookie-jar-workflow.mjs",
+    "test:project-target-inventory": "npm run build && node tests/project-store-target-inventory-workflow.mjs",
+    "test:project-run-state": "npm run build && node tests/project-store-run-state-workflow.mjs && node tests/project-store-live-run-state-wiring.mjs",
+    "test:project-repeater": "npm run build && node tests/project-store-repeater-workflow.mjs",
+    "test:project-intruder": "npm run build && node tests/project-store-intruder-workflow.mjs",
+    "test:project-scanner": "npm run build && node tests/project-store-scanner-workflow.mjs",
+    "test:project-issue-report": "npm run build && node tests/project-store-issue-report-workflow.mjs",
+    "test:project-websocket": "npm run build && node tests/project-store-websocket-workflow.mjs",
+    "test:proxy-store-workflow": "npm run build && node tests/proxy-project-store-workflow.mjs",
+    "test:oast-store-workflow": "npm run build && node tests/project-store-oast-workflow.mjs",
+    "test:oast-signed-evidence": "npm run build && node tests/project-store-oast-signed-evidence.mjs",
+    "test:scanner-oast-ssrf": "npm run build && node tests/scanner-oast-ssrf.mjs",
+    "test:safety-enterprise": "npm run build && node tests/safety-enterprise-engine.mjs",
+    "test:platform-release": "npm run build && node tests/platform-release-engine.mjs",
+    "test:ui-scale-production": "npm run build && node tests/ui-scale-production-engine.mjs",
+    "test:platform-shell-production": "npm run build && node tests/platform-shell-production-engine.mjs",
+    "test:agent-control-production": "npm run build && node tests/agent-control-production-engine.mjs",
+    "test:ai-provider-production": "npm run build && node tests/ai-provider-production-engine.mjs",
+    "test:release-security-production": "npm run build && node tests/release-security-production-engine.mjs",
+    "test:release-trust-production": "npm run build && node tests/release-trust-production-engine.mjs",
+    "test:fast-regression-production": "npm run build && node tests/fast-regression-production-engine.mjs",
+    "test:full-nightly-production": "npm run build && node tests/full-nightly-production-engine.mjs",
+    "test:full-nightly-history": "npm run build && node tests/full-nightly-history-engine.mjs",
+    "test:install-docs-production": "npm run build && node tests/install-docs-production-engine.mjs",
+    "test:windows-package-production": "npm run build && node tests/windows-package-production-engine.mjs",
+    "test:linux-package-production": "npm run build && node tests/linux-package-production-engine.mjs",
+    "test:vulnerable-fixture": "node tests/vulnerable-fixture-app.mjs",
+    "test:organizer": "npm run build && node tests/organizer-evidence-engine.mjs",
+    "test:search": "npm run build && node tests/search-engine.mjs",
+    "test:ai": "npm run build && node tests/ai-engine.mjs && node tests/ai-action-engine.mjs",
+    "test:exploit": "npm run build && node tests/exploit-engine.mjs",
+    "test:security-review": "npm run build && node tests/security-review-engine.mjs",
+    "test:decoder": "npm run build && node tests/decoder-engine.mjs && node tests/decoder-golden.mjs",
+    "test:compare": "npm run build && node tests/compare-engine.mjs",
+    "test:report": "npm run build && node tests/report-engine.mjs && node tests/report-pdf-visual-qa.mjs",
+    "test:release": "npm run build && node tests/release-readiness.mjs && node tests/release-runtime-workflow.mjs",
+    "test:release:fuses": "node tests/electron-fuse-policy.mjs",
+    "test:private-output": "node tests/private-output-permissions.mjs",
+    "test:roadmap": "node tests/roadmap-completion.mjs",
+    "test:release:browser-routing": "npm run build && node tests/release-browser-routing.mjs",
+    "test:ci:fast": "node tests/ci-fast-suite.mjs",
+    "test:ci:full": "node tests/ci-full-suite.mjs",
+    "test:ci:nightly-policy": "node tests/ci-nightly-policy.mjs",
+    "test:headless": "npm run build && node tests/headless-runner.mjs",
+    "test:enterprise-policy": "npm run build && node tests/enterprise-policy-transport.mjs",
+    "test:agent": "npm run build && node tests/agent-cli.mjs && node tests/agent-option-audit.mjs",
+    "headless": "npm run build && node dist-electron/headlessRunner.js",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p electron/tsconfig.json"
+  },
+  "dependencies": {
+    "electron-is-dev": "^3.0.1",
+    "lucide-react": "^0.468.0",
+    "node-forge": "^1.4.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@electron/fuses": "^2.1.2",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^20.10.6",
+    "@types/node-forge": "^1.3.14",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^6.0.2",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^42.2.0",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.3.3",
+    "vite": "^8.0.16",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "dev.proxyforge.desktop",
+    "productName": "ProxyForge",
+    "afterPack": "scripts/electron-fuse-policy.mjs",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "scripts/proxyforge-agent.mjs",
+      "scripts/proxyforge-automation-service.mjs",
+      "scripts/release-smoke.mjs",
+      "scripts/release-trust.mjs",
+      "docs/AGENTIC_INTERFACE.md",
+      "docs/INSTALL_LINUX_WINDOWS.md",
+      "docs/OPERATOR_GUIDE.md",
+      "docs/RELEASE_CHECKLIST.md",
+      "docs/RELEASE_EVIDENCE.md",
+      "docs/agents/**/*",
+      "LICENSE",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "LICENSE",
+        "to": "LICENSE"
+      }
+    ],
+    "linux": {
+      "category": "Development",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libgbm1",
+        "libasound2"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    }
+  }
+}

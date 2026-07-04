@@ -1,0 +1,53 @@
+id: ctf_web_challenge_classifier
+name: CTF Web Challenge Classifier
+version: 1
+summary: "Classifies a web challenge by style BEFORE tool use: auth bypass / SQLi / SSTI / deserialization / JWT / client-side trick / race / SSRF / file upload / path traversal / crypto-web hybrid. Saves time by preventing generic payload spam."
+status: active
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- ctf-web
+- challenge-classification
+- auth-bypass
+- sqli
+- ssti
+- deserialization
+- jwt-lab
+- client-trick
+- race
+- ssrf
+- file-upload
+- path-traversal
+requires_scope: true
+required_tools: []
+optional_tools:
+- curl
+- intercepting-proxy
+triggers:
+  surface:
+  - general
+hypothesis_templates:
+- id: auth-bypass-classifier
+  description: "Login page + suspicious comment + admin endpoint → auth bypass class (SQLi auth, NULL byte, etc.)."
+- id: ssti-classifier
+  description: "Template syntax artifacts in response → SSTI (Jinja/Twig/Velocity classifier)."
+- id: jwt-classifier
+  description: "JWT in request + algorithm:none or weak HS256 → JWT lab."
+- id: deserialization-classifier
+  description: "Cookie/POST body has known serialization markers (PHP, Python pickle, Java) → deserialization."
+- id: client-side-trick-classifier
+  description: "Heavy client-side JS doing the 'real' check → bypass via direct API call."
+- id: upload-traversal-classifier
+  description: "File upload + path-controllable filename → traversal class."
+forbidden:
+- destructive
+- out_of_scope
+- real_target_exploitation

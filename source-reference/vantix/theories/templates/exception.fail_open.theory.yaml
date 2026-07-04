@@ -1,0 +1,39 @@
+schema_version: theory.system
+id: exception.fail_open
+title: Fail-open exceptional condition handling
+version: 1.0.0
+status: active
+summary: Error or exceptional states may bypass intended authorization, validation, or integrity controls.
+vuln_class: exception_fail_open
+subclass: exceptional_condition
+severity_default: high
+mappings:
+  owasp_top10_2025: [A10]
+  wstg: [WSTG-ERRH]
+  cwe: [CWE-755]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest, surface.source]
+preconditions:
+  required: [error_boundary_or_exception_path_present]
+detection_logic:
+  predicates: [exception_path_reachable, security_control_weakened, control_request_compared]
+  disconfirming_observations: [consistent_secure_failure, no_security_effect]
+exploitability_model:
+  factors: [reachability, control_strength, repeatability, attacker_control]
+impact_model:
+  dimensions: [integrity, confidentiality, availability, fail_open_risk]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_security_effect, verify_not_generic_error_only, verify_control_request]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

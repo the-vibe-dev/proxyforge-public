@@ -1,0 +1,81 @@
+schema_version: playbook.system
+id: playbook.sechive.cryptography
+name: SecHive Cryptography Matrix (WSTG 4.9)
+version: 1.0.0
+status: active
+summary: "TLS audit, padding oracle detection, weak-crypto-primitive bundle scan, JWT alg=none + impersonation, plaintext transport."
+owner:
+  team: sechive-core
+modes:
+  allowed: [bugbounty, pentest, ctf]
+  requires_scope: true
+objectives:
+  primary: [run_sechive_wstg_aligned_category_battery]
+target_requirements:
+  surfaces:
+    any: [surface.web.http, surface.api.rest]
+required_skills:
+  primary: [scope_guard]
+  supporting: []
+global_limits:
+  max_steps: 30
+  max_runtime_minutes: 60
+steps:
+- id: scope.preflight
+  title: Confirm authorization + scope before running probe battery
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.scope.preflight
+    required: [{type: scope_record, count: 1}]
+- id: sechive.battery
+  title: Run the SecHive WSTG-aligned probe battery for this category
+  agent: executor
+  action_type: deterministic_probe
+  skill_ref: scope_guard
+  evidence_gate:
+    id: gate.sechive.battery
+    required: [{type: sechive_test_result, count: 1}]
+
+# H19 — SecHive executable_steps block. PlaybookExecutor walks each entry,
+# dynamic-imports the primitive, binds (client, base, summary, routes,
+# observed_tokens) by signature, and persists hits as
+# Fact(source="playbook-execute", tags=[wstg:..., sechive:...]).
+executable_steps:
+  - playbook_step_id: sechive.crypto.tls_audit
+    primitive_module: secops.services.probe_crypto_audit
+    primitive_function: probe_tls_scan
+    sechive_id: sechive.crypto.tls_audit
+    wstg_id: WSTG-CRYPTO-01
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.crypto.padding_oracle
+    primitive_module: secops.services.probe_crypto_audit
+    primitive_function: probe_padding_oracle
+    sechive_id: sechive.crypto.padding_oracle
+    wstg_id: WSTG-CRYPTO-02
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.crypto.plaintext_transport
+    primitive_module: secops.services.probe_crypto_audit
+    primitive_function: probe_plaintext_sensitive_transport
+    sechive_id: sechive.crypto.plaintext_transport
+    wstg_id: WSTG-CRYPTO-03
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.crypto.weak_primitives
+    primitive_module: secops.services.probe_crypto_audit
+    primitive_function: probe_weak_crypto_primitives
+    sechive_id: sechive.crypto.weak_primitives
+    wstg_id: WSTG-CRYPTO-04
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.crypto.jwt_alg_none
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_jwt_alg_none
+    sechive_id: sechive.crypto.jwt_alg_none
+    wstg_id: WSTG-SESSION-10
+    evidence_emit: { kind: sechive_test_result }
+  - playbook_step_id: sechive.session.jwt
+    primitive_module: secops.services.active_probe
+    primitive_function: probe_jwt_impersonation_alg_none
+    sechive_id: sechive.session.jwt
+    wstg_id: WSTG-SESSION-10
+    evidence_emit: { kind: sechive_test_result }

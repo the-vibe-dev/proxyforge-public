@@ -1,0 +1,48 @@
+schema_version: theory.system
+id: llm.api_cost_dos
+title: LLM service cost-DoS via unbounded loops or maximum-context generation
+version: 1.0.0
+status: active
+summary: Crafted prompts induce unbounded reasoning loops, recursive tool calls, or maximum-context generation, amplifying inference cost or latency. With insufficient per-request token caps, per-user quotas, or loop-detection, this enables cost-exhaustion or denial-of-service against shared capacity.
+vuln_class: llm
+subclass: cost_dos
+severity_default: medium
+mappings:
+  cwe: [CWE-400, CWE-770]
+  llm: [owasp.llm.llm04]
+applicability:
+  target_surfaces: [surface.llm.chat, surface.llm.agent]
+preconditions:
+  required: [no_per_request_max_tokens_or_loose_cap, no_per_user_or_per_tenant_quota_or_loose, loop_or_long_generation_observable]
+detection_logic:
+  predicates:
+    - small_prompt_yields_max_context_response
+    - tool_call_loop_continues_without_bound
+    - cost_or_latency_spike_observable_in_test
+  disconfirming_observations:
+    - per_request_max_tokens_enforced_below_threshold
+    - tool_loop_terminator_intervenes
+    - per_tenant_quota_caps_burst
+exploitability_model:
+  factors: [token_caps, loop_detection, quota_state]
+impact_model:
+  dimensions: [cost_amplification, availability_impact_for_other_tenants]
+evidence_requirements:
+  minimum_for_validated:
+    - type: probe_prompt_evidence
+      count: 1
+    - type: response_token_count_or_loop_trace
+      count: 1
+  preferred_for_critical:
+    - type: lab_loop_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_no_compensating_per_user_or_per_tenant_quota
+    - verify_loop_actually_unbounded_not_terminator_imminent
+    - verify_test_against_dedicated_endpoint_only
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

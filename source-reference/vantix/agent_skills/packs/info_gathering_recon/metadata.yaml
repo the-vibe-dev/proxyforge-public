@@ -1,0 +1,29 @@
+id: info_gathering_recon
+name: Information Gathering Recon
+version: 1
+summary: Universal reconnaissance — public assets, FTP-style static dirs, well-known files, locale enumeration, canonical hidden paths, certificate-transparency subdomain pivot. WSTG-INFO-01..10.
+roles: [recon, researcher]
+modes: [bugbounty, pentest, ctf]
+execution_level: passive
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags: [info-gathering, recon, osint, asset-discovery, cert-transparency]
+requires_scope: true
+required_tools: []
+optional_tools: [whatweb, wappalyzer]
+sechive_ids:
+  - sechive.info.review_metafiles
+  - sechive.info.cert_transparency
+  - sechive.info.identify_entry_points
+  - sechive.info.attack_surface_id
+wstg_ids: [WSTG-INFO-01, WSTG-INFO-02, WSTG-INFO-03, WSTG-INFO-04, WSTG-INFO-06]
+triggers:
+  surface: [any-target]
+runtime:
+  primitive_module: secops.services.probe_extras
+  primitives:
+    - probe_known_canonical_paths
+    - probe_static_dir_backup_sweep
+    - probe_asset_enumeration
+    - probe_i18n_enumeration

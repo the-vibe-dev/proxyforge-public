@@ -1,0 +1,24 @@
+id: http_verb_param_abuse
+name: HTTP Verb + Parameter Abuse
+version: 1
+summary: Tamper HTTP methods (TRACE/OPTIONS/PUT/DELETE) and pollute query params with duplicates. WSTG-INPUT-03 + WSTG-INPUT-04.
+roles: [researcher]
+modes: [bugbounty, pentest, ctf]
+execution_level: active
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags: [http-verb-tampering, parameter-pollution, hpp, trace, options]
+requires_scope: true
+required_tools: []
+sechive_ids:
+  - sechive.input.http_verb_tampering
+  - sechive.input.parameter_pollution
+wstg_ids: [WSTG-INPUT-03, WSTG-INPUT-04]
+triggers:
+  surface: [http-endpoint-with-query-params]
+runtime:
+  primitive_module: secops.services.probe_input_validation
+  primitives:
+    - probe_http_verb_tampering
+    - probe_http_param_pollution

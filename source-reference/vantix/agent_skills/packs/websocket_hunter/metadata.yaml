@@ -1,0 +1,47 @@
+id: websocket_hunter
+name: WebSocket Hunter
+version: 1
+summary: test WebSocket implementations for auth bypass, cross-site WebSocket hijacking (CSWSH), missing origin/subprotocol checks, per-message authz/IDOR and message injection on authorized targets with owned sessions only
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: active
+tags:
+- websocket
+- cswsh
+- cross-site-websocket-hijacking
+- origin-check
+- per-message-authz
+- websocket-idor
+- evidence-first
+requires_scope: true
+risk_tier: active
+opsec: moderate
+required_tools: []
+optional_tools: []
+fallback_chain: {}
+triggers:
+  surface:
+  - websocket_upgrade_endpoint_in_scope
+  - cookie_or_token_auth_on_ws_handshake
+  pivot:
+  - cswsh_or_per_message_authz_to_exploit_precision
+hypothesis_templates:
+- id: cswsh
+  description: "Replay the WS handshake from an attacker origin with an owned account's ambient cookies; authorized data received => CSWSH."
+- id: per_message_authz_idor
+  description: "Mutate object/tenant ids in WS frames on an owned session; cross-account data => WS IDOR."
+forbidden:
+- destructive
+- out_of_scope
+- targeting_real_users
+sechive_ids: [sechive.client.websocket_cswsh]
+wstg_ids: [WSTG-CLIENT-10]
+runtime:
+  primitive_module: secops.services.probe_client_side
+  primitives:
+    - probe_websocket_cswsh

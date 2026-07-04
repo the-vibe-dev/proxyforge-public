@@ -1,0 +1,21 @@
+id: clientside_template_injection
+name: Client-Side Template Injection
+version: 1
+summary: Inject Angular/Vue/Mustache template syntax into SPA query routes; confirm template evaluation via dialog or DOM marker. WSTG-CLIENT-15.
+roles: [researcher]
+modes: [bugbounty, pentest, ctf]
+execution_level: active
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags: [csti, clientside, template-injection, angular, vue]
+requires_scope: true
+required_tools: [playwright]
+sechive_ids: [sechive.client.template_injection]
+wstg_ids: [WSTG-CLIENT-15]
+triggers:
+  surface: [angular-spa, vue-spa, handlebars-rendered-page]
+runtime:
+  primitive_module: secops.services.probe_client_side
+  primitives:
+    - probe_clientside_template_injection

@@ -1,0 +1,41 @@
+schema_version: theory.system
+id: jwt.rs_to_hs_key_confusion
+title: JWT verifier accepts HS256 token signed with the RSA public key (RS->HS confusion)
+version: 1.0.0
+status: active
+summary: A JWT verifier configured for RS256 (asymmetric) accepts a token whose header advertises HS256 (symmetric), validating the HMAC using the RSA public key as the shared secret. Because the public key is publicly disclosed (via `/.well-known/jwks.json`, x5u, or repository), an attacker mints arbitrary claims and signs them with HS256-of-public-key, and the verifier accepts.
+vuln_class: token_crypto
+subclass: jwt_alg_confusion
+severity_default: high
+mappings:
+  cwe: [CWE-347, CWE-345]
+  owasp: [A02:2021, A07:2021]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql]
+preconditions:
+  required: [jwt_in_use, public_key_obtainable, verifier_does_not_pin_alg_to_rs256_only]
+detection_logic:
+  predicates:
+    - hs256_token_hmac_with_pem_public_key_validates
+    - hs256_token_hmac_with_der_public_key_variant_validates
+  disconfirming_observations:
+    - verifier_rejects_alg_mismatch_with_explicit_error
+    - verifier_strips_alg_and_uses_pinned_alg
+exploitability_model:
+  factors: [public_key_publication, library_version, alg_pinning]
+impact_model:
+  dimensions: [authentication_bypass, privilege_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: forged_token_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_token_validation_path_reached
+    - verify_application_acts_on_forged_claim
+    - try_both_pem_and_der_public_key_encodings_for_negative_control
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

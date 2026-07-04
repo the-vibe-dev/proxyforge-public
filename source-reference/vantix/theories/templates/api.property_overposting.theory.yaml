@@ -1,0 +1,41 @@
+schema_version: theory.system
+id: api.property_overposting
+title: API accepts server-owned property overposting
+version: 1.0.0
+status: active
+summary: API request bodies may allow clients to set fields that should be controlled only by the server.
+vuln_class: api_authz
+subclass: property_overposting
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A04]
+  cwe: [CWE-639, CWE-915]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql]
+  required_observations: [schema_response_or_source_field_evidence]
+preconditions:
+  required: [scope_authorizes_testing, observed_server_owned_field]
+detection_logic:
+  predicates: [baseline_body_accepted, expanded_body_accepted, server_owned_field_persisted_or_acted_on]
+  disconfirming_observations: [field_rejected, field_ignored, field_reflected_only]
+exploitability_model:
+  factors: [field_sensitivity, auth_state, persistence, workflow_effect]
+impact_model:
+  dimensions: [privilege, integrity, financial_or_workflow_state]
+evidence_requirements:
+  minimum_for_validated:
+    - type: http_exchange
+      count: 2
+    - type: validation_result
+      count: 1
+false_positive_filters:
+  required: [verify_field_is_server_owned, verify_persistence_or_action, verify_same_actor_baseline]
+linked_skills:
+  primary: [api_security, bizlogic_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.schema_driven_api_validation]
+promotion_rules:
+  finding_allowed_when: [required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [server_owned_fields, schema_driven_api_matrix]

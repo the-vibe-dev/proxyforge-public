@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: race.concurrent_state_update
+title: Concurrent state update race
+version: 1.0.0
+status: active
+summary: State-changing endpoints may validate replay, quota, vote, coupon, checkout, or uniqueness constraints outside an atomic update window.
+vuln_class: race_condition
+subclass: concurrent_state_update
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A04, A01]
+  wstg: [WSTG-BUSL, WSTG-ATHZ]
+  cwe: [CWE-362, CWE-367]
+applicability:
+  target_surfaces: [surface.api.rest, surface.web.http]
+  required_observations: [state_changing_route]
+preconditions:
+  required: [baseline_state_change_captured, scoped_low_volume_concurrency_allowed]
+  blockers: [destructive_or_resource_stress_effect, no_readback]
+detection_logic:
+  predicates:
+    - normal_replay_or_quota_behavior_known
+    - tiny_concurrent_batch_changes_final_state
+    - final_readback_exceeds_expected_invariant
+  disconfirming_observations:
+    - atomic_rejection_consistent
+    - final_state_matches_single_allowed_action
+    - timing_noise_without_state_delta
+exploitability_model:
+  factors: [window_size, endpoint_idempotency, invariant_value, repeatability]
+impact_model:
+  dimensions: [integrity, business_logic, quota_bypass, value_abuse]
+evidence_requirements:
+  minimum_for_validated:
+    - type: request_sequence
+      count: 1
+    - type: state_readback
+      count: 1
+false_positive_filters:
+  required: [verify_low_volume, verify_final_state_delta, verify_not_expected_multiple_action]
+linked_skills:
+  primary: [api_security]
+  supporting: [web_hunter, payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [concurrent_replay, quota_race, vote_like_race, checkout_race]

@@ -1,0 +1,54 @@
+# Learning-source registry for SecHive theories.
+#
+# Every id a theory cites under references.learning_sources MUST appear
+# here. 'corpus' entries are the internal bug-bounty methodology corpus.
+schema_version: learning_source.registry.system
+sources:
+  - id: corpus.bb.idor_ac
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-6, sec-14]
+    transcript_label: IDOR-AC-P3
+    summary: "IDOR/access-control unified methodology, desktop/mobile app proxying, WebSocket authorization"
+  - id: corpus.bb.client_side_injection
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-7, sec-8, sec-9, sec-10, sec-11, sec-12]
+    transcript_label: CSI-P1+CSI-P2
+    summary: "DOM fundamentals, sources/sinks, client-side injection strategies, reflected/stored/DOM XSS, prototype pollution, compensating controls"
+  - id: corpus.bb.xss_bypass
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-10, sec-12, sec-13]
+    transcript_label: XSS-BYPASS
+    summary: "Planning XSS weaponization before payload work; comparing security controls; CSP directive analysis"
+  - id: corpus.bb.framework
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-4]
+    transcript_label: FRAMEWORK
+    summary: "Recon import, scope management, URL populator, remote reverse-proxy deployment, built-in STRIDE feature"
+  - id: corpus.bb.ato_xss
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-12, sec-13]
+    transcript_label: ATO-XSS
+    summary: "Account takeover through XSS: endpoint-first strategy, CSRF/CORS/CSP validation, token-exchange examples"
+  - id: corpus.bb.recon_to_manual
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-1, sec-5]
+    transcript_label: RECON-TO-MANUAL
+    summary: "Threat modeling, crown jewels, nightmare scenarios, mechanisms, objects, controls; recon-to-manual bridge"
+  - id: corpus.bb.ai_assisted
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-15]
+    transcript_label: AI-ASSISTED-HUNTING
+    summary: "Operator-side LLM use: program selection, threat-model generation, scan-finding interpretation"
+  - id: corpus.bb.defcon_automation
+    kind: corpus
+    doc: docs/agent-learning/bug-bounty-methodology-playbook.md
+    anchors: [sec-3]
+    transcript_label: DEFCON-AUTOMATION
+    summary: "Automation engineering: passive discovery, CT logs, cert scanning, DNS resolution, port strategy, recon data engineering"

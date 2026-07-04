@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: authn.recovery_knowledge_factor_weakness
+title: Account recovery knowledge-factor weakness
+version: 1.0.0
+status: active
+summary: Password reset or recovery flows may rely on public, guessable, metadata-derived, or weakly rate-limited knowledge factors.
+vuln_class: authn
+subclass: recovery_knowledge_factor
+severity_default: high
+mappings:
+  owasp_top10_2025: [A07, A01]
+  wstg: [WSTG-ATHN]
+  cwe: [CWE-640, CWE-307, CWE-287]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [password_reset_or_security_question_flow]
+preconditions:
+  required: [owned_lab_or_operator_approved_identity, scope_authorizes_recovery_testing]
+  blockers: [real_user_privacy_risk, brute_force_without_approval]
+detection_logic:
+  predicates:
+    - recovery_prompt_or_factor_observed
+    - answer_source_class_is_public_or_app_leaked
+    - reset_state_change_or_rate_limit_boundary_validated
+  disconfirming_observations:
+    - strong_token_bound_flow
+    - unknown_answers_rate_limited_and_not_public
+    - reset_requires_out_of_band_verification
+exploitability_model:
+  factors: [answer_publicness, rate_limit_strength, token_binding, target_identity_scope]
+impact_model:
+  dimensions: [account_takeover, recovery_integrity, privacy]
+evidence_requirements:
+  minimum_for_validated:
+    - type: request_sequence
+      count: 1
+    - type: recovery_flow_observation
+      count: 1
+false_positive_filters:
+  required: [verify_authorized_identity, verify_no_personal_answer_disclosure, verify_reset_or_rate_boundary]
+linked_skills:
+  primary: [api_security]
+  supporting: [osint_collector, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [authorized_identity_validated, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [security_question_osint, metadata_leakage, weak_recovery_rate_limit]

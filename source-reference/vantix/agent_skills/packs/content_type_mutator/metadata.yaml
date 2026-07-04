@@ -1,0 +1,51 @@
+id: content_type_mutator
+name: Content-Type Mutator
+version: 1
+summary: Content-Type and JSON structure mutation - application/json, form-urlencoded, multipart, text/plain, xml, graphql. JSON scalar-to-array/object coercion, null, duplicate keys. Finds parser differentials and mass-assignment.
+roles:
+- researcher
+- executor
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- content-type-confusion
+- parser-differential
+- mass-assignment
+- json-coercion
+- duplicate-keys
+- null-injection
+- type-confusion
+- validation-bypass
+- array-scalar-confusion
+- object-scalar-confusion
+requires_scope: true
+required_tools: []
+optional_tools:
+- curl
+triggers:
+  surface:
+  - json_api_endpoint
+  - form_submission
+  - multipart_upload
+  - graphql_endpoint
+hypothesis_templates:
+- id: parser-differential-form-vs-json
+  description: Endpoint accepts both form-urlencoded and JSON; parser interprets roles/permissions differently, form-urlencoded bypasses validation.
+- id: mass-assignment-array-coercion
+  description: Parameter expects scalar string; JSON array wrapping [value] unwraps during parsing, bypasses type check, allows hidden field mutation.
+- id: mass-assignment-object-coercion
+  description: Parameter expects scalar; JSON object wrapping bypasses validation layer intended for scalar input.
+- id: null-injection-type-bypass
+  description: Parameter set to null in JSON; validator skips type-check for null, defaults to permissive state.
+- id: duplicate-key-precedence
+  description: JSON duplicate keys processed by different layers; one is validated, one is not; last-wins or first-wins precedence varies by parser.
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- production_data_mutation

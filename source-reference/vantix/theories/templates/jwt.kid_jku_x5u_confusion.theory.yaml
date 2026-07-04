@@ -1,0 +1,43 @@
+schema_version: theory.system
+id: jwt.kid_jku_x5u_confusion
+title: JWT header kid/jku/x5u parameter confusion lets attacker control verification key
+version: 1.0.0
+status: active
+summary: A JWT verifier resolves the signing key from attacker-controllable header parameters — `kid` used as a path or SQL fragment, `jku`/`x5u` URLs not pinned to an allowlist, or an unsanitized JWK lookup. The attacker forges a token whose header points the verifier at a key under attacker control (file-path traversal, attacker-hosted JWKS, injected DB row), the verifier accepts the resulting signature, and a privileged claim is accepted as authentic.
+vuln_class: token_crypto
+subclass: jwt_header_param_injection
+severity_default: high
+mappings:
+  cwe: [CWE-345, CWE-347]
+  owasp: [A02:2021, A07:2021]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql, surface.web.http]
+preconditions:
+  required: [jwt_in_use, verifier_uses_header_param_to_resolve_key]
+detection_logic:
+  predicates:
+    - kid_path_traversal_returns_file_under_app_root_validates
+    - jku_or_x5u_pointing_to_attacker_origin_validates_token
+    - injected_kid_value_resolves_attacker_supplied_jwks_row
+  disconfirming_observations:
+    - kid_used_only_as_opaque_index_into_static_keyset
+    - jku_pinned_to_allowlist_origin
+    - signature_check_uses_pre_pinned_static_key
+exploitability_model:
+  factors: [verifier_library_version, jwks_endpoint_allowlist_pin, token_lifetime]
+impact_model:
+  dimensions: [authentication_bypass, identity_spoofing, privilege_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: forged_token_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_token_was_actually_validated_not_logged_only
+    - verify_response_reflects_forged_claim_not_default_anonymous
+    - verify_no_secondary_session_check_invalidates_forgery
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator, web_hunter]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

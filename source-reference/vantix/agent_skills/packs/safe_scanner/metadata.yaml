@@ -1,0 +1,38 @@
+id: safe_scanner
+name: Safe Scanner
+version: 1
+summary: Scope-safe, rate-limited vulnerability scanner orchestration with payload budgets, denylists, and replayable evidence capture.
+status: active
+roles:
+- researcher
+- scanner-operator
+modes:
+- bugbounty
+- pentest
+execution_level: advisory
+safety_level: passive
+risk_tier: safe
+opsec: quiet
+tags:
+- safe-scanner
+- rate-limiting
+- scope-guard
+- payload-budget
+- active-scanning
+- evidence-dedup
+- denylist
+- passive-discovery
+optional_tools: []
+requires_scope: true
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+hypothesis_templates:
+- "Endpoint {{endpoint}} accepts {{param}} injection when input crosses {{boundary}} without sanitization."
+- "Scanner discovers {{class}} within scope via {{technique}} while respecting rate-limit {{rps}}."
+- "Payload {{payload}} triggers {{behavior}} on {{target}}, reproducible via HAR {{har_id}}."
+- "Denylist entry {{pattern}} blocks {{dangerous}} payloads; {{safe}} payloads proceed."
+- "Response size {{bytes}} from {{endpoint}} confirms data leak {{class}} within evidence-dedup window."
+- "Per-program safety profile permits {{allowed_class}} but rejects {{forbidden_class}} on {{program}}."

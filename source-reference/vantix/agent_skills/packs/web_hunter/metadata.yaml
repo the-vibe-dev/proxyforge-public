@@ -1,0 +1,251 @@
+id: web_hunter
+name: Web Hunter
+version: 1
+summary: web application discovery, fuzzing, and validation guidance
+roles:
+- recon
+- researcher
+- developer
+- executor
+modes:
+- pentest
+- bugbounty
+- ctf
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- web
+- http
+- fuzzing
+- upload
+- authenticated-surface
+- wordpress
+- backup-plugin
+- blind-inference
+- payload-mutation
+- stagnation-recovery
+- adaptive-revisit
+- full-proof
+- exhaustive-surface
+- stateful-workflow
+- javascript-submit-target
+- hidden-field-state
+- route-family-closure
+- path-normalization
+- realtime-api
+- browser-boundary
+- ssrf-deep
+- ssrf-filter-bypass
+- aws-metadata
+- gcp-metadata
+- ecs-metadata
+- gopher-ssrf
+- dns-rebinding
+- jwt-cracker
+- jwt-attacks
+- alg-none
+- kid-injection
+- jku-confusion
+- x5u-confusion
+- rs256-hs256-confusion
+- weak-jwt-secret
+requires_scope: true
+required_tools:
+- curl
+optional_tools:
+- detection-engine
+- httpx
+- ffuf
+- dalfox
+- sqlmap
+- gobuster
+- feroxbuster
+- whatweb
+- nikto
+fallback_chain:
+  http_probe: [curl, httpx]
+  content_discovery: [feroxbuster, gobuster, ffuf]
+  template_scan: [detection-engine]
+  xss_probe: [dalfox]
+  sqli_probe: [sqlmap]
+  fingerprint: [whatweb, nikto]
+  smuggling_probe: [curl]
+  cache_probe: [curl]
+  race_burst: [curl]
+triggers:
+  general_surface:
+  - route
+  - form
+  - js_bundle
+  - source_map
+  - html_config
+  - api_docs
+  - upload
+  - redirect
+  - url_fetch
+  - parser_endpoint
+  - export
+  - admin
+  - static_artifact
+  - metrics
+  - security_policy
+  - generated_docs
+  - language_file
+  - license_manifest
+  workflow_completion:
+  - login_hint
+  - test_account_hint
+  - javascript_submit_target
+  - hidden_field
+  - post_auth_route
+  adaptive_revisit:
+  - new_route
+  - new_source_sink
+  - new_auth_state
+  - new_error_family
+  - stack_trace
+  - dependency_version
+  - new_capability
+  client_runtime:
+  - route_literal
+  - feature_toggle
+  - api_base_path
+  - role_name
+  - source_map
+  - html_config
+  - route_table
+  - lazy_chunk
+  - hidden_navigation
+  - disabled_control
+  - client_validation
+  node_json:
+  - express
+  - json_body
+  - query_parser
+  - method_override
+  - generated_rest
+  - prototype_pollution_signal
+  - duplicate_parameter
+  - duplicate_json_key
+  xss_context:
+  - reflection
+  - dom_sink
+  - innerHTML
+  - postMessage
+  - csp
+  - verifier_oracle
+  - sanitizer_grammar
+  - whitespace_collapse
+  - allowed_tag_discovery
+  browser_platform:
+  - localStorage
+  - sessionStorage
+  - indexedDB
+  - service_worker
+  - postMessage
+  - websocket
+  - cors
+  - csp
+  side_channel:
+  - xs_leak
+  - frameable
+  - cross_origin_load
+  - cache_timing
+  - window_open
+  - corp
+  ssrf_fetch:
+  - url_parameter
+  - avatar_url
+  - webhook
+  - redirect_target
+  - preview
+  authenticated_surfaces:
+  - upload
+  - import
+  - admin
+  - invoice
+  - document
+  post_auth_evidence:
+  - session_cookie
+  - auth_bypass
+  - credential_material
+  source_local_service:
+  - source_local_side_service
+  - mapped_side_service
+  - container_internal_service
+  wordpress_backup:
+  - wp-json
+  - wp-content
+  - backup
+  - migration
+  - active_plugins
+  filtered_surfaces:
+  - parser_error
+  - blocked_character
+  - tag_stripped
+  - delimiter_transform
+  - no_visible_output
+  - response_delta
+  blind_sql_oracle:
+  - boolean_sqli
+  - blind_sql_injection
+  - sql_error
+  - sql_syntax_delta
+  - union_width
+  - dbms_fingerprint
+  - time_based_sql
+  route_family_coverage:
+  - route_family_gap
+  - method_matrix
+  - content_type_matrix
+  - auth_state_matrix
+  - closure_matrix
+  path_normalization:
+  - dot_segment
+  - encoded_slash
+  - encoded_dot
+  - mixed_separator
+  - static_helper
+  browser_boundaries:
+  - cross_origin_read
+  - cross_site_state_change
+  - websocket_origin
+  - message_authz
+  static_exposure:
+  - directory_listing
+  - backup_file
+  - log_file
+  - metrics_endpoint
+  - key_material
+  - translation_catalog
+  - build_artifact
+  token_crypto:
+  - jwt
+  - signed_id
+  - coupon_code
+  - invitation_code
+  - reset_token
+  - weak_encoding
+  race_automation:
+  - captcha
+  - vote
+  - review
+  - quota
+  - concurrent_update
+  - replay_window
+mode_gates:
+  proof:
+    target_scoped_full_send: true
+    recompute_on_new_evidence: true
+hypothesis_templates:
+- id: web_surface_to_primitive
+  description: Classify each discovered route/form/API/static artifact into a likely primitive before validation.
+- id: capability_unlock_question
+  description: After each validated primitive, ask what route, credential, object, source, or service it unlocks next.
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

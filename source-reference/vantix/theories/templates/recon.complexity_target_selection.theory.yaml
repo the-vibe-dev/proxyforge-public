@@ -1,0 +1,56 @@
+schema_version: theory.system
+id: recon.complexity_target_selection
+title: Complexity-driven target selection from recon surface
+version: 1.0.0
+status: active
+summary: Bug-class-first methodology — structural complexity (multiple auth
+  methods, roles, tenants, clients for one backend, websockets, import/export,
+  third-party integrations, staging/legacy environments, shared CORS/SSO)
+  predicts where a chosen vulnerability class is structurally likely. This
+  theory scores recon assets for complexity and routes the highest-signal,
+  least-tested surfaces to manual testing instead of producing undirected
+  output.
+vuln_class: recon
+subclass: complexity_target_selection
+severity_default: info
+mappings:
+  owasp_top10_2025: [A01, A05]
+  wstg: [WSTG-INFO-09]
+  cwe: [CWE-1059]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest, surface.api.graphql, surface.api.websocket]
+  required_observations: [recon_assets_collected, scope_confirmed]
+preconditions:
+  required: [scope_authorizes_testing, recon_inventory_present]
+  blockers: [scope_unconfirmed]
+detection_logic:
+  predicates:
+    - asset.exposes_authentication
+    - asset.exhibits_complexity_signal  # multi_auth | multi_role | multi_tenant | multi_client | websocket | import_export | shared_sso_cors | staging_legacy
+    - asset.under_tested_relative_to_signal
+  disconfirming_observations:
+    - asset_out_of_scope
+    - asset_static_no_functionality
+    - asset_duplicate_of_main_app_already_covered
+exploitability_model:
+  factors: [complexity_signal_count, scope_confidence, change_recency, prior_test_coverage]
+impact_model:
+  dimensions: [prioritization_quality, coverage_efficiency]
+evidence_requirements:
+  minimum_for_validated:
+    - type: recon_asset_record
+      count: 1
+    - type: complexity_signal_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_in_scope, verify_signal_not_artifact_of_redirect, verify_not_already_covered]
+linked_skills:
+  primary: [recon_advisor]
+  supporting: [threat_modeler, report_generator]
+linked_playbooks:
+  primary: [playbook.bugbounty_recon_asset_graph]
+  supporting: [playbook.web_api_coverage]
+promotion_rules:
+  finding_allowed_when: [scope_authorized, required_evidence_satisfied]
+references:
+  learning_sources: [corpus.bb.recon_to_manual, corpus.bb.defcon_automation, corpus.bb.ai_assisted]

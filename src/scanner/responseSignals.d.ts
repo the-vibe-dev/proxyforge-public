@@ -1,0 +1,10 @@
+export declare const SQL_ERROR_PATTERNS: RegExp[];
+export declare const XSS_REFLECTION_PATTERNS: RegExp[];
+export declare const SSTI_MATH_PATTERNS: RegExp[];
+export declare const FILE_CONTENT_PATTERNS: RegExp[];
+export declare const COMMAND_OUTPUT_PATTERNS: RegExp[];
+export declare const XXE_REFLECTION_PATTERNS: RegExp[];
+export declare const NOSQL_AUTH_BYPASS_PATTERNS: RegExp[];
+export declare const REDIRECT_LOCATION_PATTERNS: RegExp[];
+export declare function matchesAnyPattern(text: string, patterns: RegExp[]): string | null;
+export declare function simpleBodyHash(text: string): string;

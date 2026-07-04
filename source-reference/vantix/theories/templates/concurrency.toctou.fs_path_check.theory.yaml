@@ -1,0 +1,51 @@
+schema_version: theory.system
+id: concurrency.toctou.fs_path_check
+title: Filesystem TOCTOU — path validated by name, then reopened, allowing swap to attacker-controlled target
+version: 1.0.0
+status: active
+summary: Code performs a security check (stat / access / realpath / extension or directory match) on a path string, then later re-opens or operates on the same path by name. Between the check and the use, an attacker swaps the path component (rename, symlink replacement, junction/reparse-point flip) so the second resolution lands on a different filesystem object than the first. The privileged operation runs against attacker-chosen state.
+vuln_class: concurrency
+subclass: toctou_filesystem
+severity_default: high
+mappings:
+  cwe: [CWE-367, CWE-59, CWE-61]
+applicability:
+  target_surfaces: [surface.binary.native, surface.chromium.browser, surface.chromium.sandbox, surface.os.privileged_helper]
+preconditions:
+  required:
+    - path_checked_by_name_then_reopened_by_name
+    - attacker_can_modify_path_component_between_calls
+    - second_call_runs_with_elevated_or_distinct_privilege
+detection_logic:
+  predicates:
+    - decompiler_shows_stat_or_access_followed_by_open
+    - source_grep_realpath_then_open_or_lstat_then_open
+    - strace_trace_shows_lookup_then_open_pair
+    - audit_log_shows_path_resolution_change_between_calls
+  disconfirming_observations:
+    - openat_with_o_nofollow_and_directory_fd_used
+    - operation_uses_open_then_fstat_on_same_fd
+    - path_canonicalized_into_locked_directory_owned_by_caller
+exploitability_model:
+  factors: [attacker_filesystem_write_in_path_segment, race_window_widenable, privileged_operation_at_second_call]
+impact_model:
+  dimensions: [privilege_escalation, sandbox_escape_potential, file_overwrite, info_leak]
+evidence_requirements:
+  minimum_for_validated:
+    - type: regression_witness
+      count: 1
+    - type: symbolized_stack
+      count: 1
+  preferred_for_critical:
+    - type: decompiler_project
+      count: 1
+false_positive_filters:
+  required:
+    - confirm_two_independent_path_resolutions
+    - confirm_attacker_can_rename_or_swap_segment
+    - confirm_second_call_inherits_privilege_distinct_from_attacker
+linked_skills:
+  primary: [binary_re]
+  supporting: [crash_triage]
+linked_playbooks:
+  primary: [playbook.crash_to_root_cause]

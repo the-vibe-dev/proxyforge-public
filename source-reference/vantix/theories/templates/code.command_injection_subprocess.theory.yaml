@@ -1,0 +1,47 @@
+schema_version: theory.system
+id: code.command_injection_subprocess
+title: Command injection via subprocess/shell call with attacker-influenced argument
+version: 1.0.0
+status: active
+summary: A subprocess, shell, or OS-command primitive (system, popen, exec, Runtime.exec, child_process.exec, shell_exec) is invoked with a string assembled from request input, without argv-list separation or strict allowlist tokenization.
+vuln_class: command_injection
+subclass: shell_string_concat
+severity_default: critical
+mappings:
+  owasp_top10_2025: [A03]
+  cwe: [CWE-78, CWE-88]
+applicability:
+  target_surfaces: [surface.source.code]
+preconditions:
+  required: [subprocess_or_shell_call_present, untrusted_input_concatenated_or_interpolated]
+detection_logic:
+  predicates:
+    - shell_true_or_string_command_form
+    - input_reaches_command_argument
+    - no_argv_array_split_or_shellescape_on_path
+  disconfirming_observations:
+    - argv_array_form_with_constant_command
+    - shellescape_or_strict_allowlist_applied
+    - command_runs_in_isolated_no_priv_context_with_controlled_args
+exploitability_model:
+  factors: [shell_metachar_filter, runtime_environment, command_privilege]
+impact_model:
+  dimensions: [rce, lateral_movement, data_access]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: data_flow_path
+      count: 1
+    - type: command_form_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_input_actually_external
+    - verify_shell_metachar_handling
+    - verify_command_actually_reachable
+linked_skills:
+  primary: [source_reviewer]
+  supporting: [poc_validator, payload_crafter]
+linked_playbooks:
+  primary: [playbook.source_audit_loop]

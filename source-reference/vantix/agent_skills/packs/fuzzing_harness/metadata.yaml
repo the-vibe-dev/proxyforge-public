@@ -1,0 +1,99 @@
+id: fuzzing_harness
+name: Fuzzing Harness
+version: 1
+summary: Locked active skill for building, running, and managing local libFuzzer/AFL++/honggfuzz/fuzzilli/atheris campaigns against authorized native/managed targets — corpus and coverage merge, sanitizer builds, resource-capped runners, defensive only.
+roles:
+- developer
+- executor
+- analyst
+modes:
+- native_research
+execution_level: gated
+safety_level: locked
+risk_tier: active
+opsec: moderate
+tags:
+- fuzzing
+- libfuzzer
+- afl
+- honggfuzz
+- fuzzilli
+- domato
+- atheris
+- cargo-fuzz
+- radamsa
+- zzuf
+- coverage
+- corpus
+- sanitizer
+- chromium
+- v8
+- pdfium
+- skia
+- media
+- resource-capped
+requires_scope: true
+disabled_by_default: true
+requires_operator_approval: true
+required_tools:
+- llvm-symbolizer
+optional_tools:
+- afl++
+- honggfuzz
+- fuzzilli
+- domato
+- atheris
+- cargo-fuzz
+- radamsa
+- zzuf
+- llvm-profdata
+- llvm-cov
+fallback_chain:
+  fuzz_engine: [afl++, honggfuzz]
+  language_specific: [atheris, cargo-fuzz]
+  grammar: [domato, fuzzilli]
+  mutator: [radamsa, zzuf]
+  coverage: [llvm-profdata, llvm-cov]
+triggers:
+  harness_intake:
+  - target_function_identified
+  - parser_or_decoder_surface_named
+  - language_runtime_with_fuzzer_binding
+  - chromium_libfuzzer_target_present
+  surface_hints:
+  - libfuzzer_main_present
+  - cargo_fuzz_targets_dir
+  - atheris_python_module
+  - fuzzilli_v8_build
+  candidate_signals:
+  - new_corpus_seed_increases_coverage
+  - sanitizer_finding_in_run
+  - hang_or_oom_under_resource_cap
+mode_gates:
+  proof:
+    require_runtime_corroboration_for_critical: true
+    static_finding_proof_type: false
+    recompute_on_new_evidence: true
+risk_caps:
+  max_execution_level_without_approval: advisory
+  resource_limits:
+    cpu_seconds_per_run: 7200
+    memory_mb_per_run: 4096
+    disk_mb_per_run: 8192
+    require_cgroup_or_prlimit: true
+forbidden:
+- weaponize
+- chain_to_arbitrary_execution
+- fuzz_external_unowned_targets
+- destructive
+- dos
+- persistence
+- out_of_scope
+hypothesis_templates:
+- id: harness_yield_hypothesis
+  description: For each fuzz run, name the target function, the corpus seed lineage (initial set + minimization tool), the sanitizer used, the coverage delta achieved, and any sanitizer-detected finding mapped to a candidate theory.
+- id: harness_dead_zone
+  description: When coverage stalls, name the unexplored block(s) (file:line) and the hypothesis for why the harness cannot reach them (input grammar gap, unreachable guard, missing mock dependency).
+ui:
+  label: Fuzz harness
+  locked: true

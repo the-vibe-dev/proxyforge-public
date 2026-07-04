@@ -1,0 +1,38 @@
+schema_version: theory.system
+id: supply_chain.agentic_skill
+title: Agentic skill supply-chain weakness
+version: 1.0.0
+status: active
+summary: A skill may be malicious, overprivileged, unpinned, weakly isolated, or poorly governed.
+vuln_class: supply_chain
+subclass: agentic_skill
+severity_default: high
+mappings:
+  agentic_skills_top10: [AST01, AST02, AST03, AST04, AST05, AST06, AST07, AST08, AST09, AST10]
+  owasp_top10_2025: [A03]
+applicability:
+  target_surfaces: [surface.source]
+preconditions:
+  required: [skill_manifest_or_instruction_body_available]
+detection_logic:
+  predicates: [governance_gap_confirmed, runtime_relevance_confirmed, security_property_missing_or_invalid]
+  disconfirming_observations: [skill_not_loadable, governance_control_present, issue_cosmetic_only]
+exploitability_model:
+  factors: [routeability, permission_scope, trust_tier, update_policy, isolation_strength]
+impact_model:
+  dimensions: [supply_chain_reach, credential_exposure, agent_integrity, cross_platform_reuse]
+evidence_requirements:
+  minimum_for_validated:
+    - type: source_location
+      count: 1
+    - type: log_excerpt
+      count: 1
+false_positive_filters:
+  required: [verify_skill_loadable_or_routeable, verify_security_relevance, verify_control_absent]
+linked_skills:
+  primary: [threat_modeler]
+  supporting: [report_generator]
+linked_playbooks:
+  primary: [playbook.skill_supply_chain_audit]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

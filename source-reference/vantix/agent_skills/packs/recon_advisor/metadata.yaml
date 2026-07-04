@@ -1,0 +1,88 @@
+id: recon_advisor
+name: Recon Advisor
+version: 2
+summary: network and service enumeration methodology, plus complexity-driven target selection and optional LLM-assisted program/target ranking from structured scope data
+roles:
+- recon
+- researcher
+modes:
+- pentest
+- bugbounty
+- ctf
+- koth
+- windows-ctf
+- windows-koth
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- recon
+- nmap
+- services
+- complexity-target-selection
+- bug-class-first
+- llm-assisted-ranking
+- resources-vs-findings
+- passive-first
+- scope-confidence
+- snmp
+- smb
+- nfs
+- ipmi
+- ntp
+- llmnr
+- network-protocol
+requires_scope: true
+required_tools:
+- nmap
+optional_tools:
+- enum4linux-ng
+- snmp
+- onesixtyone
+- smbclient
+- nfs-common
+- responder
+- ike-scan
+- ntpq
+fallback_chain:
+  service_inventory: [nmap]
+  smb_enum: [enum4linux-ng, smbclient]
+  snmp_enum: [snmp, onesixtyone]
+  nfs_enum: [nfs-common]
+  ntp_amplification_check: [ntpq]
+  ipmi_check: [nmap]
+  llmnr_nbns_mdns_listen: [responder]
+triggers:
+  surfaces:
+  - surface.network.tcp
+  - surface.network.udp
+  - surface.network.smb
+  - surface.network.nfs
+  - surface.network.broadcast
+  protocols:
+  - snmp_v1_v2c
+  - smb_v1_v2_v3
+  - nfsv3_v4
+  - ipmi_v2
+  - ntp_v3_v4
+  - llmnr_nbns_mdns
+mode_gates:
+  proof:
+    poisoning_listen_only: true
+    relay_in_lab_only: true
+    no_amplification_send: true
+hypothesis_templates:
+- {id: net.snmp_default_community, description: SNMPv1/v2c default-community read-or-write on in-scope device}
+- {id: net.smb_null_session_and_signing, description: SMB null/anonymous access or unsigned/relayable SMB on in-scope host}
+- {id: net.nfs_export_unrestricted, description: NFS export world-readable/writable to in-scope client}
+- {id: net.ipmi_cipher0_or_passthrough, description: IPMI 2.0 cipher 0 or anonymous PASSTHRU on in-scope BMC}
+- {id: net.llmnr_nbns_mdns_poison, description: LLMNR/NBT-NS/mDNS broadcast resolvers active on in-scope segment (listen only)}
+- {id: net.ntp_monlist_amplification, description: NTP monlist or other UDP amplifier responding from in-scope host}
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope
+- amplification_send
+- production_relay

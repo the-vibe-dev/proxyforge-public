@@ -1,0 +1,31 @@
+id: recon_change_detection
+name: Recon Change Detection
+version: 1
+summary: Detect new changed and disappeared assets over time and launch targeted follow-up instead of full rescans
+roles:
+- recon
+- researcher
+modes:
+- bugbounty
+- pentest
+execution_level: passive
+safety_level: passive
+risk_tier: passive
+opsec: low
+tags:
+- recon
+- change-detection
+- monitoring
+- data-platform
+requires_scope: false
+required_tools:
+- curl
+optional_tools: []
+triggers:
+  surfaces:
+  - surface.recon.passive
+forbidden:
+- destructive
+- dos
+- out_of_scope
+- active_probe

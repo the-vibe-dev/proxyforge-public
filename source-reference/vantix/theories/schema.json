@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sechive.local/schemas/theory.system.json",
+  "title": "SecHive Unified Theory Manifest",
+  "description": "The theory contract combines applicability, detection, scoring, evidence, false-positive filtering, promotion, proof-continuation, and closure semantics into one runtime system.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "vuln_class",
+    "mappings",
+    "evidence_requirements",
+    "false_positive_filters",
+    "linked_skills"
+  ],
+  "properties": {
+    "schema_version": {"const": "theory.system"},
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$"},
+    "title": {"type": "string", "minLength": 3},
+    "version": {"type": "string", "default": "1.0.0"},
+    "status": {"type": "string", "enum": ["draft", "active", "deprecated", "revoked"], "default": "active"},
+    "summary": {"type": "string"},
+    "vuln_class": {"type": "string", "minLength": 2},
+    "subclass": {"type": "string"},
+    "severity_default": {"type": "string", "enum": ["info", "low", "medium", "high", "critical"], "default": "medium"},
+    "mappings": {"type": "object", "additionalProperties": true, "minProperties": 1},
+    "contract_lineage": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "system": {"type": "string"},
+        "posture": {"type": "string", "enum": ["unified"]},
+        "preserves": {"type": "array", "items": {"type": "string"}},
+        "adds": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "applicability": {"type": "object", "additionalProperties": true},
+    "preconditions": {"type": "object", "additionalProperties": true},
+    "detection_logic": {"type": "object", "additionalProperties": true},
+    "exploitability_model": {"type": "object", "additionalProperties": true},
+    "impact_model": {"type": "object", "additionalProperties": true},
+    "evidence_requirements": {"type": "object", "additionalProperties": true, "required": ["minimum_for_validated"]},
+    "false_positive_filters": {
+      "type": "object",
+      "additionalProperties": {"type": "array", "items": {"type": "string"}},
+      "required": ["required"]
+    },
+    "linked_skills": {
+      "type": "object",
+      "additionalProperties": {"type": "array", "items": {"type": "string"}}
+    },
+    "linked_playbooks": {
+      "type": "object",
+      "additionalProperties": {"type": "array", "items": {"type": "string"}}
+    },
+    "promotion_rules": {"type": "object", "additionalProperties": true},
+    "references": {"type": "object", "additionalProperties": true},
+    "internal_only": {"type": "boolean", "default": false}
+  }
+}

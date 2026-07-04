@@ -1,0 +1,43 @@
+schema_version: theory.system
+id: crypto.weak_rng_predictable_token
+title: Weak RNG (Mersenne Twister, time-seeded, math/random) yields predictable tokens
+version: 1.0.0
+status: active
+summary: Tokens, password resets, session IDs, or coupon codes are generated from `Math.random`, `random.random`, `rand()`, or a time-seeded Mersenne Twister. From observed outputs an attacker recovers internal state and predicts future or sibling tokens.
+vuln_class: crypto
+subclass: weak_rng
+severity_default: high
+mappings:
+  cwe: [CWE-330, CWE-338]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+preconditions:
+  required: [tokens_generated_from_non_csprng, sufficient_token_outputs_observable]
+detection_logic:
+  predicates:
+    - mt19937_state_clone_succeeds_from_624_outputs
+    - time_seeded_rng_predictable_from_observed_timestamp
+    - sequential_or_low_entropy_token_format
+  disconfirming_observations:
+    - tokens_generated_from_os_csprng
+    - tokens_signed_with_keyed_mac
+    - per_token_high_entropy_attestable
+exploitability_model:
+  factors: [observable_token_count, csprng_use, additional_signing]
+impact_model:
+  dimensions: [account_takeover, token_prediction, authz_bypass]
+evidence_requirements:
+  minimum_for_validated:
+    - type: observed_token_set
+      count: 1
+    - type: prediction_or_clone_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_tokens_actually_from_predicted_rng
+    - verify_no_compensating_signing
+linked_skills:
+  primary: [crypto_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.crypto_token_review]

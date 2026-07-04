@@ -1,0 +1,49 @@
+schema_version: theory.system
+id: web.cross_origin_data_exposure
+title: Cross-origin data exposure or state change
+version: 1.0.0
+status: active
+summary: JSONP callbacks, permissive CORS, frameable pages, ambient cookies, or weak CSRF controls may let an untrusted origin read data or trigger state changes.
+vuln_class: browser_security
+subclass: cross_origin_boundary
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01, A05]
+  wstg: [WSTG-SESS, WSTG-CLNT]
+  cwe: [CWE-352, CWE-942, CWE-346]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [cookie_auth_or_callback_or_cors_signal]
+preconditions:
+  required: [owned_or_lab_session, browser_feasibility_model]
+  blockers: [no_browser_read_or_state_change_path, unapproved_real_user_flow]
+detection_logic:
+  predicates:
+    - untrusted_origin_request_shape_defined
+    - browser_can_send_credentials_or_read_response
+    - sensitive_readback_or_state_change_observed
+  disconfirming_observations:
+    - preflight_blocks_request
+    - same_site_or_origin_checks_block
+    - response_not_readable_and_no_state_change
+exploitability_model:
+  factors: [credential_mode, content_type, preflight, sensitive_fields, state_change_power]
+impact_model:
+  dimensions: [confidentiality, account_integrity, session_abuse]
+evidence_requirements:
+  minimum_for_validated:
+    - type: browser_proof
+      count: 1
+    - type: http_exchange
+      count: 1
+false_positive_filters:
+  required: [verify_untrusted_origin, verify_sensitive_read_or_state_delta, verify_browser_feasibility]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [payload_crafter, poc_validator]
+linked_playbooks:
+  primary: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [browser_feasible, required_evidence_satisfied, false_positive_filters_passed]
+references:
+  native_patterns: [cors_readback, jsonp_callback, csrf_state_change, framing_side_channel]

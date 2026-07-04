@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: llm.tool_call_confused_deputy
+title: LLM tool-call confused deputy via untrusted content
+version: 1.0.0
+status: active
+summary: Untrusted content in the conversation context (RAG document, uploaded file, email body, fetched web page, prior tool output) triggers the LLM agent to invoke a privileged tool — email send, file write, payment, code exec — without an out-of-band user confirmation step or per-tool authorization gate.
+vuln_class: llm
+subclass: tool_confused_deputy
+severity_default: critical
+mappings:
+  cwe: [CWE-285, CWE-77]
+  llm: [owasp.llm.llm08]
+applicability:
+  target_surfaces: [surface.llm.agent]
+preconditions:
+  required: [agent_has_side_effecting_tools, untrusted_content_can_reach_agent_context, no_per_tool_user_confirmation]
+detection_logic:
+  predicates:
+    - tool_call_emitted_after_attacker_controlled_input
+    - tool_arguments_attributable_to_untrusted_content
+    - no_human_confirmation_step_observed
+  disconfirming_observations:
+    - tool_call_routed_through_user_approval_modal
+    - per_tool_authz_revalidates_user_intent
+    - attacker_content_quoted_and_sandboxed
+exploitability_model:
+  factors: [tool_inventory_blast_radius, confirmation_flow, content_provenance_tracking]
+impact_model:
+  dimensions: [account_takeover_via_email_or_password_reset, financial_loss, data_loss_via_file_writes]
+evidence_requirements:
+  minimum_for_validated:
+    - type: trigger_payload_evidence
+      count: 1
+    - type: tool_call_trace
+      count: 1
+    - type: side_effect_evidence_or_argument
+      count: 1
+  preferred_for_critical:
+    - type: lab_side_effect_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_no_user_confirmation_intercepted_call
+    - verify_tool_arguments_match_untrusted_content
+    - verify_target_tool_actually_side_effecting
+linked_skills:
+  primary: [llm_redteam]
+  supporting: [poc_validator, web_hunter]
+linked_playbooks:
+  primary: [playbook.llm_application_review]

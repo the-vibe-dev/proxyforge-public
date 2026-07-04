@@ -1,0 +1,562 @@
+[
+  {
+    "checkId": "sql-injection",
+    "family": "sql-injection",
+    "surfaceTypes": ["query", "body", "json", "cookie"],
+    "triggerFacts": [
+      "SQL error pattern in response",
+      "Time delay observed",
+      "OAST callback received",
+      "Boolean-based difference detected"
+    ],
+    "summary": "SQL injection via unsanitized input concatenated into SQL queries.",
+    "operatorGuidance": [
+      "Confirm with error-based, time-based, and OAST payloads",
+      "Map all input parameters before probing",
+      "Use blind time-based confirmation if no error output is visible",
+      "Chain OAST callback to confirm blind injection without timing reliance"
+    ],
+    "allowedFollowups": [
+      "extract-db-schema",
+      "blind-oast-confirmation",
+      "automated-exploitation"
+    ],
+    "forbiddenBranches": ["destructive-ddl"],
+    "expectedProof": [
+      "SQL error message",
+      "time delta >= 5s",
+      "OAST DNS callback",
+      "Boolean response difference"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "reflected-xss",
+    "family": "xss-reflected",
+    "surfaceTypes": ["query", "body", "header", "path"],
+    "triggerFacts": [
+      "Payload reflected in response body without encoding",
+      "Script tag executed in browser",
+      "Attribute breakout observed"
+    ],
+    "summary": "Reflected XSS via unsanitized user input echoed back into the HTML response.",
+    "operatorGuidance": [
+      "Confirm payload executes in a real browser context",
+      "Identify the reflection context (HTML body, attribute, JS block, URL)",
+      "Test both GET and POST submission paths",
+      "Check CSP headers that may prevent exploitation"
+    ],
+    "allowedFollowups": [
+      "browser-confirm-execution",
+      "cookie-theft-demo",
+      "dom-pivot"
+    ],
+    "forbiddenBranches": ["account-takeover-without-consent"],
+    "expectedProof": [
+      "Payload reflected unencoded",
+      "Script execution confirmed in browser",
+      "Alert/fetch callback observed"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "xss-oracle",
+    "family": "xss-oracle",
+    "surfaceTypes": ["query", "body", "json", "header"],
+    "triggerFacts": [
+      "Oracle response class: expected-proof",
+      "Verifier type error detected",
+      "Tag-stripped-or-ignored response observed"
+    ],
+    "summary": "XSS oracle classification confirms sanitisation bypass or encoding gap in XSS defences.",
+    "operatorGuidance": [
+      "Run oracle payloads across all insertion points in the request",
+      "Classify responses using oracle response classifier",
+      "Escalate expected-proof classifications to reflected-xss confirmation",
+      "Document verifier-type-error responses as partial bypass evidence"
+    ],
+    "allowedFollowups": [
+      "reflected-xss-confirm",
+      "stored-xss-probe"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Oracle class: expected-proof",
+      "Payload reflected in unencoded context",
+      "Sanitiser bypass confirmed"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "ssti",
+    "family": "ssti",
+    "surfaceTypes": ["query", "body", "json", "header", "cookie"],
+    "triggerFacts": [
+      "Mathematical expression evaluated in response",
+      "Template syntax reflected with evaluation result",
+      "Error message reveals template engine name"
+    ],
+    "summary": "Server-side template injection via user-controlled input passed into a template engine.",
+    "operatorGuidance": [
+      "Use engine-agnostic polyglot payloads first to detect evaluation",
+      "Fingerprint template engine from error messages or evaluation results",
+      "Escalate to RCE via engine-specific payloads",
+      "Test Jinja2, Twig, Freemarker, Pebble, Velocity, Handlebars patterns"
+    ],
+    "allowedFollowups": [
+      "ssti-rce-escalation",
+      "file-read-via-ssti"
+    ],
+    "forbiddenBranches": ["destructive-file-write"],
+    "expectedProof": [
+      "Mathematical expression result in response (e.g. 49 from 7*7)",
+      "Template engine name in error",
+      "Command output via RCE payload"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "lfi-traversal",
+    "family": "lfi-traversal",
+    "surfaceTypes": ["query", "body", "path", "cookie"],
+    "triggerFacts": [
+      "Known file contents in response",
+      "Directory listing returned",
+      "Path traversal sequence not sanitised"
+    ],
+    "summary": "Local file inclusion via path traversal in a file parameter, allowing arbitrary file reads.",
+    "operatorGuidance": [
+      "Start with /etc/passwd or Windows equivalents as low-risk proof files",
+      "Test URL-encoded and double-encoded traversal sequences",
+      "Check for null-byte termination bypasses",
+      "Escalate to RCE via log poisoning or /proc/self/fd if available"
+    ],
+    "allowedFollowups": [
+      "lfi-to-rce-log-poison",
+      "source-code-disclosure"
+    ],
+    "forbiddenBranches": ["destructive-file-overwrite"],
+    "expectedProof": [
+      "/etc/passwd contents in response",
+      "Windows system file contents",
+      "Application source code disclosed"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "command-injection",
+    "family": "command-injection",
+    "surfaceTypes": ["query", "body", "json", "header", "cookie"],
+    "triggerFacts": [
+      "OS command output in response",
+      "Time delay from sleep/ping command",
+      "OAST DNS callback from nslookup/curl payload"
+    ],
+    "summary": "OS command injection via unsanitized input passed to shell execution context.",
+    "operatorGuidance": [
+      "Use time-based blind payloads first to avoid noisy output",
+      "Confirm with OAST DNS lookup for reliable out-of-band confirmation",
+      "Test semicolon, pipe, ampersand, and backtick separators",
+      "Identify the shell context (sh, bash, cmd, powershell)"
+    ],
+    "allowedFollowups": [
+      "oast-blind-confirmation",
+      "rce-escalation"
+    ],
+    "forbiddenBranches": ["destructive-system-commands", "data-exfiltration-without-consent"],
+    "expectedProof": [
+      "OS command output (id, whoami)",
+      "Time delta >= 5s from sleep payload",
+      "OAST DNS callback"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "ssrf",
+    "family": "ssrf",
+    "surfaceTypes": ["query", "body", "json", "header"],
+    "triggerFacts": [
+      "Internal service response in body",
+      "Cloud metadata endpoint response",
+      "Redirect to internal host followed"
+    ],
+    "summary": "Server-side request forgery via user-controlled URL causing the server to make internal requests.",
+    "operatorGuidance": [
+      "Probe cloud metadata endpoints (169.254.169.254, 100.100.100.200)",
+      "Test loopback and RFC-1918 ranges",
+      "Use URL scheme variants: http, https, gopher, dict, file",
+      "Check for partial SSRF via redirect chains"
+    ],
+    "allowedFollowups": [
+      "ssrf-oast-confirmation",
+      "cloud-metadata-extraction",
+      "internal-service-enum"
+    ],
+    "forbiddenBranches": ["credential-exfiltration-without-consent"],
+    "expectedProof": [
+      "Internal host response body",
+      "Cloud metadata content (AWS/GCP/Azure)",
+      "TCP port open confirmation"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "ssrf-oast",
+    "family": "ssrf-oast",
+    "surfaceTypes": ["query", "body", "json", "header"],
+    "triggerFacts": [
+      "OAST DNS callback received",
+      "OAST HTTP callback received",
+      "No in-band response indicator available"
+    ],
+    "summary": "Blind SSRF confirmed via out-of-band DNS or HTTP callback to an OAST listener.",
+    "operatorGuidance": [
+      "Use unique per-request OAST subdomains to correlate callbacks",
+      "Wait at least 30s for delayed callbacks",
+      "Test both HTTP and HTTPS probe URLs",
+      "Confirm the server-side user-agent in OAST logs for fingerprinting"
+    ],
+    "allowedFollowups": [
+      "ssrf-cloud-metadata",
+      "ssrf-internal-port-scan"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "OAST DNS callback with unique token",
+      "OAST HTTP request received",
+      "Correlation between request timestamp and callback"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "open-redirect",
+    "family": "open-redirect",
+    "surfaceTypes": ["query", "body", "header", "path"],
+    "triggerFacts": [
+      "Redirect to attacker-controlled domain observed",
+      "Location header contains injected URL",
+      "Meta refresh to external URL"
+    ],
+    "summary": "Open redirect allows attacker-controlled redirection, enabling phishing and OAuth token theft.",
+    "operatorGuidance": [
+      "Test absolute and relative URL payloads",
+      "Check for allowlist bypass via double-slash, at-sign, and fragment tricks",
+      "Assess severity in context of OAuth redirect_uri or SSO flows",
+      "Document redirect chain depth and final destination"
+    ],
+    "allowedFollowups": [
+      "oauth-redirect-abuse",
+      "phishing-chain-demo"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "HTTP 3xx response with Location to attacker domain",
+      "Browser navigation to external origin confirmed"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "xxe",
+    "family": "xxe",
+    "surfaceTypes": ["body", "json", "xml"],
+    "triggerFacts": [
+      "File contents returned in response",
+      "SSRF via external entity observed",
+      "XML parsing error exposing entity processing"
+    ],
+    "summary": "XML external entity injection via malicious DOCTYPE in XML input processed by the server.",
+    "operatorGuidance": [
+      "Inject SYSTEM entity pointing to /etc/passwd for in-band proof",
+      "Use parameter entities if external general entities are blocked",
+      "Test XInclude and XPath injection as alternatives",
+      "Escalate blind XXE via OAST HTTP callback"
+    ],
+    "allowedFollowups": [
+      "xxe-oast-confirmation",
+      "xxe-ssrf-escalation"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "File contents in response via entity reference",
+      "Server-side error revealing DTD processing",
+      "SSRF to internal host via external entity"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "xxe-oast",
+    "family": "xxe-oast",
+    "surfaceTypes": ["body", "xml"],
+    "triggerFacts": [
+      "OAST DNS callback from external entity URL",
+      "OAST HTTP callback received",
+      "Blind XXE with no in-band output"
+    ],
+    "summary": "Blind XXE confirmed via out-of-band DNS/HTTP callback when no in-band error output is available.",
+    "operatorGuidance": [
+      "Use parameter entity with external DTD reference to trigger OAST",
+      "Correlate OAST callback timing with request submission",
+      "Chain with file exfiltration via out-of-band data channel",
+      "Test both DNS and HTTP OOB channels for firewall traversal"
+    ],
+    "allowedFollowups": [
+      "xxe-file-exfil-oob"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "OAST DNS callback with unique token",
+      "OAST HTTP request containing entity data"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "nosql-injection",
+    "family": "nosql-injection",
+    "surfaceTypes": ["query", "body", "json", "cookie"],
+    "triggerFacts": [
+      "Authentication bypass via operator injection",
+      "More records returned than expected",
+      "NoSQL error message in response"
+    ],
+    "summary": "NoSQL injection via operator injection in MongoDB, CouchDB, or similar document store queries.",
+    "operatorGuidance": [
+      "Test $gt, $ne, $regex operators in JSON body and query params",
+      "Attempt auth bypass with {$ne: null} on password field",
+      "Use $where clause injection for JavaScript execution where supported",
+      "Fingerprint database type from error messages"
+    ],
+    "allowedFollowups": [
+      "nosql-data-extraction",
+      "nosql-auth-bypass-confirm"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Authentication bypass with invalid credentials",
+      "Excessive records returned via $ne or $gt",
+      "NoSQL error message with operator syntax"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "host-header",
+    "family": "host-header",
+    "surfaceTypes": ["header"],
+    "triggerFacts": [
+      "Injected Host value reflected in response",
+      "Password reset link contains attacker domain",
+      "Cache poisoning via Host header confirmed"
+    ],
+    "summary": "Host header injection allows cache poisoning, password reset hijacking, or internal routing abuse.",
+    "operatorGuidance": [
+      "Test X-Forwarded-Host, X-Host, X-Original-Host as alternatives",
+      "Check password reset flows for Host-reflected links",
+      "Probe for routing differences when Host points to internal hostnames",
+      "Verify if the injected value is cached and served to other users"
+    ],
+    "allowedFollowups": [
+      "password-reset-poison",
+      "cache-poisoning-escalation"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Injected Host value in response body or Location header",
+      "Password reset email with attacker-controlled domain",
+      "Cache hit serving poisoned response to other requests"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "crlf-injection",
+    "family": "crlf-injection",
+    "surfaceTypes": ["query", "body", "header", "path"],
+    "triggerFacts": [
+      "Injected header appears in response",
+      "Set-Cookie header injected",
+      "HTTP response splitting observed"
+    ],
+    "summary": "CRLF injection via \\r\\n sequences in user input allows header injection and response splitting.",
+    "operatorGuidance": [
+      "Test URL-encoded %0d%0a in query parameters and path segments",
+      "Confirm injected headers appear in response",
+      "Assess session fixation risk via Set-Cookie injection",
+      "Check for XSS via injected Content-Type or body splitting"
+    ],
+    "allowedFollowups": [
+      "session-fixation-via-crlf",
+      "xss-via-response-split"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Injected header present in HTTP response",
+      "Set-Cookie header injected with attacker value",
+      "Response body content injected via splitting"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "cache-poisoning",
+    "family": "cache-poisoning",
+    "surfaceTypes": ["header", "query"],
+    "triggerFacts": [
+      "Poisoned response served from cache to other requests",
+      "Unkeyed input reflected in cached response",
+      "Cache hit with injected content"
+    ],
+    "summary": "Web cache poisoning via unkeyed request inputs that influence cached responses served to all users.",
+    "operatorGuidance": [
+      "Identify unkeyed headers using Param Miner or equivalent",
+      "Confirm reflection of unkeyed input in response body",
+      "Verify poisoned entry is cached with X-Cache or Age headers",
+      "Assess XSS or redirect payload deliverable via cached response"
+    ],
+    "allowedFollowups": [
+      "cache-xss-delivery",
+      "host-header-cache-poison"
+    ],
+    "forbiddenBranches": ["mass-cache-poisoning-without-consent"],
+    "expectedProof": [
+      "Poisoned response returned from cache (X-Cache: HIT)",
+      "Unkeyed input reflected in cached response",
+      "Different session receiving injected content"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "jwt-attack",
+    "family": "jwt-attack",
+    "surfaceTypes": ["header", "cookie"],
+    "triggerFacts": [
+      "JWT algorithm confusion accepted (RS256 to HS256)",
+      "None algorithm token accepted",
+      "Weak secret cracked offline"
+    ],
+    "summary": "JWT attack via algorithm confusion, none algorithm, or weak HMAC secret allowing token forgery.",
+    "operatorGuidance": [
+      "Test none algorithm by stripping signature",
+      "Attempt RS256-to-HS256 confusion with public key as HMAC secret",
+      "Crack short or default HMAC secrets with jwt-cracker or hashcat",
+      "Test kid header injection for SQL or file path traversal"
+    ],
+    "allowedFollowups": [
+      "jwt-privilege-escalation",
+      "jwt-kid-injection"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Forged token accepted by server",
+      "Elevated privileges granted with manipulated claims",
+      "Server processes none-algorithm token"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "cors-misconfiguration",
+    "family": "cors-misconfig",
+    "surfaceTypes": ["header"],
+    "triggerFacts": [
+      "Access-Control-Allow-Origin reflects attacker origin",
+      "ACAO: null accepted",
+      "Wildcard ACAO with credentials"
+    ],
+    "summary": "CORS misconfiguration allows cross-origin credential theft when the server reflects attacker-controlled origins.",
+    "operatorGuidance": [
+      "Test null origin and arbitrary subdomain reflection",
+      "Confirm Access-Control-Allow-Credentials: true is present",
+      "Assess impact based on what authenticated endpoints are reachable",
+      "Check pre-flight OPTIONS handling for method/header exposure"
+    ],
+    "allowedFollowups": [
+      "cors-credential-theft-poc"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "ACAO header reflects attacker origin",
+      "ACAC: true present alongside reflected origin",
+      "Cross-origin fetch of authenticated response succeeds"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "graphql-introspection",
+    "family": "graphql-attack",
+    "surfaceTypes": ["body", "json"],
+    "triggerFacts": [
+      "Introspection query returns full schema",
+      "Hidden mutations or queries exposed",
+      "Debug fields or internal types visible"
+    ],
+    "summary": "GraphQL introspection enabled in production exposes full schema including internal types and mutations.",
+    "operatorGuidance": [
+      "Run introspection query to enumerate all types, fields, mutations",
+      "Map hidden or undocumented mutations for further probing",
+      "Test for field-level authorization gaps on sensitive resolvers",
+      "Probe for batching attacks and alias-based rate limit bypass"
+    ],
+    "allowedFollowups": [
+      "graphql-authorization-matrix",
+      "graphql-batching-attack"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Full schema returned via __schema introspection",
+      "Hidden mutations enumerated",
+      "Sensitive types or resolvers identified"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "mass-assignment",
+    "family": "mass-assignment",
+    "surfaceTypes": ["body", "json"],
+    "triggerFacts": [
+      "Extra fields accepted and persisted",
+      "Role or privilege field writable by user",
+      "Undocumented field causes behaviour change"
+    ],
+    "summary": "Mass assignment vulnerability allows users to set protected fields by sending unexpected parameters.",
+    "operatorGuidance": [
+      "Add privileged fields (role, admin, isVerified) to update requests",
+      "Confirm field persistence by reading state after write",
+      "Compare API request schemas with database model definitions",
+      "Test nested object assignment for bypassed allowlists"
+    ],
+    "allowedFollowups": [
+      "privilege-escalation-via-mass-assign"
+    ],
+    "forbiddenBranches": [],
+    "expectedProof": [
+      "Privileged field persisted after injection",
+      "Role escalation reflected in subsequent authenticated requests",
+      "Response body confirms assigned field value"
+    ],
+    "defaultRisk": "low"
+  },
+  {
+    "checkId": "idor",
+    "family": "idor",
+    "surfaceTypes": ["query", "body", "path", "json"],
+    "triggerFacts": [
+      "Another user's resource returned",
+      "Sequential or guessable IDs accepted",
+      "Authorization check absent on object lookup"
+    ],
+    "summary": "Insecure direct object reference allows access to other users' resources via manipulated identifiers.",
+    "operatorGuidance": [
+      "Map all object identifiers in API endpoints (IDs, GUIDs, slugs)",
+      "Test cross-account access with a second test account",
+      "Probe horizontal and vertical privilege escalation paths",
+      "Check for GUID predictability or hash reversibility"
+    ],
+    "allowedFollowups": [
+      "idor-bulk-enumeration",
+      "idor-privilege-escalation"
+    ],
+    "forbiddenBranches": ["bulk-pii-extraction-without-consent"],
+    "expectedProof": [
+      "Another user's data returned in response",
+      "Cross-account resource modification confirmed",
+      "Authorization boundary not enforced on object lookup"
+    ],
+    "defaultRisk": "low"
+  }
+]

@@ -1,0 +1,44 @@
+schema_version: theory.system
+id: api.graphql.field_authz_and_idor
+title: GraphQL field-level authorization gap or object-level IDOR via resolver
+version: 1.0.0
+status: active
+summary: GraphQL resolvers enforce authorization only at the top-level query/mutation but not on nested object fields or relationship traversal, or an object identifier passed to a resolver is not validated against the caller's tenant/owner. Result is information disclosure or cross-tenant access via composed queries.
+vuln_class: api
+subclass: graphql_authz
+severity_default: high
+mappings:
+  cwe: [CWE-285, CWE-639]
+  api: [graphql]
+applicability:
+  target_surfaces: [surface.api.graphql]
+preconditions:
+  required: [resolver_returns_object_referenced_by_user_id, no_per_field_or_per_object_authz_check]
+detection_logic:
+  predicates:
+    - query_with_other_tenant_object_id_returns_data
+    - nested_field_returns_data_without_top_level_authorization
+    - relationship_traversal_returns_unauthorized_objects
+  disconfirming_observations:
+    - resolver_validates_caller_against_object_ownership
+    - dataloader_or_authz_filter_strips_unauthorized_nodes
+    - persisted_query_pinning_blocks_arbitrary_traversal
+exploitability_model:
+  factors: [authz_layer_breadth, dataloader_design, object_id_format]
+impact_model:
+  dimensions: [pii_disclosure, cross_tenant_access, data_modification]
+evidence_requirements:
+  minimum_for_validated:
+    - type: cross_tenant_query_evidence
+      count: 1
+    - type: response_with_unauthorized_object
+      count: 1
+false_positive_filters:
+  required:
+    - verify_returned_object_belongs_to_other_owner
+    - verify_no_compensating_field_filter
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.graphql_attack_surface]

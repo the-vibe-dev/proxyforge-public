@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: authn.stateful_workflow
+title: Stateful authentication workflow completion
+version: 1.0.0
+status: active
+summary: Login, registration, role, and profile flows may require following app-indicated state transitions before the real attack surface is reachable.
+vuln_class: authn
+subclass: stateful_workflow
+severity_default: medium
+mappings:
+  owasp_top10_2025: [A01, A07]
+  wstg: [WSTG-ATHN, WSTG-ATHZ]
+  cwe: [CWE-287, CWE-306, CWE-862]
+applicability:
+  target_surfaces: [surface.web.http, surface.api.rest]
+  required_observations: [auth_like_form_or_route, app_workflow_hint]
+preconditions:
+  required: [scope_authorizes_testing, current_run_workflow_evidence]
+  blockers: [credential_use_not_approved, destructive_state_change_required]
+detection_logic:
+  predicates:
+    - app_exposes_login_registration_or_profile_flow
+    - javascript_or_redirect_or_form_action_identifies_next_step
+    - session_state_changes_route_access_or_server_output
+  disconfirming_observations:
+    - identical_response_after_preserved_session_replay
+    - credentials_or_registration_blocked
+    - server_rejects_all_state_transitions
+exploitability_model:
+  factors: [workflow_reachability, session_continuity, credential_hint_quality, role_boundary, post_auth_surface]
+impact_model:
+  dimensions: [auth_bypass, privileged_route_access, data_access, workflow_integrity]
+evidence_requirements:
+  minimum_for_validated:
+    - type: request_sequence
+      count: 1
+    - type: post_auth_delta
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_session_cookie_continuity, verify_server_side_state_change, verify_not_ui_only]
+linked_skills:
+  primary: [web_hunter, api_security]
+  supporting: [poc_validator, exploit_chainer]
+linked_playbooks:
+  primary: [playbook.web_api_coverage]
+  supporting: [playbook.proof_pack_completion]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed]

@@ -1,0 +1,40 @@
+schema_version: theory.system
+id: jwt.none_alg_acceptance
+title: JWT verifier accepts alg=none or empty signature
+version: 1.0.0
+status: active
+summary: "A JWT verifier accepts a token whose header advertises alg=none (or a case variant like None/NONE/nOnE) with an empty or absent signature, treating the token as authenticated. Library-default acceptance, mis-typed allow lists, or mode-flag bugs cause the unsigned token to be accepted as if it carried a valid signature."
+vuln_class: token_crypto
+subclass: jwt_alg_none
+severity_default: high
+mappings:
+  cwe: [CWE-347, CWE-287]
+  owasp: [A07:2021]
+applicability:
+  target_surfaces: [surface.api.rest, surface.api.graphql, surface.web.http]
+preconditions:
+  required: [jwt_in_use, verifier_does_not_pin_alg]
+detection_logic:
+  predicates:
+    - token_with_alg_none_and_empty_signature_validates_as_user
+    - token_with_alg_None_case_variant_validates
+  disconfirming_observations:
+    - verifier_returns_explicit_alg_not_allowed_error
+    - verifier_pins_to_HS256_or_RS256_only
+exploitability_model:
+  factors: [library_version, alg_pinning_policy]
+impact_model:
+  dimensions: [authentication_bypass, identity_spoofing]
+evidence_requirements:
+  minimum_for_validated:
+    - type: forged_token_acceptance_evidence
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_reflects_forged_identity
+    - verify_not_only_decoded_for_logging
+linked_skills:
+  primary: [api_security]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.token_signature_validation_attacks]

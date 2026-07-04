@@ -1,0 +1,50 @@
+schema_version: theory.system
+id: web.cache_poisoning
+title: Web cache poisoning via unkeyed input
+version: 1.0.0
+status: active
+summary: A caching layer (CDN, reverse proxy, framework cache) keys responses on a subset of request attributes (URL + a few headers) but allows other attributes (X-Forwarded-Host, custom headers, query parameters) to influence the response body. An attacker poisons a cached response that is then served to other users.
+vuln_class: web
+subclass: cache_poisoning
+severity_default: high
+mappings:
+  cwe: [CWE-345, CWE-444]
+  web: [cdn, http_cache]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [shared_cache_layer_present, unkeyed_request_attribute_influences_response, cache_hit_observable]
+detection_logic:
+  predicates:
+    - probe_with_modified_unkeyed_header_changes_response_body
+    - subsequent_clean_request_returns_poisoned_body
+    - cache_hit_indicator_present
+  disconfirming_observations:
+    - cache_keys_include_all_response_influencing_inputs
+    - cache_layer_strips_unsafe_headers
+    - response_marked_no_cache_for_target_route
+exploitability_model:
+  factors: [cache_key_breadth, response_input_dependencies, cache_ttl]
+impact_model:
+  dimensions: [stored_xss_via_cache, redirect_to_attacker, denial_of_service]
+evidence_requirements:
+  minimum_for_validated:
+    - type: poison_request_evidence
+      count: 1
+    - type: clean_request_observes_poison
+      count: 1
+    - type: cache_hit_evidence
+      count: 1
+  preferred_for_critical:
+    - type: lab_user_impact_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_response_actually_cached
+    - verify_clean_request_path_observes_poison
+    - verify_unkeyed_input_actually_changes_body
+linked_skills:
+  primary: [web_hunter]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.web_advanced_techniques]

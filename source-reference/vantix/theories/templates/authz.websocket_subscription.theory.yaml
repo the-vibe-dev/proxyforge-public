@@ -1,0 +1,54 @@
+schema_version: theory.system
+id: authz.websocket_subscription
+title: WebSocket subscription authorization bypass
+version: 1.0.0
+status: active
+summary: A stateful WebSocket connection authorizes only at connect-time (or
+  not at all) while per-subscription / per-frame identifiers (object id,
+  tenant id, channel, user id) are trusted without re-checking caller
+  ownership. A user subscribes to or sends frames for another user's or
+  tenant's object stream.
+vuln_class: authz
+subclass: websocket_subscription
+severity_default: high
+mappings:
+  owasp_top10_2025: [A01]
+  wstg: [WSTG-ATHZ-02, WSTG-CLNT-10]
+  cwe: [CWE-862, CWE-639]
+applicability:
+  target_surfaces: [surface.api.websocket, surface.api.realtime, surface.web.http]
+  required_observations: [websocket_handshake_observed, subscription_identifier_present]
+preconditions:
+  required: [scope_authorizes_testing, two_owned_test_accounts_available]
+  blockers: [credential_use_not_approved, destructive_state_change_required]
+detection_logic:
+  predicates:
+    - subscription_identifier.controlled_by_user
+    - authorization.only_at_connect_or_absent
+    - cross_subject_subscription.returns_data_or_acts
+  disconfirming_observations:
+    - per_frame_authorization_enforced
+    - subscription_rejected_for_non_owned_id
+    - stream_scoped_to_authenticated_principal
+exploitability_model:
+  factors: [authz_timing, identifier_predictability, stream_sensitivity, repeatability]
+impact_model:
+  dimensions: [confidentiality, tenant_boundary, integrity, real_time_data_exposure]
+evidence_requirements:
+  minimum_for_validated:
+    - type: websocket_frame_exchange
+      count: 2
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_other_account_owns_stream, verify_authz_not_enforced_per_frame, verify_not_cached_or_replayed_self_data]
+linked_skills:
+  primary: [access_control_bypass, web_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.websocket_realtime_api_review]
+  supporting: [playbook.api_authz_idor_matrix]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.idor_ac]

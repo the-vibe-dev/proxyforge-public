@@ -1,0 +1,42 @@
+schema_version: theory.system
+id: crypto.ecb_plaintext_recovery
+title: ECB-mode plaintext recovery or block cut-and-paste forgery
+version: 1.0.0
+status: active
+summary: A token or cookie is encrypted with ECB. Repeated 16-byte plaintext blocks produce identical ciphertext blocks, exposing structure. With chosen-plaintext or partial-control input, blocks can be cut-and-pasted to forge tokens (e.g., role escalation by swapping `role=user__` block with `role=admin_` block).
+vuln_class: crypto
+subclass: ecb
+severity_default: high
+mappings:
+  cwe: [CWE-327, CWE-326]
+applicability:
+  target_surfaces: [surface.web.http]
+preconditions:
+  required: [token_encrypted_with_ecb, attacker_can_observe_repeating_blocks_or_inject_partial_plaintext]
+detection_logic:
+  predicates:
+    - identical_input_blocks_yield_identical_ciphertext_blocks
+    - chosen_plaintext_recovery_or_block_swap_succeeds_in_lab
+  disconfirming_observations:
+    - mode_actually_cbc_or_gcm_with_random_iv
+    - token_authenticated_with_mac
+    - input_padded_with_random_salt_per_block
+exploitability_model:
+  factors: [attacker_input_alignment, mac_use, salt_state]
+impact_model:
+  dimensions: [forgery, auth_bypass, role_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: ciphertext_with_repeating_blocks
+      count: 1
+    - type: forgery_or_recovery_demo
+      count: 1
+false_positive_filters:
+  required:
+    - verify_repeating_blocks_attributable_to_ecb_not_chance
+    - verify_no_mac_blocks_forgery
+linked_skills:
+  primary: [crypto_attacker]
+  supporting: [poc_validator]
+linked_playbooks:
+  primary: [playbook.crypto_token_review]

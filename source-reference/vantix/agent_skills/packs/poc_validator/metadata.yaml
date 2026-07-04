@@ -1,0 +1,84 @@
+id: poc_validator
+name: PoC Validator
+version: 1
+summary: non-destructive vulnerability confirmation
+roles:
+- developer
+- executor
+- researcher
+modes:
+- pentest
+- bugbounty
+- ctf
+execution_level: gated
+safety_level: active
+risk_tier: active
+opsec: moderate
+tags:
+- poc
+- validation
+- backup-exposure
+- config-disclosure
+- plugin-entrypoint
+- bounded-validation
+- blind-inference
+- proof-bundle
+- payload-mutation
+- full-proof
+- promotion-discipline
+- route-closure
+- proof-floor
+requires_scope: true
+triggers:
+  validation_targets:
+  - public_backup_archive
+  - config_disclosure
+  - database_dump
+  - file_read
+  - known_vulnerable_entrypoint
+  - plugin_version_match
+  - csrf_candidate
+  - cors_candidate
+  - graphql_operation
+  - websocket_message
+  - dom_sink
+  - verifier_oracle
+  - sanitizer_grammar
+  - whitespace_collapse
+  - delimiter_transform
+  - browser_storage_token
+  - source_local_side_service
+  - mapped_side_service
+  - property_overposting
+  - excessive_response_field
+  - transport_configuration
+  - scanner_module_result
+  - mobile_component_invocation
+  - mobile_storage_trace
+  - agentic_boundary_gap
+  blind_validation:
+  - timing_delta
+  - body_length_delta
+  - header_delta
+  - boolean_oracle
+  proof_mode:
+  - full_capability_acknowledged
+  - target_scoped_proof
+  - high_risk_surface
+mode_gates:
+  proof:
+    high_impact_labels_are_metadata: true
+    require_non_promotion_reason: true
+    require_vrp_policy_reference_for_vrp_promotion: true
+hypothesis_templates:
+- id: proof_candidate_to_finding
+  description: Convert validated runtime evidence into a finding or explicit non-promotion reason.
+policy_references:
+  general_vrp: vrp_best.md
+  chrome_vrp: chrome_vrp.md
+  google_alphabet_vrp: google_vrp.md
+forbidden:
+- destructive
+- dos
+- persistence
+- out_of_scope

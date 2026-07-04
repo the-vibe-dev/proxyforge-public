@@ -1,0 +1,72 @@
+id: tenant_isolation_hunter
+name: Tenant Isolation Hunter
+version: 1
+summary: SaaS critical. Org switching bugs, cross-workspace object access, stale invitation access, role downgrade not applied, shared provider config leakage, cross-tenant search/memory leakage, report/artifact leakage, billing/org admin boundary bugs.
+roles:
+  - researcher
+  - executor
+modes:
+  - bugbounty
+  - pentest
+execution_level: gated
+safety_level: passive
+risk_tier: critical
+opsec: quiet
+status: active
+tags:
+  - tenant-isolation
+  - multi-tenant
+  - saas-security
+  - org-switching
+  - cross-tenant-access
+  - workspace-boundary
+  - invitation-abuse
+  - role-isolation
+  - shared-config-leak
+  - search-leakage
+  - audit-log-leakage
+  - billing-boundary
+  - cross-org-api-access
+requires_scope: true
+required_tools: []
+optional_tools:
+  - sqlite3
+fallback_chain:
+  cross_tenant_test: [curl]
+  object_enumeration: [curl]
+triggers:
+  surface:
+    - multi_tenant_saas_app
+    - org_switching_endpoint
+    - workspace_selection_endpoint
+    - invitation_acceptance_endpoint
+    - role_assignment_endpoint
+    - permission_grant_endpoint
+    - shared_resource_endpoint
+    - search_endpoint
+    - audit_log_endpoint
+  pivot:
+    - workspace_boundary_bypass_to_data_exfil
+    - cross_tenant_api_to_critical
+hypothesis_templates:
+  - id: cross_org_object_access
+    description: API does not validate org_id ownership; user from org_a requests /api/org_b/documents and receives documents.
+  - id: stale_invitation_acceptance
+    description: Invitation token valid indefinitely or accepted after invitation is revoked; stale invitations grant org access.
+  - id: role_downgrade_not_applied
+    description: User is downgraded from admin to member in org_a; existing access token retains admin scopes; user can still manage org until token expires.
+  - id: shared_provider_config_leak
+    description: SSO/OAuth provider config (client ID, secrets) stored as shared org resource; leaks to other orgs.
+  - id: cross_tenant_search_leakage
+    description: Global search includes results from other organizations; user search retrieves colleague names and email addresses from other tenants.
+  - id: audit_log_visibility_cross_tenant
+    description: Audit logs show actions from other organizations; user can trace other orgs' activity.
+  - id: billing_admin_privilege_overshoot
+    description: Billing admin can downgrade other admins, delete orgs, change subscription tier.
+  - id: org_invite_self_elevation
+    description: Attacker invites themselves to org with admin role; acceptance does not validate inviter permissions.
+forbidden:
+  - destructive
+  - dos
+  - out_of_scope
+  - production_data_mutation

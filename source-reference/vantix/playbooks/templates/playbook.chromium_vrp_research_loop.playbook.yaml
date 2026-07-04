@@ -1,0 +1,655 @@
+schema_version: playbook.system
+id: playbook.chromium_vrp_research_loop
+name: Chromium VRP Research Loop
+version: 1.1.0
+status: active
+summary: "Drive a focused Chromium VRP-class research loop \u2014 confirm scope, pick a component, test promising candidates\
+  \ in Stable then Beta then Canary, classify channel patterns A-G, submit security-shaped Stable/Beta findings even when\
+  \ Canary is fixed, build a sanitizer profile when needed, capture a regression witness with explicit process boundary, run\
+  \ dedupe/bisect, and gate the submission bundle on the pre-submission checklist."
+owner:
+  team: sechive-core
+modes:
+  allowed:
+  - native_research
+  requires_scope: true
+objectives:
+  primary:
+  - confirm_scope_snapshot_fresh
+  - pin_component_and_channel
+  - run_channel_pattern_gate
+  - emit_build_profile
+  - run_surface_analysis_track
+  - capture_regression_witness
+  - run_bisect
+  - emit_submission_bundle_with_checklist_gate
+required_skills:
+  primary:
+  - chromium_research
+  - scope_guard
+  supporting:
+  - vrp_hunt_discipline
+  - binary_re
+  - fuzzing_harness
+  - crash_triage
+  - patch_diff
+  - report_generator
+  - evidence_ledger
+  - poc_validator
+policy_references:
+  required_for_review:
+  - ./vrp_best.md
+  - ./chrome_vrp.md
+  optional_for_cross_program_context:
+  - ./google_vrp.md
+  rules:
+  - Load `vrp_best.md` before any VRP promotion, review, or polishing step.
+  - Load `chrome_vrp.md` before any Chrome/Chromium submission bundle, PoC packaging, or severity wording.
+  - Use `google_vrp.md` only for Google/Alphabet web, app, mobile, or browser-extension VRP reports; do not substitute it for Chrome Browser rules.
+target_requirements:
+  surfaces:
+    any:
+    - surface.chromium.renderer
+    - surface.chromium.browser
+    - surface.chromium.v8
+    - surface.chromium.blink
+    - surface.chromium.mojo
+    - surface.chromium.pdfium
+    - surface.chromium.skia
+    - surface.chromium.media
+    - surface.chromium.network
+    - surface.chromium.sandbox
+execution_environment:
+  chromium_unit_repros:
+    preferred_host: staging-backend
+    preferred_host_ip: 192.168.1.176
+    fallback_host: aitts
+    fallback_host_ip: 192.168.1.94
+    ssh_example: ssh -i ~/.ssh/dashburg_remoteops -o IdentitiesOnly=yes trilobyte@192.168.1.176
+    shared_checkout_root: /data/chromium_lane_a/src
+    hardware_pool:
+      heavy_chromium_builds: staging-backend
+      android_device_repros: aitts
+      gpu_browser_proof: lenovohouse
+      fallback_compute: aitts
+    rule: Runtime/unit repros can support local triage, but modified Chromium unit/browser tests are not valid Chrome
+      VRP submission PoCs. Run local triage builds on staging-backend using node-local /data checkouts and out/
+      directories; do not build Chromium from NAS paths. Use NAS only for one-time source seeding or small archived
+      evidence after completion. Then obtain a supported proof in unmodified Chrome,
+      d8, pdfium_test, another accepted binary, MojoJS, or an eligible renderer-patch setup before marking submit-ready.
+      Use aitts for attached Android-device repros or when staging-backend is offline; use lenovohouse for full bare-metal
+      GPU/browser proof. Local CPU is for source inspection and small edits only unless the operator explicitly approves a
+      local build; slow local CPU never means skipping supported repros.
+theory_filters:
+  preferred_theories:
+  - mem.uaf.callback_outlives_object
+  - mem.uaf.refcount_decrement_during_callback
+  - mem.type_confusion.downcast_no_check
+  - mem.oob.array_index_unchecked
+  - mem.integer.multiplication_overflow_to_size
+  - mem.integer.signed_truncation_to_alloc
+  - concurrency.race.compare_then_use
+  - concurrency.toctou.fs_path_check
+  - parser.length_field_trust_unchecked
+  - parser.state_confusion.partial_buffer_advance
+  - ipc.mojo.message_type_confusion
+  - ipc.mojo.handle_lifetime_misuse
+  - ipc.mojo.privilege_boundary_skip
+  - ipc.deserialization.untrusted_to_renderer_typecheck_missing
+  - sandbox.broker.path_normalization_bypass
+  - sandbox.permission_check_bypass
+proof_continuation:
+  enabled: true
+  max_replans: 4
+  require_candidate_closure: true
+  route_thin_fallback: true
+  final_closure_note_required: true
+global_limits:
+  max_steps: 22
+  max_runtime_minutes: 360
+steps:
+- id: scope.preflight
+  title: Confirm authorization, target boundaries, and allowed proof depth
+  agent: orchestrator
+  action_type: policy_check
+  skill_ref: scope_guard
+  inputs_from:
+  - run.scope
+  - run.target_profile
+  - program.policy
+  evidence_gate:
+    id: gate.scope.preflight
+    required:
+    - type: scope_record
+      count: 1
+    - type: roe_matrix
+      count: 1
+    blocked_when:
+    - target_out_of_scope
+    - destructive_action_required
+    - unauthorized_third_party
+- id: scope.snapshot
+  title: Refresh Chrome VRP scope snapshot (scope.json); refuse run if older than 7 days
+  agent: planner
+  action_type: scope_check
+  skill_ref: chromium_research
+  evidence_gate:
+    id: gate.scope.snapshot
+    required:
+    - type: scope_record
+      count: 1
+    blocked_when:
+    - scope_lapsed
+    - snapshot_stale
+    - authorization_denied
+  stop_conditions:
+  - authorization_denied
+- id: pin.component_channel
+  title: Pin component (v8/blink/mojo/pdfium/skia/media/network/extensions/sandbox/third_party_dep); default promising-candidate
+    channel order is Stable, Beta, Canary, then Dev if useful
+  agent: planner
+  action_type: configuration
+  skill_ref: chromium_research
+  inputs_from:
+  - scope.snapshot
+  evidence_gate:
+    id: gate.pin.component_channel
+    required:
+    - type: scope_record
+      count: 1
+- id: build.profile
+  title: Emit args.gn for the chosen sanitizer (asan/msan/ubsan/tsan) and channel
+  agent: developer
+  action_type: configuration
+  skill_ref: chromium_research
+  inputs_from:
+  - pin.component_channel
+  evidence_gate:
+    id: gate.build.profile
+    required:
+    - type: harness_source
+      count: 1
+- id: surface.track_select
+  title: Select binary-RE track (playbook.binary_re_intake_to_review) or harness track (playbook.fuzzing_campaign) per component
+  agent: researcher
+  action_type: analysis
+  skill_ref: chromium_research
+  inputs_from:
+  - pin.component_channel
+  evidence_gate:
+    id: gate.surface.track_select
+    required:
+    - type: observation_bundle
+      count: 1
+- id: surface.run_track
+  title: Run the chosen track to its completion; route candidates back here
+  agent: researcher
+  action_type: handoff
+  skill_ref: chromium_research
+  inputs_from:
+  - surface.track_select
+  - build.profile
+  evidence_gate:
+    id: gate.surface.run_track
+    required_any:
+    - type: finding_record
+      count: 1
+    - type: observation_bundle
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: channel.value_gate
+  title: Run exact PoC on Stable, Beta, Canary, then Dev if useful; classify Pattern A-G and do not discard Stable/Beta issues
+    just because Canary is fixed
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - surface.run_track
+  evidence_gate:
+    id: gate.channel.value_gate
+    required_any:
+    - type: negative_evidence
+      count: 1
+    - type: channel_matrix
+      count: 1
+    blocked_when:
+    - safe_rejection_everywhere
+    - exact_duplicate_without_distinct_variant
+    - canary_only_without_operator_override
+    - trunk_head_under_7_days
+- id: vrp.reward_scope_gate
+  title: Confirm Chrome VRP reward scope; High/Critical or explicit special category required before submit-ready
+  agent: validator
+  action_type: policy_check
+  skill_ref: vrp_hunt_discipline
+  inputs_from:
+  - channel.value_gate
+  evidence_gate:
+    id: gate.vrp.reward_scope_gate
+    required:
+    - type: severity_record
+      count: 1
+    - type: impact_category_record
+      count: 1
+    blocked_when:
+    - severity_below_high_without_special_category
+    - medium_only_hardening_issue
+    - impact_not_demonstrated
+- id: ipc.parse_mojo
+  title: When component is mojo or browser-side, parse .mojom interfaces and run reachability assessor
+  agent: analyst
+  action_type: analysis
+  skill_ref: chromium_research
+  inputs_from:
+  - vrp.reward_scope_gate
+  evidence_gate:
+    id: gate.ipc.parse_mojo
+    required_any:
+    - type: ipc_trace
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: witness.capture
+  title: "Capture a minimized regression_witness (\u226464 KB target) with command line, feature flags, channel, OS, and explicit\
+    \ process_boundary"
+  agent: validator
+  action_type: evidence_validation
+  skill_ref: poc_validator
+  inputs_from:
+  - vrp.reward_scope_gate
+  - ipc.parse_mojo
+  evidence_gate:
+    id: gate.witness.capture
+    required:
+    - type: regression_witness
+      count: 1
+    blocked_when:
+    - chain_construction_attempted
+    - weaponization_attempted
+    - non_default_flag_unauthorized
+    - modified_unit_or_browser_test_only
+    - unsupported_chrome_harness_only
+    - no_supported_binary_repro
+- id: bisect.range
+  title: Run bisect-builds.py to identify (first_bad, last_good) and capture a witness at each step
+  agent: executor
+  action_type: scanner_run
+  skill_ref: chromium_research
+  inputs_from:
+  - witness.capture
+  evidence_gate:
+    id: gate.bisect.range
+    required_any:
+    - type: bisect_range
+      count: 1
+    - type: negative_evidence
+      count: 1
+- id: report.submission_bundle
+  title: Render submission bundle Markdown via report_generator; vrp_best.md and chrome_vrp.md review checklist must pass
+  agent: reporter
+  action_type: handoff
+  skill_ref: report_generator
+  inputs_from:
+  - witness.capture
+  - bisect.range
+  - ipc.parse_mojo
+  evidence_gate:
+    id: gate.report.submission_bundle
+    required:
+    - type: report
+      count: 1
+    - type: proof_pack
+      count: 1
+    blocked_when:
+    - submission_score_below_threshold
+    - checklist_incomplete
+    - vrp_policy_reference_not_loaded
+    - chrome_vrp_poc_or_channel_requirement_missing
+    - chrome_modified_unit_or_browser_test_as_primary_poc
+    - chrome_no_poc_html_js_mojojs_or_supported_binary_repro
+- id: agent.runtime.closeout
+  title: Promote final evidence through agent handoff, redaction, and proof-readiness checks
+  agent: evaluator
+  action_type: agent_runtime_closeout
+  skill_ref: evidence_ledger
+  inputs_from:
+  - report.submission_bundle
+  - decision_log
+  - coverage_matrix
+  evidence_gate:
+    id: gate.agent.runtime.closeout
+    required_any:
+    - type: proof_pack
+      count: 1
+    - type: closure_note
+      count: 1
+    - type: negative_evidence_summary
+      count: 1
+    required:
+    - type: redaction_log
+      count: 1
+    - type: agent_handoff_trace
+      count: 1
+    quality_floor: 0.75
+    blocked_when:
+    - unredacted_secret
+    - missing_scope_ref
+    - unresolved_safety_decision
+agents:
+  orchestrator:
+    role: planner
+    responsibilities:
+    - select_playbooks
+    - maintain_scope_state
+    - coordinate_handoffs
+    - prioritize_by_signal
+    handoff_artifacts:
+    - run_plan
+    - scope_ref
+    - coverage_matrix
+    - open_risks
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  planner:
+    role: planner
+    responsibilities:
+    - define_objective
+    - choose_safe_proof_depth
+    - map_dependencies
+    - set_stop_conditions
+    handoff_artifacts:
+    - validation_plan
+    - roe_matrix
+    - candidate_queue
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  researcher:
+    role: researcher
+    responsibilities:
+    - map_surface
+    - generate_hypotheses
+    - rank_theories
+    - record_negative_evidence
+    handoff_artifacts:
+    - observation_bundle
+    - theory_frontier
+    - asset_graph_delta
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  recon:
+    role: researcher
+    responsibilities:
+    - refresh_inventory
+    - correlate_external_signals
+    - flag_scope_ambiguity
+    handoff_artifacts:
+    - asset_graph_delta
+    - service_inventory
+    - scope_question
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  executor:
+    role: executor
+    responsibilities:
+    - run_bounded_tests
+    - capture_raw_evidence
+    - honor_rate_limits
+    - abort_on_guardrail
+    handoff_artifacts:
+    - http_exchange
+    - tool_result
+    - runtime_observation
+    - blocked_record
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  developer:
+    role: builder
+    responsibilities:
+    - build_harnesses
+    - prepare_test_fixtures
+    - instrument_targets
+    - avoid_weaponization
+    handoff_artifacts:
+    - harness_manifest
+    - build_log
+    - fixture_manifest
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  analyst:
+    role: analyst
+    responsibilities:
+    - triage_results
+    - deduplicate_findings
+    - reason_about_root_cause
+    - score_exploitability_defensively
+    handoff_artifacts:
+    - triage_record
+    - root_cause_hypothesis
+    - diff_signal
+    - risk_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  validator:
+    role: validator
+    responsibilities:
+    - validate_replay
+    - minimize_proof
+    - verify_false_positive_filters
+    - confirm_cleanup
+    handoff_artifacts:
+    - validation_result
+    - replay_spec
+    - cleanup_log
+    - negative_evidence
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  evaluator:
+    role: evaluator
+    responsibilities:
+    - review_evidence_quality
+    - enforce_policy
+    - decide_submission_readiness
+    - route_gaps
+    handoff_artifacts:
+    - readiness_decision
+    - risk_decision
+    - gap_list
+    - quality_score
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  reporter:
+    role: reporter
+    responsibilities:
+    - assemble_proof_pack
+    - redact_sensitive_data
+    - write_disclosure
+    - preserve_replay_steps
+    handoff_artifacts:
+    - proof_pack
+    - report
+    - timeline
+    - remediation_notes
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  specialist:
+    role: domain_specialist
+    responsibilities:
+    - apply_domain_methods
+    - flag_domain_specific_risks
+    - produce_specialist_handoff
+    handoff_artifacts:
+    - specialist_notes
+    - domain_matrix
+    - candidate_findings
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+  safety_reviewer:
+    role: safety_reviewer
+    responsibilities:
+    - enforce_authorization
+    - block_destructive_actions
+    - review_sensitive_evidence
+    - confirm_nonproduction_proof
+    handoff_artifacts:
+    - safety_decision
+    - redaction_log
+    - stop_condition_note
+    guardrails:
+    - use_least_privilege_tools
+    - preserve_evidence_refs
+    - do_not_cross_scope
+    - stop_on_destructive_or_persistence_request
+contract_lineage:
+  system: sechive-unified-playbook
+  posture: unified
+  preserves:
+  - existing_domain_objectives
+  - existing_evidence_gates
+  - authorized_testing_scope
+  adds:
+  - agent_runtime_contract
+  - standard_agent_roster
+  - scope_roe_preflight
+  - safe_proof_depth
+  - redacted_evidence_ledger_closeout
+agent_runtime:
+  orchestration: planner_researcher_executor_validator_reporter_with_safety_review
+  routing_rules:
+  - start_with_scope_and_roe_gate
+  - route_passive_recon_before_active_testing
+  - require_validator_before_report_promotion
+  - send_scope_ambiguity_to_safety_reviewer
+  - prefer_minimal_benign_proof_over_broad_exploitation
+  handoff_contract:
+    required_fields:
+    - objective
+    - scope_ref
+    - assumptions
+    - evidence_refs
+    - risk_level
+    - next_action
+    - stop_conditions
+    evidence_ref_format: ledger://<artifact-type>/<stable-id>
+    handoff_requires_redaction_check: true
+  memory_policy:
+    write_to:
+    - evidence_ledger
+    - coverage_matrix
+    - decision_log
+    never_store_raw_values:
+    - passwords
+    - session_tokens
+    - api_keys
+    - private_keys
+    - third_party_personal_data
+    secret_representation: type+issuer+last4+hash_prefix_when_allowed
+  parallelization:
+    allowed_for:
+    - passive_enrichment
+    - static_analysis
+    - documentation_review
+    - negative_evidence_collection
+    requires_join_gate: gate.agent.join_quality
+  quality_bars:
+    minimum_replayability: 0.75
+    minimum_scope_confidence: 0.95
+    require_negative_evidence_for_closed_branches: true
+    require_cleanup_note_for_stateful_tests: true
+  high_risk_review_required: false
+safety_model:
+  authorization:
+    requires_scope_record: true
+    requires_roe_matrix: true
+    block_when:
+    - target_out_of_scope
+    - unclear_asset_ownership
+    - third_party_impact
+    - policy_blocked
+  proof_depth:
+    default: minimal_benign_reproduction
+    production: no_destructive_actions_no_persistence_no_real_data_exfiltration
+    ctf_or_lab: full_local_validation_allowed_without_third_party_targets
+    high_risk_requires_explicit_roe: false
+  traffic_controls:
+    respect_rate_limits: true
+    backoff_on_errors: true
+    no_broad_scanning_without_active_scan_permission: true
+    log_user_agent_or_test_marker_when_required: true
+  data_handling:
+    collect_minimum_data: true
+    redact_sensitive_values: true
+    use_test_accounts_and_canaries: true
+    forbid_bulk_access_or_dumping: true
+  stop_conditions:
+  - destructive_effect_detected
+  - privilege_boundary_crossed_beyond_roe
+  - real_user_data_would_be_accessed
+  - service_health_degrades
+  - persistence_or_evasion_required_outside_lab
+evidence_contracts:
+  ledger_required: true
+  minimum_artifacts:
+  - scope_record
+  - observation_bundle_or_negative_evidence
+  - validation_result_or_blocked_record
+  - proof_pack_or_closure_note
+  redaction:
+    required_for:
+    - credentials
+    - tokens
+    - cookies
+    - customer_data
+    - internal_hostnames_when_policy_requires
+    preserve:
+    - timestamps
+    - request_ids
+    - status_codes
+    - owned_test_account_ids
+    - hash_prefixes_when_allowed
+  proof_pack:
+    required_sections:
+    - scope
+    - impact
+    - reproduction
+    - evidence
+    - false_positive_checks
+    - cleanup
+    - remediation
+    replay_must_use:
+    - owned_test_account_or_lab_target
+    - bounded_payload
+    - rate_limit_notes

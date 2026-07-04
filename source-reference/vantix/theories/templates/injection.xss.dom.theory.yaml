@@ -1,0 +1,56 @@
+schema_version: theory.system
+id: injection.xss.dom
+title: DOM-based cross-site scripting via client source-to-sink flow
+version: 1.0.0
+status: active
+summary: Client-side JavaScript reads an attacker-controllable DOM source
+  (location.hash, query, postMessage, storage, custom JS source) and passes
+  it to a dangerous sink (innerHTML, document.write, eval, framework HTML
+  render) without sanitization. The payload may never reach the server, so
+  server logs do not show it; validation requires the browser.
+vuln_class: injection
+subclass: xss_dom
+severity_default: high
+mappings:
+  owasp_top10_2025: [A03]
+  wstg: [WSTG-CLNT-01]
+  cwe: [CWE-79, CWE-829]
+applicability:
+  target_surfaces: [surface.web.http, surface.client.spa]
+  required_observations: [client_js_reads_dom_source, sink_reachable_from_source]
+preconditions:
+  required: [scope_authorizes_testing, browser_validation_available, controlled_canary_only]
+  blockers: [real_user_data_in_blast_radius]
+detection_logic:
+  predicates:
+    - source.attacker_controllable
+    - source_to_sink.path_exists
+    - sink.executes_or_writes_unsanitized
+  disconfirming_observations:
+    - value_sanitized_before_sink
+    - framework_escapes_interpolated_value
+    - sink_only_reachable_with_self_supplied_input
+exploitability_model:
+  factors: [source_delivery_via_url, sink_danger, csp_strength, framework_escaping, victim_reachability]
+impact_model:
+  dimensions: [session_hijack, forced_action, data_exfiltration, privilege_escalation]
+evidence_requirements:
+  minimum_for_validated:
+    - type: browser_execution_evidence
+      count: 1
+    - type: source_to_sink_trace
+      count: 1
+    - type: negative_evidence
+      count: 1
+false_positive_filters:
+  required: [verify_in_browser_not_only_proxy, verify_source_attacker_controlled, verify_not_self_xss]
+linked_skills:
+  primary: [dom_taint_hunter, web_hunter]
+  supporting: [poc_validator, report_generator]
+linked_playbooks:
+  primary: [playbook.client_side_js_secret_and_sink_review]
+  supporting: [playbook.web_weakness_coverage]
+promotion_rules:
+  finding_allowed_when: [state_validated, required_evidence_satisfied, false_positive_filters_passed, scope_authorized]
+references:
+  learning_sources: [corpus.bb.client_side_injection, corpus.bb.xss_bypass]
