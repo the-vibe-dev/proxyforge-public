@@ -23,6 +23,7 @@ const agentOptionAudit = fs.readFileSync(path.join(root, 'docs/agents/MVP_OPTION
 const viteConfig = fs.readFileSync(path.join(root, 'vite.config.ts'), 'utf8');
 const electronMain = fs.readFileSync(path.join(root, 'electron/main.ts'), 'utf8');
 const pagesWorkflow = fs.readFileSync(path.join(root, '.github/workflows/pages.yml'), 'utf8');
+const pagesBuilder = fs.readFileSync(path.join(root, 'scripts/build-github-pages.mjs'), 'utf8');
 const countsJson = readJson('docs/counts.json');
 const brandManifest = readJson('assets/brand-manifest.json');
 const versionBadge = fs.readFileSync(path.join(root, 'assets/badges/version.svg'), 'utf8');
@@ -71,6 +72,10 @@ assert.match(pagesWorkflow, /actions\/upload-pages-artifact@v4[\s\S]*path:\s*\.g
 assert.match(pagesWorkflow, /actions\/deploy-pages@v5/i, 'GitHub Pages workflow should deploy with the official Pages action');
 assert.match(pagesWorkflow, /workflow_dispatch:/i, 'GitHub Pages workflow should be manually runnable for release docs publishing');
 assert.doesNotMatch(pagesWorkflow, /^\s*push:/m, 'GitHub Pages workflow should not make source-alpha pushes red when GitHub artifact quota is recalculating');
+assert.match(pagesBuilder, /proxyforge-github-hero\.png/i, 'GitHub Pages builder should publish the branded ProxyForge hero asset');
+assert.match(pagesBuilder, /copySiteAssets/i, 'GitHub Pages builder should copy local brand assets into the Pages artifact');
+assert.match(pagesBuilder, /stripReadmeChrome/i, 'GitHub Pages builder should prevent GitHub-only README HTML from rendering as plaintext');
+assert.match(pagesBuilder, /code-block/i, 'GitHub Pages builder should render fenced code as styled code blocks');
 assert.match(securityPolicy, /authorized|Alpha Scope|Reporting Vulnerabilities|Secret Handling|Responsible Use|GitHub Security Advisory/i, 'SECURITY.md should document authorized use, private reporting, secret handling, and responsible-use boundaries');
 assert.match(securityPolicy, /proxyforge-public\/security\/advisories\/new/i, 'SECURITY.md should point private security reports at the public repository');
 assert.equal(countsJson.version, packageJson.version, 'docs/counts.json should match package version');
