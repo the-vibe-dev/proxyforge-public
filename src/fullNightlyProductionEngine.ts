@@ -355,7 +355,7 @@ export function buildFullNightlyProductionEvidencePackage(
       && fastStepNames.has('Project import compatibility engine')
       && fastStepNames.has('Customer-scale interop profiling engine')
       && fastStepNames.has('Extension third-party compatibility engine'),
-    docsAndSchemasCovered: /RELEASE_CHECKLIST|OPERATOR_GUIDE|SCHEMAS\.md|proxyforge-full-nightly-production-evidence-package|trend dashboard|report-export-only/i.test(docsText),
+    docsAndSchemasCovered: /INSTALL_LINUX_WINDOWS|OPERATOR_GUIDE|SCHEMAS\.md|proxyforge-full-nightly-production-evidence-package|trend dashboard|report-export-only/i.test(docsText),
     artifactPathsSafe: safeArtifactPath(request.artifactPath)
       && safeArtifactPath(request.historyArtifactPath)
       && request.plan.coverageOwnership.every((step) => step.artifactPaths.every(safeArtifactPath)),

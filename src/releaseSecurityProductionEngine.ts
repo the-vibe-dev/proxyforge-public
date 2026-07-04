@@ -123,7 +123,7 @@ export function buildReleaseSecurityProductionEvidencePackage(
     cleanMachineRuntimeEvidenceCovered: passedLane('clean-runtime', /clean-container|installed GUI|trusted-CA|NSIS|DPAPI|Platform Shell/i),
     artifactHygieneCovered: passedLane('artifact-hygiene', /\.gitignored|test-results|release\/|artifact hygiene/i),
     packageRefreshCovered: passedLane('package-refresh', /dist-electron\/securityReviewEngine\.js|dist-electron\/releaseSecurityProductionEngine\.js|packaged|package refresh/i),
-    docsAndSchemasCovered: passedLane('docs-schema', /OPERATOR_GUIDE|RELEASE_CHECKLIST|SCHEMAS\.md|FEATURE_MATRIX|proxyforge-release-security-production-evidence-package/i),
+    docsAndSchemasCovered: passedLane('docs-schema', /OPERATOR_GUIDE|INSTALL_LINUX_WINDOWS|SCHEMAS\.md|FEATURE_MATRIX|proxyforge-release-security-production-evidence-package/i),
     rawExecutorMaterialPreserved: /HTTP\/[12]|Authorization:|Cookie:|X-API-Key:|rawRequest|rawResponse|callbackToken|Bearer/i.test(rawMaterial),
     operationalSecretsPreserved: secretSamples.length > 0 && secretSamples.every((sample) => rawMaterial.includes(sample)),
     reportPhaseOnlyRedaction: /redact-only-during-report-export|report-export-only redaction|submission\/report artifacts redact/i.test(rawMaterial),

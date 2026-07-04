@@ -124,7 +124,8 @@ const requiredBuildPaths = [
 ];
 
 const requiredDocsPaths = [
-  /docs\/RELEASE_CHECKLIST\.md$/,
+  /docs\/INSTALL_LINUX_WINDOWS\.md$/,
+  /docs\/OPERATOR_GUIDE\.md$/,
   /docs\/agents\/SCHEMAS\.md$/,
 ];
 
@@ -194,7 +195,7 @@ export function buildReleaseTrustProductionEvidencePackage(
       && request.provenance.verificationCommands.some((command) => /test:ci:fast/i.test(command)),
     releaseArtifactRetentionCovered: request.policy.releaseArtifactRetentionDays >= 30
       && request.provenance.retentionDays >= 30,
-    docsAndSchemasCovered: /RELEASE_CHECKLIST|OPERATOR_GUIDE|SCHEMAS\.md|proxyforge-release-trust-production-evidence-package|SBOM|checksums|provenance|report-export-only/i.test(docsText),
+    docsAndSchemasCovered: /INSTALL_LINUX_WINDOWS|OPERATOR_GUIDE|SCHEMAS\.md|proxyforge-release-trust-production-evidence-package|SBOM|checksums|provenance|report-export-only/i.test(docsText),
     rawExecutorMaterialPreserved: /HTTP\/[12]|Authorization:|Cookie:|X-API-Key:|rawRequest|rawResponse|callbackToken|Bearer/i.test(rawMaterial),
     operationalSecretsPreserved: (request.operationalSecretSamples ?? []).length > 0
       && (request.operationalSecretSamples ?? []).every((sample) => rawMaterial.includes(sample)),

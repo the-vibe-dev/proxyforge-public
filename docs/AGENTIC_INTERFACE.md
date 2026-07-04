@@ -11,7 +11,7 @@ This work is scheduled after every MVP surface in the feature matrix is at least
 - A stable headless command set for agents to launch ProxyForge tasks, inspect state, run approved workflows, and export artifacts.
 - Markdown instructions that explain the contract for Codex CLI, Claude CLI, and Vantix-side agents.
 - Machine-readable manifests for available tools, safety limits, report paths, and current project state.
-- Read-only status commands for inventory, history, findings, scans, callbacks, reports, and release evidence.
+- Read-only status commands for inventory, history, findings, scans, callbacks, reports, and release validation artifacts.
 - Controlled action commands for scoped crawl, Chromium launch/cookie capture, proxy import, Sequencer token analysis/soak packages, Decoder transform chains, live target profiling, target map comparison, replay execution, bulk replay, replay matrix comparison, WebSocket list/replay/fuzz/transcript export, Intruder execution/soak packages, Repeater desync/race proofing and race soak packages, scanner plan creation, OAST issue promotion, Anvil custom scan-check validation/package export, extension compatibility fixtures, callback polling, callback replay, approved exploit runs, evidence attachment, and report export.
 - Explicit safety gates for exploit execution, active scans, callback replay, traffic mutation, Chromium profile access, credential/cookie handling, and any workflow that sends traffic to a live target.
 - Phase-aware outputs: operational/executor commands preserve full tokens, keys, cookies, headers, and raw traffic; submission/reporting commands redact before artifacts leave ProxyForge for report use.

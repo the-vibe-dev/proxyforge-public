@@ -122,7 +122,7 @@ function buildPlatformShellContext() {
     releaseDocs: [
       'INSTALL_LINUX_WINDOWS documents Platform Shell production commands, release:smoke:linux, release:smoke:windows, PROXYFORGE_RELEASE_SMOKE, and Production Ready shell proof.',
       'OPERATOR_GUIDE documents Platform Shell production evidence retention, app.asar, external-cwd ~/vantix invocation, package gates, full-fidelity operational material, and redact-only-during-report-export.',
-      'RELEASE_CHECKLIST requires Platform Shell production evidence before the Electron shell row is Production Ready.',
+      'OPERATOR_GUIDE requires Platform Shell production evidence before the Electron shell row is Production Ready.',
     ],
     operationalSecretSamples: [
       'Authorization: Bearer platform-shell-secret-token',

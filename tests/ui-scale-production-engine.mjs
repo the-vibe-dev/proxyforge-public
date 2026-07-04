@@ -173,7 +173,7 @@ function buildUiScaleProductionContext() {
     ],
     docs: [
       'OPERATOR_GUIDE documents proxyforge-ui-scale-production-evidence-package, large-project UI scale, responsive overflow proof, and report-export-only redaction.',
-      'RELEASE_CHECKLIST requires ui-scale-production-engine.mjs before UI production signoff.',
+      'OPERATOR_GUIDE requires ui-scale-production-engine.mjs before UI production signoff.',
       'SCHEMAS.md documents proxyforge-ui-scale-production-evidence-package requirements for agents.',
       'Large-project operational UI evidence preserves raw requests, raw responses, tokens, cookies, keys, and callbacks until redact-only-during-report-export.',
     ],

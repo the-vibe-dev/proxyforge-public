@@ -111,7 +111,7 @@ export function buildAiProviderProductionEvidencePackage(
     noDirectActionTrafficCovered: /trafficSent["']?\s*:\s*false|no autonomous traffic sent|UI-controlled/i.test(rawMaterial),
     packageRefreshCovered: passedLane('package-refresh', /dist-electron\/aiEngine\.js|resources[\\/]+app\.asar|proxyforge-ai-parity-evidence-package|packaged/i),
     longRunProfilingCovered: passedLane('long-run-profile', /long-run|soak|benchmark replay|providerCount|baselineCount|resultCount|latencyMs/i),
-    docsAndSchemasCovered: passedLane('docs-schema', /OPERATOR_GUIDE|SCHEMAS\.md|AGENTIC_INTERFACE|RELEASE_CHECKLIST|proxyforge-ai-provider-production-evidence-package/i),
+    docsAndSchemasCovered: passedLane('docs-schema', /OPERATOR_GUIDE|SCHEMAS\.md|AGENTIC_INTERFACE|INSTALL_LINUX_WINDOWS|proxyforge-ai-provider-production-evidence-package/i),
     securityPolicyCovered: passedLane('security-policy', /scope|approval|redaction|no direct traffic|full-fidelity|report-export-only/i),
     rawExecutorMaterialPreserved: /HTTP\/[12]|Authorization:|Cookie:|X-API-Key:|requestRaw|responseRaw|Bearer|session/i.test(rawMaterial),
     operationalSecretsPreserved: (request.operationalSecretSamples ?? []).length > 0

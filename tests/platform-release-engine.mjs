@@ -206,9 +206,9 @@ function buildPlatformReleaseContext() {
         content: `Proxy CA trust, browser routing, replay, scanner, exploit, reporting, and agentic operation. ${rawRequest}\n${rawResponse}`,
       },
       {
-        id: 'release-checklist',
-        title: 'Release checklist',
-        path: 'docs/RELEASE_CHECKLIST.md',
+        id: 'install-signoff',
+        title: 'Install signoff guidance',
+        path: 'docs/INSTALL_LINUX_WINDOWS.md',
         coveredTopics: ['Linux', 'Windows', 'certificate trust', 'browser routing', 'agentic operation', 'production signoff'],
         content: `Production signoff requires fast/full gates, release smoke, and security review. ${rawRequest}\n${rawResponse}`,
       },

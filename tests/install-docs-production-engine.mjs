@@ -29,8 +29,6 @@ assert.equal(productionPackage.packagedDocumentCount, context.documents.length);
 assert.equal(packageContent.kind, 'proxyforge-install-docs-production-evidence-package');
 assert.match(productionPackage.content, /docs\/INSTALL_LINUX_WINDOWS\.md/);
 assert.match(productionPackage.content, /docs\/OPERATOR_GUIDE\.md/);
-assert.match(productionPackage.content, /docs\/RELEASE_CHECKLIST\.md/);
-assert.match(productionPackage.content, /docs\/RELEASE_EVIDENCE\.md/);
 assert.match(productionPackage.content, /docs\/agents\/SCHEMAS\.md/);
 assert.match(productionPackage.content, /release:smoke:linux/);
 assert.match(productionPackage.content, /release:smoke:windows/);
@@ -46,7 +44,7 @@ const artifactDir = path.resolve('.gitignored/test-artifacts/install-docs-produc
 await fs.mkdir(artifactDir, { recursive: true });
 await fs.writeFile(path.join(artifactDir, 'install-docs-production-evidence-package.json'), productionPackage.content);
 
-console.log('install-docs-production-engine: verified packaged install/operator docs, release evidence sync, and full-fidelity secret boundary');
+console.log('install-docs-production-engine: verified packaged install/operator/agent docs and full-fidelity secret boundary');
 
 async function loadEngine(filePath) {
   const source = await fs.readFile(filePath, 'utf8');
@@ -86,8 +84,6 @@ async function buildInstallDocsContext() {
   const documentPaths = [
     ['install-guide', 'docs/INSTALL_LINUX_WINDOWS.md', 'Linux and Windows install guide'],
     ['operator-guide', 'docs/OPERATOR_GUIDE.md', 'Operator guide'],
-    ['release-checklist', 'docs/RELEASE_CHECKLIST.md', 'Release checklist'],
-    ['release-evidence', 'docs/RELEASE_EVIDENCE.md', 'Release evidence'],
     ['agent-schema', 'docs/agents/SCHEMAS.md', 'Agent schemas'],
     ['agent-codex', 'docs/agents/CODEX.md', 'Codex agent guide'],
     ['agent-claude', 'docs/agents/CLAUDE.md', 'Claude agent guide'],

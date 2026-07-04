@@ -137,7 +137,7 @@ function buildAgentControlContext(capabilities) {
     docs: [
       'AGENTIC_INTERFACE documents Codex CLI, Claude CLI, and ~/vantix driving persistent MITM, Chromium, Project Store recovery/backup, search provider ranking, replay, WebSocket list/replay/fuzz/transcript, Intruder, Repeater desync/race, scanner, Anvil, callback, exploit, reports, and Vantix commands.',
       'CODEX.md CLAUDE.md VANTIX.md SCHEMAS.md MVP_OPTION_AUDIT cover the 70-command surface, active workflow gates, full-fidelity operational outputs, and submission-reporting-redaction during report export.',
-      'RELEASE_CHECKLIST requires packaged status to expose full current 70-command source surface from resources/app.asar and external-cwd invocation.',
+      'OPERATOR_GUIDE requires packaged status to expose full current 70-command source surface from resources/app.asar and external-cwd invocation.',
     ],
     operationalSecretSamples: [
       'Authorization: Bearer agent-production-secret-token',

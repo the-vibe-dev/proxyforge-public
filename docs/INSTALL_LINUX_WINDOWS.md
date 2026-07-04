@@ -297,7 +297,7 @@ Add `--browser-trust-store` only on hosts that permit temporary `Cert:\CurrentUs
 }
 ```
 
-Attach JSON output and artifact SHA-256 values to [RELEASE_EVIDENCE.md](RELEASE_EVIDENCE.md). A lane is not marked `Production Ready` until its clean-machine install, browser routing/trust-store, packaged headless scan/report, packaged runtime proxy/cert/OAST/report, and platform-specific cookie/decryption smokes have current evidence.
+Keep JSON output and artifact SHA-256 values with the GitHub release or internal release run, not in the public source tree. A lane is not marked `Production Ready` until its clean-machine install, browser routing/trust-store, packaged headless scan/report, packaged runtime proxy/cert/OAST/report, and platform-specific cookie/decryption smokes have current evidence.
 
 ### Known host-dependent lanes
 

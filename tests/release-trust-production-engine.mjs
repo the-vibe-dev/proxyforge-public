@@ -19,7 +19,7 @@ assert.deepEqual(missingExports, [], `release-trust-production-engine: missing e
 const generatedAt = '2026-05-26T06:55:00.000Z';
 const trustManifest = await buildReleaseTrustManifest({ generatedAt });
 const docs = [
-  'RELEASE_CHECKLIST requires proxyforge-release-trust-production-evidence-package with SBOM, checksums, provenance, signing pins, and report-export-only redaction.',
+  'OPERATOR_GUIDE requires proxyforge-release-trust-production-evidence-package with SBOM, checksums, provenance, signing pins, and report-export-only redaction.',
   'OPERATOR_GUIDE requires release trust evidence before Production Ready signoff and keeps operational raw material full fidelity.',
   'SCHEMAS.md documents proxyforge-release-trust-production-evidence-package requirements for agents.',
   'Operational submission/report artifacts redact only at redact-only-during-report-export.',

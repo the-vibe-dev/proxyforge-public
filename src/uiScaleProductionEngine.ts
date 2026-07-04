@@ -213,7 +213,7 @@ export function buildUiScaleProductionEvidencePackage(
     workflowSurfaceCoverage: requiredWorkflowLanes.every((lane) => allWorkflowLanes.has(lane))
       && request.workflowProofs.every((proof) => proof.status === 'passed' && proof.failedChecks === 0 && proof.passedChecks > 0),
     packagedModeCovered: /PROXYFORGE_RELEASE_SMOKE=1|app\.asar|packaged|release-smoke/i.test(rawMaterial),
-    docsAndSchemasCovered: /OPERATOR_GUIDE|RELEASE_CHECKLIST|SCHEMAS\.md|proxyforge-ui-scale-production-evidence-package|large-project|overflow|responsive/i.test(docsText),
+    docsAndSchemasCovered: /OPERATOR_GUIDE|INSTALL_LINUX_WINDOWS|SCHEMAS\.md|proxyforge-ui-scale-production-evidence-package|large-project|overflow|responsive/i.test(docsText),
     rawExecutorMaterialPreserved: /HTTP\/[12]|Authorization:|Cookie:|X-API-Key:|rawRequest|rawResponse|callbackToken|Bearer/i.test(rawMaterial),
     operationalSecretsPreserved: (request.operationalSecretSamples ?? []).length > 0
       && (request.operationalSecretSamples ?? []).every((sample) => rawMaterial.includes(sample)),

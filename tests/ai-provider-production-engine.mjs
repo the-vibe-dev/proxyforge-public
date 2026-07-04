@@ -109,7 +109,7 @@ function buildAiProviderContext() {
   const docs = [
     'OPERATOR_GUIDE documents proxyforge-ai-provider-production-evidence-package and AI provider operation.',
     'SCHEMAS.md documents proxyforge-ai-provider-production-evidence-package, provider runs, token/cost accounting, action packages, and report-export-only redaction.',
-    'AGENTIC_INTERFACE and RELEASE_CHECKLIST document Codex CLI, Claude CLI, OpenAI-compatible local provider, controlled actions, and full-fidelity prompt context.',
+    'AGENTIC_INTERFACE and OPERATOR_GUIDE document Codex CLI, Claude CLI, OpenAI-compatible local provider, controlled actions, and full-fidelity prompt context.',
   ];
   const proof = (id, lane, providerId, content, passedChecks = 3) => ({
     id,
@@ -211,7 +211,7 @@ function buildAiProviderContext() {
         latencyMs: 420,
       }),
       proof('docs-schema', 'docs-schema', undefined, {
-        docs: ['OPERATOR_GUIDE', 'SCHEMAS.md', 'AGENTIC_INTERFACE', 'RELEASE_CHECKLIST', 'proxyforge-ai-provider-production-evidence-package'],
+        docs: ['OPERATOR_GUIDE', 'SCHEMAS.md', 'AGENTIC_INTERFACE', 'INSTALL_LINUX_WINDOWS', 'proxyforge-ai-provider-production-evidence-package'],
       }),
       proof('security-policy', 'security-policy', undefined, {
         policy: ['scope gates', 'approval gate', 'no direct traffic', 'full-fidelity prompt context', 'report-export-only redaction'],

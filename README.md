@@ -249,7 +249,7 @@ npm run dist:win
 npm run dist:win:zip
 ```
 
-`npm run test:release` builds the renderer and Electron runtime, then checks Electron Builder targets, packaged entrypoints, ignored release directories, and the operator checklist. Linux targets AppImage and `.deb`. Windows targets NSIS and portable executables. `dist:win:zip` is the Linux-host fallback when Wine is unavailable. The install-smoke procedure lives in [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md); artifact evidence is in [`docs/RELEASE_EVIDENCE.md`](docs/RELEASE_EVIDENCE.md).
+`npm run test:release` builds the renderer and Electron runtime, then checks Electron Builder targets, packaged entrypoints, ignored release directories, and the public operator docs. Linux targets AppImage and `.deb`. Windows targets NSIS and portable executables. Install, SmartScreen, checksum, CA trust, and smoke-test guidance lives in [`docs/INSTALL_LINUX_WINDOWS.md`](docs/INSTALL_LINUX_WINDOWS.md) and [`docs/OPERATOR_GUIDE.md`](docs/OPERATOR_GUIDE.md).
 
 ---
 

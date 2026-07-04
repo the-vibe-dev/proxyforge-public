@@ -18,7 +18,7 @@ const defaultArtifactPaths = [
   'dist/index.html',
   'dist-electron/main.js',
   'dist-electron/headlessRunner.js',
-  'docs/RELEASE_CHECKLIST.md',
+  'docs/INSTALL_LINUX_WINDOWS.md',
   'docs/OPERATOR_GUIDE.md',
   'docs/agents/SCHEMAS.md',
   '.github/workflows/nightly-full-suite.yml',
@@ -33,7 +33,8 @@ const requiredArtifactPathSet = new Set([
   'dist/index.html',
   'dist-electron/main.js',
   'dist-electron/headlessRunner.js',
-  'docs/RELEASE_CHECKLIST.md',
+  'docs/INSTALL_LINUX_WINDOWS.md',
+  'docs/OPERATOR_GUIDE.md',
   'docs/agents/SCHEMAS.md',
   '.github/workflows/nightly-full-suite.yml',
 ]);

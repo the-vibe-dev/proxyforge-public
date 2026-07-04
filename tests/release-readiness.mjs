@@ -6,9 +6,7 @@ import path from 'node:path';
 const root = process.cwd();
 const packageJson = readJson('package.json');
 const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
-const checklist = fs.readFileSync(path.join(root, 'docs/RELEASE_CHECKLIST.md'), 'utf8');
 const matrix = fs.readFileSync(path.join(root, 'docs/FEATURE_MATRIX.md'), 'utf8');
-const releaseEvidence = fs.readFileSync(path.join(root, 'docs/RELEASE_EVIDENCE.md'), 'utf8');
 const releaseNotes = fs.readFileSync(path.join(root, 'docs/RELEASE_NOTES_v0.1.0-alpha.1.md'), 'utf8');
 const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 const securityPolicy = fs.readFileSync(path.join(root, 'SECURITY.md'), 'utf8');
@@ -62,12 +60,8 @@ assert.match(readme, /missing Playwright browser or blocked Playwright CDN are e
 assert.match(releaseNotes, /GitHub CI records a clean run for the exact release commit with Chromium installed/i, 'release notes should require CI Chromium before source alpha tagging');
 assert.match(releaseNotes, /Unsigned binaries can be built for validation, but publish release-certified installers only after native artifact receipts and `npm run release:preflight` pass/i, 'release notes should distinguish validation binaries from release-certified installers');
 assert.match(releaseNotes, /expected to fail in extracted source archives without a git tag, live-validation evidence, native receipts, and `SHA256SUMS\.txt`/i, 'release notes should explain source archive preflight failures');
-assert.doesNotMatch(
-  releaseEvidence,
-  /Final Beta|beta tag|public-beta|beta release notes|README beta status|Beta-candidate/i,
-  'release evidence should not contain stale beta-era public release wording',
-);
-assert.match(releaseEvidence, /Final Source Alpha Blocker Fix Checkpoint|binary-release blocker|installer certification proof|README alpha status|Source-alpha candidate/i, 'release evidence should use alpha-era public release wording');
+assert.ok(!fs.existsSync(path.join(root, 'docs/RELEASE_CHECKLIST.md')), 'public source should not include internal release checklist receipts');
+assert.ok(!fs.existsSync(path.join(root, 'docs/RELEASE_EVIDENCE.md')), 'public source should not include internal release evidence logs');
 assert.match(pagesWorkflow, /actions\/upload-pages-artifact@v4[\s\S]*path:\s*\.gitignored\/github-pages/i, 'GitHub Pages workflow should upload the generated static docs artifact');
 assert.match(pagesWorkflow, /actions\/deploy-pages@v5/i, 'GitHub Pages workflow should deploy with the official Pages action');
 assert.match(pagesWorkflow, /workflow_dispatch:/i, 'GitHub Pages workflow should be manually runnable for release docs publishing');
@@ -76,6 +70,7 @@ assert.match(pagesBuilder, /proxyforge-github-hero\.png/i, 'GitHub Pages builder
 assert.match(pagesBuilder, /copySiteAssets/i, 'GitHub Pages builder should copy local brand assets into the Pages artifact');
 assert.match(pagesBuilder, /stripReadmeChrome/i, 'GitHub Pages builder should prevent GitHub-only README HTML from rendering as plaintext');
 assert.match(pagesBuilder, /code-block/i, 'GitHub Pages builder should render fenced code as styled code blocks');
+assert.doesNotMatch(pagesBuilder, /RELEASE_CHECKLIST|RELEASE_EVIDENCE|release-checklist|release-evidence/i, 'GitHub Pages builder should not publish internal release checklist/evidence docs');
 assert.match(securityPolicy, /authorized|Alpha Scope|Reporting Vulnerabilities|Secret Handling|Responsible Use|GitHub Security Advisory/i, 'SECURITY.md should document authorized use, private reporting, secret handling, and responsible-use boundaries');
 assert.match(securityPolicy, /proxyforge-public\/security\/advisories\/new/i, 'SECURITY.md should point private security reports at the public repository');
 assert.equal(countsJson.version, packageJson.version, 'docs/counts.json should match package version');
@@ -173,8 +168,8 @@ assertIncludes(packageJson.build?.files ?? [], 'scripts/release-smoke.mjs', 'rel
 assertIncludes(packageJson.build?.files ?? [], 'scripts/release-trust.mjs', 'release trust generator should be packaged');
 assertIncludes(packageJson.build?.files ?? [], 'docs/INSTALL_LINUX_WINDOWS.md', 'end-user install guide should be packaged');
 assertIncludes(packageJson.build?.files ?? [], 'docs/OPERATOR_GUIDE.md', 'operator guide should be packaged');
-assertIncludes(packageJson.build?.files ?? [], 'docs/RELEASE_CHECKLIST.md', 'release checklist should be packaged');
-assertIncludes(packageJson.build?.files ?? [], 'docs/RELEASE_EVIDENCE.md', 'release evidence should be packaged');
+assertDoesNotInclude(packageJson.build?.files ?? [], 'docs/RELEASE_CHECKLIST.md', 'internal release checklist should not be packaged');
+assertDoesNotInclude(packageJson.build?.files ?? [], 'docs/RELEASE_EVIDENCE.md', 'internal release evidence should not be packaged');
 assertIncludes(packageJson.build?.files ?? [], 'docs/agents/**/*', 'agent docs should be packaged');
 assertIncludes(packageJson.build?.files ?? [], 'LICENSE', 'project license notice should be packaged');
 assertIncludes(packageJson.build?.files ?? [], 'package.json', 'package metadata should be packaged');
@@ -254,63 +249,6 @@ assertFile('docs/agents/MVP_OPTION_AUDIT.md', 'MVP agent option audit should exi
 assert.match(gitignore, /^release\/$/m, 'release artifacts should stay out of git');
 assert.match(gitignore, /^\.gitignored\/$/m, 'local quarantine folder should stay out of git');
 
-assert.match(checklist, /Linux/i, 'release checklist should cover Linux');
-assert.match(checklist, /Windows/i, 'release checklist should cover Windows');
-assert.match(checklist, /AppImage/i, 'release checklist should mention AppImage');
-assert.match(checklist, /\bdeb\b/i, 'release checklist should mention deb');
-assert.match(checklist, /NSIS/i, 'release checklist should mention NSIS');
-assert.match(checklist, /portable/i, 'release checklist should mention portable Windows build');
-assert.match(checklist, /win\.zip|Windows zip/i, 'release checklist should mention the Windows zip fallback build');
-assert.match(checklist, /certificate trust/i, 'release checklist should cover certificate trust smoke');
-assert.match(checklist, /proxy/i, 'release checklist should cover proxy smoke');
-assert.match(checklist, /headless/i, 'release checklist should cover CLI/headless smoke');
-assert.match(checklist, /runtime proxy\/cert\/OAST\/report|release-smoke-runtime/i, 'release checklist should cover packaged runtime workflow smoke');
-assert.match(checklist, /browser routing|release-smoke-browser-routing/i, 'release checklist should cover packaged browser routing smoke');
-assert.match(checklist, /DPAPI sample-cookie|dpapi-cookie|releaseCookieDpapiSmoke/i, 'release checklist should cover packaged Windows DPAPI sample-cookie smoke');
-assert.match(checklist, /release-deb-container-smoke|clean-container deb/i, 'release checklist should cover the Linux clean-container deb smoke');
-assert.match(checklist, /release:trust|release-trust-production-engine\.mjs|proxyforge-release-trust-production-evidence-package/i, 'release checklist should cover the Release Trust production evidence gate');
-assert.match(checklist, /Electron fuse|RunAsNode|NODE_OPTIONS|electron-fuse-policy/i, 'release checklist should cover Electron fuse verification and compatibility exceptions');
-assert.match(checklist, /browser-trust-store|trusted-CA|trusted CA/i, 'release checklist should cover trusted browser CA smoke');
-assert.match(checklist, /test:ci:fast|fast regression/i, 'release checklist should cover the curated fast regression suite');
-assert.match(checklist, /npm run docs:pages/i, 'release checklist should cover the GitHub Pages docs build');
-assert.match(checklist, /Alpha Publication Gates|Source alpha status|GitHub source gate installs Chromium|npx playwright install --with-deps chromium|environment-blocked|Binary builds are allowed before certification|unsigned validation artifacts|native Linux and Windows artifacts|packaged Electron fuse receipts|packaged-license receipts|native release-smoke receipts|live-validation evidence|release\/SHA256SUMS\.txt|npm run release:preflight|release-certified installers/i, 'release checklist should distinguish source-alpha, validation binaries, and certified binary publication gates');
-assert.match(checklist, /test:ci:full|full\/nightly|nightly regression/i, 'release checklist should cover the full/nightly regression suite');
-assert.match(checklist, /nightly-full-suite|Upload full-suite artifacts|30-day retention/i, 'release checklist should cover the scheduled full-suite workflow and artifact retention');
-assert.match(checklist, /test:browser-launcher|managed browser launch/i, 'release checklist should cover the managed browser launch gate');
-assert.match(checklist, /test:proxy-history|HTTP\/2-aware Proxy history/i, 'release checklist should cover the HTTP/2 Proxy history gate');
-assert.match(checklist, /logger-column-engine\.mjs|Logger custom column parity/i, 'release checklist should cover the Logger custom column parity gate');
-assert.match(checklist, /organizer-evidence-engine\.mjs|Organizer parity evidence/i, 'release checklist should cover the Organizer parity evidence gate');
-assert.match(checklist, /test:websocket|WebSocket capture evidence/i, 'release checklist should cover the WebSocket capture gate');
-assert.match(checklist, /scanner-passive-engine\.mjs|Scanner passive checks and dedupe parity/i, 'release checklist should cover the Scanner passive/dedupe parity gate');
-assert.match(checklist, /active-scanner\.mjs|Active Scanner runtime and check-pack parity/i, 'release checklist should cover the Active Scanner check-pack gate');
-assert.match(checklist, /crawl-audit\.mjs|Crawl-derived Scanner insertion audit evidence/i, 'release checklist should cover the Crawl audit insertion evidence gate');
-assert.match(checklist, /scanner-retest-engine\.mjs|Scanner retest evidence deltas/i, 'release checklist should cover the Scanner retest evidence delta gate');
-assert.match(checklist, /anvil-engine\.mjs|Anvil custom scan-check parity/i, 'release checklist should cover the Anvil custom scan-check parity gate');
-assert.match(checklist, /extension-engine\.mjs|Extension parity evidence packages|proxyforge-extension-parity-evidence-package/i, 'release checklist should cover the Extension parity evidence gate');
-assert.match(checklist, /agentic control interface|Codex CLI|Claude CLI|vantix/i, 'release checklist should cover the post-MVP agentic interface gate');
-assert.match(checklist, /full current 70-command source surface|automation-list|automation-run|automation-ci-export|automation-scheduler-tick|automation-parity-export|automation-service-plan|automation-service-smoke|sequencer-analyze|decoder-chain|project-store-recover|project-store-backup|live-target-profile|insertion-points|websocket-replay|websocket-fuzz|websocket-transcript-export|scanner-retest|scanner-evidence-export|scanner-oast-promote|anvil-plan|anvil-run|anvil-package-export|callback-provider-probe/i, 'release checklist should require packaged smoke proof for the current 70-command agent surface');
-assert.match(checklist, /OPERATOR_GUIDE|operator guide|CA trust|OAST|troubleshooting/i, 'release checklist should require the packaged operator guide');
-assert.match(checklist, /production CI\/operator-doc gates|artifact hygiene/i, 'release checklist should cover production CI/operator-doc gates in the security review');
-assert.match(checklist, /project-parity-engine\.mjs|Project parity evidence|proxyforge-project-parity-evidence-package/i, 'release checklist should cover the Project parity evidence gate');
-assert.match(checklist, /project-import-compatibility-engine\.mjs|Project import compatibility|proxyforge-project-import-compatibility-evidence-package/i, 'release checklist should cover the Project import compatibility evidence gate');
-assert.match(checklist, /customer-scale-interop-engine\.mjs|customer-scale interop|proxyforge-project-customer-scale-interop-evidence-package/i, 'release checklist should cover the customer-scale Project interop gate');
-assert.match(checklist, /proxyforge-project-customer-workspace-restore-interop-package|customer workspace restore profiles|restored-exchange integrity/i, 'release checklist should cover the customer workspace restore interop gate');
-assert.match(checklist, /safety-enterprise-engine\.mjs|Safety\/Enterprise parity evidence|proxyforge-safety-enterprise-parity-evidence-package/i, 'release checklist should cover the Safety/Enterprise parity evidence gate');
-assert.match(checklist, /platform-release-engine\.mjs|Platform\/Release parity evidence|proxyforge-platform-release-parity-evidence-package/i, 'release checklist should cover the Platform/Release parity evidence gate');
-assert.match(checklist, /ui-scale-production-engine\.mjs|UI Scale production evidence|proxyforge-ui-scale-production-evidence-package/i, 'release checklist should cover the UI Scale production evidence gate');
-assert.match(checklist, /platform-shell-production-engine\.mjs|Platform Shell production evidence|proxyforge-platform-shell-production-evidence-package/i, 'release checklist should cover the Platform Shell production evidence gate');
-assert.match(checklist, /agent-control-production-engine\.mjs|Agent Control production evidence|proxyforge-agent-control-production-evidence-package/i, 'release checklist should cover the Agent Control production evidence gate');
-assert.match(checklist, /ai-provider-production-engine\.mjs|AI Provider production evidence|proxyforge-ai-provider-production-evidence-package/i, 'release checklist should cover the AI Provider production evidence gate');
-assert.match(checklist, /release-security-production-engine\.mjs|Release Security production evidence|proxyforge-release-security-production-evidence-package/i, 'release checklist should cover the Release Security production evidence gate');
-assert.match(checklist, /release-trust-production-engine\.mjs|Release Trust production evidence|proxyforge-release-trust-production-evidence-package/i, 'release checklist should cover the Release Trust production evidence gate');
-assert.match(checklist, /fast-regression-production-engine\.mjs|Fast Regression production evidence|proxyforge-fast-regression-production-evidence-package/i, 'release checklist should cover the Fast Regression production evidence gate');
-assert.match(checklist, /full-nightly-production-engine\.mjs|Full\/Nightly production evidence|proxyforge-full-nightly-production-evidence-package/i, 'release checklist should cover the Full/Nightly production evidence gate');
-assert.match(checklist, /full-nightly-history-engine\.mjs|Full\/Nightly retained history|proxyforge-full-nightly-retained-history-evidence-package/i, 'release checklist should cover the Full/Nightly retained history gate');
-assert.match(checklist, /install-docs-production-engine\.mjs|Install Docs production evidence|proxyforge-install-docs-production-evidence-package/i, 'release checklist should cover the Install Docs production evidence gate');
-assert.match(checklist, /windows-package-production-engine\.mjs|Windows Package production evidence|proxyforge-windows-package-production-evidence-package/i, 'release checklist should cover the Windows Package production evidence gate');
-assert.match(checklist, /linux-package-production-engine\.mjs|Linux Package production evidence|proxyforge-linux-package-production-evidence-package/i, 'release checklist should cover the Linux Package production evidence gate');
-assert.match(checklist, /release:smoke:linux|release:smoke:windows|PROXYFORGE_RELEASE_SMOKE/i, 'release checklist should cover structured Linux and Windows release smoke commands');
-assert.match(checklist, /release:preflight|release:live:source|release:live:windows|live-validation-summary\.json|releaseDecision:\s*GO|live-validation artifact paths|Electron fuse receipts|packaged-license receipts|SHA256SUMS\.txt|SHA-256 values match/i, 'release checklist should cover the final public-publish preflight gate');
 assert.match(installGuide, /Linux And Windows Install Guide|release:smoke:linux|release:smoke:windows|ProxyForge-0\.1\.0-alpha\.1\.AppImage|ProxyForge-0\.1\.0-alpha\.1-win\.zip|PROXYFORGE_RELEASE_SMOKE|release-deb-container-smoke|browser-trust-store|dpapi-cookie/i, 'install guide should cover Linux/Windows artifacts and smoke commands');
 assert.match(installGuide, /OPERATOR_GUIDE|day-to-day proxy|OAST|scanner|replay|exploit|troubleshooting/i, 'install guide should hand off to the operator guide');
 assert.match(operatorGuide, /Operating Boundaries|First-Run Checklist|Proxy And Certificate Workflow|Browser And Session Operations|Traffic Search And Viewing|Replay, Desync, Race, And Intruder|Scanner And Crawl Workflow|Extensions|Collaborator And OAST|Exploit Lab Safety|Reporting And Submission|Agentic Operation|Recovery And Troubleshooting|Production Signoff/i, 'operator guide should cover production operator workflows');
@@ -345,7 +283,7 @@ assert.match(operatorGuide, /proxyforge-release-trust-production-evidence-packag
 assert.match(operatorGuide, /proxyforge-fast-regression-production-evidence-package|completed every required step|release\/platform\/security\/project\/agent\/browser\/proxy\/scanner\/repeater\/intruder\/report lanes/i, 'operator guide should document Fast Regression production evidence packages');
 assert.match(operatorGuide, /proxyforge-full-nightly-production-evidence-package|trend dashboard|historical full-run pass|plan-only summary validates metadata/i, 'operator guide should document Full/Nightly production evidence packages');
 assert.match(operatorGuide, /proxyforge-full-nightly-retained-history-evidence-package|retained runtime summaries|ci-full-suite-history\/dashboard\.json|plan-only summaries are excluded/i, 'operator guide should document Full/Nightly retained history packages');
-assert.match(operatorGuide, /proxyforge-install-docs-production-evidence-package|Linux\/Windows install guide|release checklist|release evidence|agent docs|replay\/desync\/race\/scanner\/exploit\/OAST/i, 'operator guide should document Install Docs production evidence packages');
+assert.match(operatorGuide, /proxyforge-install-docs-production-evidence-package|Linux\/Windows install guide|operator guide|agent docs|replay\/desync\/race\/scanner\/exploit\/OAST/i, 'operator guide should document Install Docs production evidence packages');
 assert.match(operatorGuide, /proxyforge-windows-package-production-evidence-package|NSIS|portable|win-unpacked|DPAPI|trust-store pin|portable-wrapper stdout/i, 'operator guide should document Windows Package production evidence packages');
 assert.match(operatorGuide, /proxyforge-linux-package-production-evidence-package|AppImage|deb|linux-unpacked|clean-container|trusted-CA|known warning/i, 'operator guide should document Linux Package production evidence packages');
 assert.match(operatorGuide, /proxyforge-collaborator-parity-evidence-package|DNS\/HTTP\/SMTP payload generation|signed poll batches|callback replay execution|report-package persistence/i, 'operator guide should document Collaborator/OAST parity evidence packages');
@@ -406,7 +344,7 @@ assert.match(agentSchemas, /proxyforge-fast-regression-production-evidence-packa
 assert.match(agentSchemas, /proxyforge-full-nightly-production-evidence-package|fullSuitePlanValid|trendDashboardCovered|historicalRuntimePassCovered|planOnlyBoundaryCovered|productionReady/i, 'agent schema docs should describe Full/Nightly production evidence packages');
 assert.match(agentSchemas, /proxyforge-full-nightly-retained-history-evidence-package|minimumRuntimeHistoryCovered|currentRuntimeSummaryRetained|planOnlyRunsExcludedFromRuntimeHistory|digestIntegrityCovered/i, 'agent schema docs should describe Full/Nightly retained history evidence packages');
 assert.match(agentSchemas, /proxyforge-full-nightly-hosted-retained-history-evidence-package|scheduledRunReceiptsCovered|retainedHistoryRestoreSaveCovered|hostedArtifactUploadCovered|retainedDashboardLinksHostedRuns/i, 'agent schema docs should describe Full/Nightly hosted retained history evidence packages');
-assert.match(agentSchemas, /proxyforge-install-docs-production-evidence-package|installGuidePackaged|operatorGuidePackaged|releaseEvidenceSynchronized|agenticOperationCovered|highRiskWorkflowsCovered|reportPhaseOnlyRedaction/i, 'agent schema docs should describe Install Docs production evidence packages');
+assert.match(agentSchemas, /proxyforge-install-docs-production-evidence-package|installGuidePackaged|operatorGuidePackaged|packagedDocsSynchronized|agenticOperationCovered|highRiskWorkflowsCovered|reportPhaseOnlyRedaction/i, 'agent schema docs should describe Install Docs production evidence packages');
 assert.match(agentSchemas, /proxyforge-windows-package-production-evidence-package|nativeArtifactsCovered|nsisInstallUninstallCovered|trustStorePinAccepted|portableWrapperPinned|reportPhaseOnlyRedaction/i, 'agent schema docs should describe Windows Package production evidence packages');
 assert.match(agentSchemas, /proxyforge-linux-package-production-evidence-package|appImageDebUnpackedArtifactsCovered|cleanContainerTrustedCaCovered|knownWarningsPinned|reportPhaseOnlyRedaction/i, 'agent schema docs should describe Linux Package production evidence packages');
 assert.match(agentSchemas, /proxyforge-search-parity-evidence-package|fullTextSearchCovered|structuredPredicatesCovered|providerScoreMergeCovered|persistentIndexCovered|largeProjectSoakCovered|reportPhaseOnlyRedaction/i, 'agent schema docs should describe Search parity evidence packages');
@@ -433,7 +371,7 @@ assert.match(agentSchemas, /proxyforge-analysis-tool-refresh-evidence-package|se
 assert.match(agentSchemas, /proxyforge-report-parity-evidence-package|allSubmissionFormatsCovered|signedBundleVerificationCovered|reportExportsRedacted/i, 'agent schema docs should describe Report parity evidence packages');
 assert.match(agentSchemas, /proxyforge-report-external-bundle-diversity-package|externalSharedBundleDiversityCovered|digestOnlyNoSecretReviewCovered|canonicalRoundTripCovered|crossToolAttachmentDiversityCovered/i, 'agent schema docs should describe Report external bundle diversity evidence packages');
 assert.match(agentSchemas, /proxyforge-report-template-library-interop-package|templateLibraryExportCovered|duplicateConflictReviewCovered|templateVariablesResolved|bundleRenderCovered/i, 'agent schema docs should describe Report template library interop evidence packages');
-assert.match(checklist, /proxyforge-proxy-browser-proxy-chain-diversity-package|browser\/proxy-chain diversity package|proxy-history/i, 'release checklist should include Proxy browser/proxy-chain diversity evidence');
+assert.match(operatorGuide, /proxyforge-proxy-browser-proxy-chain-diversity-package|browser\/proxy-chain diversity package|proxy-history/i, 'operator guide should include Proxy browser/proxy-chain diversity evidence');
 assert.match(matrix, /Proxy browser\/proxy-chain diversity checkpoint|proxyforge-proxy-browser-proxy-chain-diversity-package|external live-host diversity/i, 'feature matrix should track Proxy browser/proxy-chain diversity as closed for this parity pass');
 assert.match(matrix, /\| G6 — Alpha cut \| Complete \|/i, 'feature matrix should mark the alpha cut gate complete');
 assert.deepEqual(forbiddenBrandTermHits(), [], 'tracked alpha candidate files should not contain legacy product brand terms');
@@ -450,7 +388,7 @@ if (releaseArtifacts.length) {
   assert.ok(hasLinuxArtifact || hasWindowsArtifact, 'release directory should contain recognizable desktop artifacts when present');
 }
 
-console.log('release-readiness: verified package scripts, builder targets, build outputs, ignored artifacts, and release checklist');
+console.log('release-readiness: verified package scripts, builder targets, build outputs, public docs, and ignored artifacts');
 
 function assertScript(name, pattern) {
   assert.match(packageJson.scripts?.[name] ?? '', pattern, `package script ${name} should match release expectation`);
@@ -462,6 +400,10 @@ function assertFile(relativePath, message) {
 
 function assertIncludes(values, expected, message) {
   assert.ok(Array.isArray(values) && values.includes(expected), message);
+}
+
+function assertDoesNotInclude(values, forbidden, message) {
+  assert.ok(Array.isArray(values) && !values.includes(forbidden), message);
 }
 
 function forbiddenBrandTermHits() {

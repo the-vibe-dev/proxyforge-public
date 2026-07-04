@@ -21,9 +21,7 @@ const sections = [
     title: 'Release',
     docs: [
       { title: 'Release Notes', source: 'docs/RELEASE_NOTES_v0.1.0-alpha.1.md', slug: 'release-notes' },
-      { title: 'Install Linux and Windows', source: 'docs/INSTALL_LINUX_WINDOWS.md', slug: 'install-linux-windows' },
-      { title: 'Release Checklist', source: 'docs/RELEASE_CHECKLIST.md', slug: 'release-checklist' },
-      { title: 'Release Evidence', source: 'docs/RELEASE_EVIDENCE.md', slug: 'release-evidence' }
+      { title: 'Install Linux and Windows', source: 'docs/INSTALL_LINUX_WINDOWS.md', slug: 'install-linux-windows' }
     ]
   },
   {
@@ -433,7 +431,7 @@ function pageShell({ doc, content, headings, previousDoc, nextDoc }) {
   <meta name="theme-color" content="#1a1d21">
   <meta property="og:type" content="website">
   <meta property="og:title" content="${escapeHtml(title)}">
-  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release notes.">
   <meta property="og:image" content="${siteUrl}assets/proxyforge-social-square.png">
   <meta property="og:url" content="${siteUrl}${doc.slug === 'index' ? '' : `${doc.slug}.html`}">
   <link rel="icon" href="./assets/favicon-32.png">

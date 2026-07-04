@@ -26,8 +26,6 @@ export interface InstallDocsProductionEvidencePackage {
   requirements: {
     installGuidePackaged: boolean;
     operatorGuidePackaged: boolean;
-    releaseChecklistPackaged: boolean;
-    releaseEvidencePackaged: boolean;
     agentDocsPackaged: boolean;
     packageScriptCovered: boolean;
     linuxInstallCovered: boolean;
@@ -40,7 +38,7 @@ export interface InstallDocsProductionEvidencePackage {
     highRiskWorkflowsCovered: boolean;
     troubleshootingCovered: boolean;
     productionSignoffCovered: boolean;
-    releaseEvidenceSynchronized: boolean;
+    packagedDocsSynchronized: boolean;
     rawExecutorMaterialPreserved: boolean;
     operationalSecretsPreserved: boolean;
     reportPhaseOnlyRedaction: boolean;
@@ -71,8 +69,6 @@ export function buildInstallDocsProductionEvidencePackage(
   const requirements = {
     installGuidePackaged: isPackaged(documentById.get('install-guide')),
     operatorGuidePackaged: isPackaged(documentById.get('operator-guide')),
-    releaseChecklistPackaged: isPackaged(documentById.get('release-checklist')),
-    releaseEvidencePackaged: isPackaged(documentById.get('release-evidence')),
     agentDocsPackaged: request.documents
       .filter((document) => document.path.startsWith('docs/agents/'))
       .every((document) => isPackaged(document)),
@@ -105,8 +101,10 @@ export function buildInstallDocsProductionEvidencePackage(
       && has(/Collaborator|OAST/i),
     troubleshootingCovered: has(/Recovery And Troubleshooting|troubleshooting|blocked result|blocked trusted-CA lane/i),
     productionSignoffCovered: has(/Production Signoff|Production Ready|signoff/i),
-    releaseEvidenceSynchronized: has(/proxyforge-install-docs-production-evidence-package/i)
-      && has(/Install Docs Production Evidence/i),
+    packagedDocsSynchronized: has(/proxyforge-install-docs-production-evidence-package/i)
+      && has(/Linux\/Windows install guide|INSTALL_LINUX_WINDOWS/i)
+      && has(/operator guide|OPERATOR_GUIDE/i)
+      && has(/agent docs|docs\/agents|Codex CLI/i),
     rawExecutorMaterialPreserved: has(/raw requests/i)
       && has(/raw responses/i)
       && has(/Authorization:|Cookie:|X-API-Key:|callbackToken/i),
@@ -156,7 +154,7 @@ export function buildInstallDocsProductionEvidencePackage(
     reportRedactionBoundary: 'redact-only-during-report-export',
     productionReady: Object.values(requirements).every(Boolean),
     digestPreview,
-    summaryText: 'Install docs production evidence covers packaged Linux/Windows install docs, release checklist, release evidence, agent docs, smoke commands, certificate trust, browser routing, Windows DPAPI/trust-store pinning, agentic operation, replay/desync/race/scanner/exploit/OAST workflows, troubleshooting, production signoff, full-fidelity operational material, and report-export-only redaction.',
+    summaryText: 'Install docs production evidence covers packaged Linux/Windows install docs, operator docs, agent docs, smoke commands, certificate trust, browser routing, Windows DPAPI/trust-store pinning, agentic operation, replay/desync/race/scanner/exploit/OAST workflows, troubleshooting, production signoff, full-fidelity operational material, and report-export-only redaction.',
     content,
   };
 }

@@ -474,18 +474,16 @@ Agents should use this package to separate manual hosted warmups from actual sch
 
 ## Install Docs Production Evidence
 
-`proxyforge-install-docs-production-evidence-package` is the proof bundle for packaged install, operator, release, and agent documentation:
+`proxyforge-install-docs-production-evidence-package` is the proof bundle for packaged install, operator, and agent documentation:
 
 ```json
 {
   "kind": "proxyforge-install-docs-production-evidence-package",
-  "documentCount": 8,
-  "packagedDocumentCount": 8,
+  "documentCount": 6,
+  "packagedDocumentCount": 6,
   "requirements": {
     "installGuidePackaged": true,
     "operatorGuidePackaged": true,
-    "releaseChecklistPackaged": true,
-    "releaseEvidencePackaged": true,
     "agentDocsPackaged": true,
     "packageScriptCovered": true,
     "linuxInstallCovered": true,
@@ -498,7 +496,7 @@ Agents should use this package to separate manual hosted warmups from actual sch
     "highRiskWorkflowsCovered": true,
     "troubleshootingCovered": true,
     "productionSignoffCovered": true,
-    "releaseEvidenceSynchronized": true,
+    "packagedDocsSynchronized": true,
     "rawExecutorMaterialPreserved": true,
     "operationalSecretsPreserved": true,
     "reportPhaseOnlyRedaction": true

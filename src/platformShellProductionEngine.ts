@@ -113,7 +113,7 @@ export function buildPlatformShellProductionEvidencePackage(
       && /proxyforge-windows-package-production-evidence-package/i.test(rawMaterial),
     trustStorePinAccepted: pinnedSmoke('trust-store-pin', /windows-trust-runner|ERROR_NOT_SUPPORTED|trust-store|CurrentUser\\Root/i),
     knownHostLimitsPinned: pinnedSmoke('host-limit', /broader host diversity|runner lane|trust-store|nonblocking/i),
-    releaseDocsCovered: /INSTALL_LINUX_WINDOWS|OPERATOR_GUIDE|RELEASE_CHECKLIST|Platform Shell production|Production Ready/i.test(rawMaterial),
+    releaseDocsCovered: /INSTALL_LINUX_WINDOWS|OPERATOR_GUIDE|Platform Shell production|Production Ready/i.test(rawMaterial),
     rawExecutorMaterialPreserved: /HTTP\/[12]|Authorization:|Cookie:|X-API-Key:|rawRequest|rawResponse|callbackToken|session/i.test(rawMaterial),
     operationalSecretsPreserved: (request.operationalSecretSamples ?? []).length > 0
       && (request.operationalSecretSamples ?? []).every((sample) => rawMaterial.includes(sample)),

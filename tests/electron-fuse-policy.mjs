@@ -8,7 +8,6 @@ const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 const mainSource = fs.readFileSync(path.join(root, 'electron/main.ts'), 'utf8');
 const releaseTrust = fs.readFileSync(path.join(root, 'scripts/release-trust.mjs'), 'utf8');
-const checklist = fs.readFileSync(path.join(root, 'docs/RELEASE_CHECKLIST.md'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github/workflows/nightly-full-suite.yml'), 'utf8');
 
 assert.equal(packageJson.devDependencies?.['@electron/fuses'], '^2.1.2');
@@ -32,10 +31,7 @@ assert.equal(sourceConfig.status, 'passed', sourceConfig.failures.join('; '));
 
 assert.match(releaseTrust, /scripts\/electron-fuse-policy\.mjs/);
 assert.match(releaseTrust, /electronFusePolicy/);
-assert.match(checklist, /Electron fuse/i);
-assert.match(checklist, /RunAsNode/i);
-assert.match(checklist, /NODE_OPTIONS/i);
 assert.match(workflow, /test:release:fuses/);
 assert.match(workflow, /runs-on:\s*\$\{\{\s*matrix\.os\s*\}\}/);
 
-console.log('electron-fuse-policy: verified source configuration, package hook, release docs, CI coverage, and explicit RunAsNode exception');
+console.log('electron-fuse-policy: verified source configuration, package hook, CI coverage, and explicit RunAsNode exception');

@@ -340,7 +340,7 @@ function buildReleaseSecurityProductionContext() {
       'release/ProxyForge.AppImage',
       'release/ProxyForge Setup 0.1.0-alpha.1.exe',
       '.gitignored/test-artifacts/release-security-production-engine/release-security-production-evidence-package.json',
-      'docs/RELEASE_EVIDENCE.md',
+      'docs/INSTALL_LINUX_WINDOWS.md',
     ],
   });
   const proof = (id, lane, content, passedChecks = 3) => ({
@@ -410,12 +410,12 @@ function buildReleaseSecurityProductionContext() {
         package: 'packaged release security production gate',
       }),
       proof('docs-schema', 'docs-schema', {
-        docs: ['OPERATOR_GUIDE', 'RELEASE_CHECKLIST', 'SCHEMAS.md', 'FEATURE_MATRIX', 'proxyforge-release-security-production-evidence-package'],
+        docs: ['OPERATOR_GUIDE', 'INSTALL_LINUX_WINDOWS', 'SCHEMAS.md', 'FEATURE_MATRIX', 'proxyforge-release-security-production-evidence-package'],
       }),
     ],
     docs: [
       'OPERATOR_GUIDE documents proxyforge-release-security-production-evidence-package and the full-fidelity executor/report-redaction boundary.',
-      'RELEASE_CHECKLIST requires release-security-production-engine and artifact retention before production signoff.',
+      'OPERATOR_GUIDE requires release-security-production-engine and artifact retention before production signoff.',
       'SCHEMAS.md documents proxyforge-release-security-production-evidence-package requirements for agents.',
       'FEATURE_MATRIX promotes the release security review row only when this production package passes.',
     ],

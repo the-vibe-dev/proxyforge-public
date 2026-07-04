@@ -298,7 +298,7 @@ function buildFullNightlyProductionContext() {
     trendRuns,
     fastSummary,
     docs: [
-      'RELEASE_CHECKLIST requires proxyforge-full-nightly-production-evidence-package with trend dashboard and report-export-only redaction.',
+      'OPERATOR_GUIDE requires proxyforge-full-nightly-production-evidence-package with trend dashboard and report-export-only redaction.',
       'OPERATOR_GUIDE documents retained full/nightly history, zero-flake policy, and full-fidelity executor material.',
       'SCHEMAS.md documents proxyforge-full-nightly-production-evidence-package requirements.',
       'Operational submission/report artifacts redact only at redact-only-during-report-export.',

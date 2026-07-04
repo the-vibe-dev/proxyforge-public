@@ -81,7 +81,6 @@ export async function verifyFusePolicy(executablePath) {
 
 export async function checkSourceConfiguration(rootDir = root) {
   const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
-  const checklist = fs.readFileSync(path.join(rootDir, 'docs/RELEASE_CHECKLIST.md'), 'utf8');
   const security = fs.readFileSync(path.join(rootDir, 'SECURITY.md'), 'utf8');
   const workflow = fs.readFileSync(path.join(rootDir, '.github/workflows/nightly-full-suite.yml'), 'utf8');
   const failures = [];
@@ -89,7 +88,6 @@ export async function checkSourceConfiguration(rootDir = root) {
   if (packageJson.devDependencies?.['@electron/fuses'] !== '^2.1.2') failures.push('package.json must explicitly own Electron 42-compatible @electron/fuses');
   if (packageJson.build?.afterPack !== 'scripts/electron-fuse-policy.mjs') failures.push('electron-builder afterPack must apply the fuse policy');
   if (!/release:fuses/.test(JSON.stringify(packageJson.scripts ?? {}))) failures.push('package scripts must expose release:fuses');
-  if (!/Electron fuse/i.test(checklist) || !/RunAsNode/i.test(checklist)) failures.push('release checklist must document Electron fuse verification and RunAsNode exception');
   if (!/GitHub Security Advisory/i.test(security)) failures.push('SECURITY.md must prefer private GitHub Security Advisories');
   if (!/pull_request:/.test(workflow) || !/push:/.test(workflow)) failures.push('CI workflow must run on pull_request and push');
 

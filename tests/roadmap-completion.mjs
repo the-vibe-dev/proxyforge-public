@@ -9,7 +9,6 @@ const matrix = read('docs/FEATURE_MATRIX.md');
 const readme = read('README.md');
 const releaseNotes = read('docs/RELEASE_NOTES_v0.1.0-alpha.1.md');
 const hotfixProcess = read('docs/HOTFIX_PROCESS.md');
-const releaseEvidence = read('docs/RELEASE_EVIDENCE.md');
 const expectedReleaseTag = 'v0.1.0-alpha.1';
 
 assert.match(roadmap, /\| 19 \| ✓ Done \| 2026-06-20 \| 2026-06-20 \| G6 \| Alpha source cut, release notes, hotfix process, tag target, and native artifact receipt workflow complete \|/);
@@ -36,9 +35,6 @@ assert.doesNotMatch(matrix, /\| G\d+ [^|]*\| Not started \|/);
 assert.match(readme, /Source alpha candidate/);
 assert.match(readme, /docs\/RELEASE_NOTES_v0\.1\.0-alpha\.1\.md/);
 assert.doesNotMatch(readme, /Open hardening work tracked/);
-
-assert.match(releaseEvidence, /Prerelease Review Disposition/);
-assert.match(releaseEvidence, /Installer publication remains gated on the native artifact matrix producing successful Linux and Windows receipts/);
 
 const tagStatus = releaseTagStatus(expectedReleaseTag);
 assert.equal(tagStatus.status, 'passed', tagStatus.message);

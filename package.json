@@ -168,8 +168,6 @@
       "docs/AGENTIC_INTERFACE.md",
       "docs/INSTALL_LINUX_WINDOWS.md",
       "docs/OPERATOR_GUIDE.md",
-      "docs/RELEASE_CHECKLIST.md",
-      "docs/RELEASE_EVIDENCE.md",
       "docs/agents/**/*",
       "LICENSE",
       "package.json"
