@@ -2,11 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/release-notes.html</loc></url>
-  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/release-checklist.html</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/install-linux-windows.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/release-checklist.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/release-evidence.html</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/operator-guide.html</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/feature-matrix.html</loc></url>
-  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/release-evidence.html</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/agentic-interface.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/automation-api.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/modes-http3.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/modes-transparent.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/modes-wireguard.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/oast-provider-guide.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/agent-codex.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/agent-claude.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/agent-vantix.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/agent-schemas.html</loc></url>
   <url><loc>https://the-vibe-dev.github.io/proxyforge-public/security.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/project-sbom-guide.html</loc></url>
+  <url><loc>https://the-vibe-dev.github.io/proxyforge-public/roadmap.html</loc></url>
 </urlset>

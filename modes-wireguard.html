@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WireGuard Mode - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="WireGuard Mode - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/modes-wireguard.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a aria-current="page" href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a aria-current="page" href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/MODES_WIREGUARD.md">docs/MODES_WIREGUARD.md</a></p>
+  <h1>WireGuard Mode</h1>
+</header>
+      <h1 id="wireguard-mode">WireGuard Mode<a class="anchor" href="#wireguard-mode" aria-label="Permanent link to WireGuard Mode">#</a></h1>
+<p>Proxy Forge supports an optional WireGuard tunnel mode via the <code>wireguard</code> side-car binary. When the side-car is installed, Proxy Forge can route captured traffic through a WireGuard interface for VPN-based target reach.</p>
+<h2 id="requirements">Requirements<a class="anchor" href="#requirements" aria-label="Permanent link to Requirements">#</a></h2>
+<ul><li>Linux: <code>wireguard-tools</code> or the bundled <code>side-cars/wireguard/</code> boringtun binary.</li><li>Windows: WireGuard for Windows with the tunnel service.</li><li>macOS: WireGuard app or <code>wireguard-go</code>.</li></ul>
+<p>The side-car is optional. Proxy Forge runs fine without it — WireGuard mode simply remains unavailable.</p>
+<h2 id="configuration">Configuration<a class="anchor" href="#configuration" aria-label="Permanent link to Configuration">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;mode&quot;: &quot;wireguard&quot;,
+  &quot;wireguard&quot;: {
+    &quot;privateKey&quot;: &quot;...&quot;,
+    &quot;peerPublicKey&quot;: &quot;...&quot;,
+    &quot;endpoint&quot;: &quot;vpn.example.com:51820&quot;,
+    &quot;allowedIPs&quot;: [&quot;10.0.0.0/8&quot;],
+    &quot;dns&quot;: &quot;10.0.0.1&quot;
+  }
+}</code></pre></div>
+<h2 id="smoke-test">Smoke test<a class="anchor" href="#smoke-test" aria-label="Permanent link to Smoke test">#</a></h2>
+<p><code>tests/traffic-wireguard.mjs</code> verifies the module exports and capability flags without requiring a live WireGuard peer.</p>
+<h2 id="safety">Safety<a class="anchor" href="#safety" aria-label="Permanent link to Safety">#</a></h2>
+<p>All ProxyForge scope, rate-limit, and mode guards apply normally when WireGuard mode is active. The tunnel does not bypass scope checks.</p>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="modes-transparent.html"><span>Previous</span>Transparent Mode</a><a class="pager-link pager-next" href="oast-provider-guide.html"><span>Next</span>OAST Provider Guide</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#requirements">Requirements</a></li><li class="toc-level-2"><a href="#configuration">Configuration</a></li><li class="toc-level-2"><a href="#smoke-test">Smoke test</a></li><li class="toc-level-2"><a href="#safety">Safety</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

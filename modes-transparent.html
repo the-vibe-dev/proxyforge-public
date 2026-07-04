@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Transparent Mode - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Transparent Mode - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/modes-transparent.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a aria-current="page" href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a aria-current="page" href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/MODES_TRANSPARENT.md">docs/MODES_TRANSPARENT.md</a></p>
+  <h1>Transparent Mode</h1>
+</header>
+      <h1 id="transparent-proxy-mode-tproxy">Transparent Proxy Mode (TPROXY)<a class="anchor" href="#transparent-proxy-mode-tproxy" aria-label="Permanent link to Transparent Proxy Mode (TPROXY)">#</a></h1>
+<h2 id="overview">Overview<a class="anchor" href="#overview" aria-label="Permanent link to Overview">#</a></h2>
+<p>Transparent proxy mode intercepts traffic at the kernel level using Linux TPROXY, eliminating the need to configure individual applications to use a proxy. All TCP/UDP traffic on selected ports is redirected to ProxyForge without any client-side configuration.</p>
+<h2 id="platform-requirements">Platform Requirements<a class="anchor" href="#platform-requirements" aria-label="Permanent link to Platform Requirements">#</a></h2>
+<ul><li><strong>Linux only</strong> — TPROXY is a Linux kernel feature (kernel ≥ 4.14 with <code>CONFIG_NETFILTER_TPROXY=y</code>)</li><li><code>CAP_NET_ADMIN</code> capability (or root)</li><li><code>iptables</code> or <code>nftables</code> available in the host environment</li><li><strong><code>proxyforge-tproxy</code> side-car binary</strong> installed beside the Electron app or in <code>PATH</code></li></ul>
+<blockquote><strong>Note:</strong> The side-car is an optional separate download. Without it <code>isTransparentModeSupported()</code> returns <code>false</code> and all capture calls resolve gracefully without doing anything.</blockquote>
+<h2 id="when-to-use">When to Use<a class="anchor" href="#when-to-use" aria-label="Permanent link to When to Use">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Use Transparent Mode?</th></tr></thead><tbody><tr><td>Mobile device traffic via tethering</td><td>Yes</td></tr><tr><td>Containerised app that ignores HTTP_PROXY</td><td>Yes</td></tr><tr><td>Thick client with hard-coded connections</td><td>Yes</td></tr><tr><td>Standard browser testing</td><td>No — HTTP proxy mode is simpler</td></tr><tr><td>macOS / Windows targets</td><td>No — use upstream proxy chaining instead</td></tr></tbody></table></div>
+<h2 id="configuration">Configuration<a class="anchor" href="#configuration" aria-label="Permanent link to Configuration">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="jsonc"><code>// Example TransparentModeConfig
+{
+  &quot;interface&quot;: &quot;eth0&quot;,       // Network interface to capture on
+  &quot;ports&quot;: [80, 443, 8080], // Ports to intercept (default: [80, 443])
+  &quot;family&quot;: &quot;ipv4&quot;,          // &quot;ipv4&quot; | &quot;ipv6&quot; | &quot;both&quot; (default: &quot;both&quot;)
+  &quot;exemptUid&quot;: 1000          // UID to exempt from capture (e.g. the proxy process)
+}</code></pre></div>
+<h2 id="usage">Usage<a class="anchor" href="#usage" aria-label="Permanent link to Usage">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="ts"><code>import {
+  isTransparentModeSupported,
+  getTransparentModeCapabilities,
+  startTransparentCapture,
+  stopTransparentCapture,
+} from &#39;electron/traffic/transparentMode&#39;;
+
+if (!isTransparentModeSupported()) {
+  const caps = getTransparentModeCapabilities();
+  console.warn(&#39;Transparent mode unavailable:&#39;, caps.reason);
+} else {
+  const session = await startTransparentCapture({
+    interface: &#39;eth0&#39;,
+    ports: [80, 443],
+  });
+  // … capture traffic …
+  await stopTransparentCapture(session.sessionId);
+}</code></pre></div>
+<h2 id="how-it-works-with-side-car">How It Works (with side-car)<a class="anchor" href="#how-it-works-with-side-car" aria-label="Permanent link to How It Works (with side-car)">#</a></h2>
+<ol><li>The side-car binary sets up iptables/nftables <code>TPROXY</code> rules that redirect matching packets to a local socket.</li><li>ProxyForge binds to that socket with <code>IP_TRANSPARENT</code> set, receiving original destination addresses.</li><li>Intercepted flows appear in the ProxyForge traffic view as if they came from a standard HTTP/S proxy.</li><li>On session stop the side-car tears down the iptables rules.</li></ol>
+<h2 id="limitations">Limitations<a class="anchor" href="#limitations" aria-label="Permanent link to Limitations">#</a></h2>
+<ul><li>Linux only — no macOS or Windows support planned</li><li>Requires elevated privileges</li><li>UDP capture requires the side-car to handle connection-less flows</li><li>Optional side-car not bundled in the default ProxyForge release</li></ul>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="modes-http3.html"><span>Previous</span>HTTP/3 Mode</a><a class="pager-link pager-next" href="modes-wireguard.html"><span>Next</span>WireGuard Mode</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#overview">Overview</a></li><li class="toc-level-2"><a href="#platform-requirements">Platform Requirements</a></li><li class="toc-level-2"><a href="#when-to-use">When to Use</a></li><li class="toc-level-2"><a href="#configuration">Configuration</a></li><li class="toc-level-2"><a href="#usage">Usage</a></li><li class="toc-level-2"><a href="#how-it-works-with-side-car">How It Works (with side-car)</a></li><li class="toc-level-2"><a href="#limitations">Limitations</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

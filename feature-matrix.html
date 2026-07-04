@@ -5,58 +5,107 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Feature Matrix - ProxyForge Docs</title>
   <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Feature Matrix - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/feature-matrix.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="./">ProxyForge <span>0.1.0-alpha.1</span></a>
-    <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">GitHub</a>
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a aria-current="page" href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
   </header>
   <main class="layout">
-    <nav class="sidebar" aria-label="Documentation"><a href="./">README</a><a href="release-notes.html">Release Notes</a><a href="release-checklist.html">Release Checklist</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="operator-guide.html">Operator Guide</a><a aria-current="page" href="feature-matrix.html">Feature Matrix</a><a href="release-evidence.html">Release Evidence</a><a href="agentic-interface.html">Agentic Interface</a><a href="security.html">Security Policy</a></nav>
-    <article class="doc">
-      <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/FEATURE_MATRIX.md">docs/FEATURE_MATRIX.md</a></p>
-      <h1 id="proxyforge-feature-matrix">ProxyForge Feature Matrix</h1>
-<p>&gt; Last updated: 2026-06-20 &gt; Test IDs reference files in <code>tests/</code>. &gt; <strong>Status key:</strong> <code>Backend</code> = code + unit tests, no GUI wiring. <code>GUI-integrated</code> = wired into the renderer. <code>E2E-tested</code> = full end-to-end with proxy/project-store. <code>Production</code> = packaged, cross-platform verified.</p>
-<h2 id="phase-0-guardrails">Phase 0 — Guardrails</h2>
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a aria-current="page" href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/FEATURE_MATRIX.md">docs/FEATURE_MATRIX.md</a></p>
+  <h1>Feature Matrix</h1>
+</header>
+      <h1 id="proxyforge-feature-matrix">ProxyForge Feature Matrix<a class="anchor" href="#proxyforge-feature-matrix" aria-label="Permanent link to ProxyForge Feature Matrix">#</a></h1>
+<blockquote>Last updated: 2026-06-20</blockquote>
+<blockquote>Test IDs reference files in <code>tests/</code>.</blockquote>
+<blockquote><strong>Status key:</strong> <code>Backend</code> = code + unit tests, no GUI wiring. <code>GUI-integrated</code> = wired into the renderer. <code>E2E-tested</code> = full end-to-end with proxy/project-store. <code>Production</code> = packaged, cross-platform verified.</blockquote>
+<h2 id="phase-0-guardrails">Phase 0 — Guardrails<a class="anchor" href="#phase-0-guardrails" aria-label="Permanent link to Phase 0 — Guardrails">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>No vantix runtime dependency</td><td>Backend</td><td>tests/no-vantix-runtime-dependency.mjs</td></tr><tr><td>Release excludes source-reference/</td><td>Backend</td><td>tests/release-package-excludes-source-reference.mjs</td></tr></tbody></table></div>
-<h2 id="phase-1-scanner-primitives">Phase 1 — Scanner Primitives</h2>
+<h2 id="phase-1-scanner-primitives">Phase 1 — Scanner Primitives<a class="anchor" href="#phase-1-scanner-primitives" aria-label="Permanent link to Phase 1 — Scanner Primitives">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Payload mutation engine (8+ families)</td><td>Backend</td><td>tests/scanner-payload-mutation-engine.mjs</td></tr><tr><td>Oracle response classifier</td><td>Backend</td><td>tests/scanner-oracle-response-classifier.mjs</td></tr><tr><td>Probe renderer</td><td>Backend</td><td>tests/scanner-probe-renderer.mjs</td></tr><tr><td>Evidence matrix</td><td>Backend</td><td>tests/scanner-evidence-matrix.mjs</td></tr><tr><td>≥50 active check IDs</td><td>Backend</td><td>—</td></tr><tr><td>17+ family payload files</td><td>Backend</td><td>—</td></tr></tbody></table></div>
-<h2 id="phase-2-traffic-tier-1">Phase 2 — Traffic Tier 1</h2>
+<h2 id="phase-2-traffic-tier-1">Phase 2 — Traffic Tier 1<a class="anchor" href="#phase-2-traffic-tier-1" aria-label="Permanent link to Phase 2 — Traffic Tier 1">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>HAR export</td><td>Backend</td><td>tests/traffic-har-export.mjs</td></tr><tr><td>Cut export</td><td>Backend</td><td>tests/traffic-cut-export.mjs</td></tr><tr><td>Content views</td><td>Backend</td><td>tests/traffic-content-views.mjs</td></tr><tr><td>Flow filter DSL</td><td>Backend</td><td>tests/traffic-flow-filter.mjs</td></tr><tr><td>Rule packs (anticache, blocklist)</td><td>Backend</td><td>tests/traffic-rules-anticache.mjs, tests/traffic-rules-blocklist.mjs</td></tr></tbody></table></div>
-<h2 id="phase-3-scanner-ui-workspace">Phase 3 — Scanner UI Workspace</h2>
+<h2 id="phase-3-scanner-ui-workspace">Phase 3 — Scanner UI Workspace<a class="anchor" href="#phase-3-scanner-ui-workspace" aria-label="Permanent link to Phase 3 — Scanner UI Workspace">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Active scan engine (IPC wiring)</td><td>Backend</td><td>tests/scanner-active-scan-engine.mjs</td></tr><tr><td>Live calibration</td><td>Backend</td><td>tests/scanner-live-calibration.mjs</td></tr></tbody></table></div>
-<h2 id="phase-3b-contexts-auth-modes">Phase 3b — Contexts, Auth, Modes</h2>
+<h2 id="phase-3b-contexts-auth-modes">Phase 3b — Contexts, Auth, Modes<a class="anchor" href="#phase-3b-contexts-auth-modes" aria-label="Permanent link to Phase 3b — Contexts, Auth, Modes">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Context engine membership</td><td>Backend</td><td>tests/context-engine-membership.mjs</td></tr><tr><td>Session macro engine</td><td>Backend</td><td>tests/session-macro-engine.mjs</td></tr><tr><td>Anti-CSRF refresh before replay</td><td>Backend</td><td>tests/anti-csrf-refresh-before-replay.mjs</td></tr><tr><td>Global safe-mode blocks active scan</td><td>Backend</td><td>tests/global-mode-safe-blocks-active-scan.mjs</td></tr></tbody></table></div>
-<h2 id="phase-4-scanner-depth">Phase 4 — Scanner Depth</h2>
+<h2 id="phase-4-scanner-depth">Phase 4 — Scanner Depth<a class="anchor" href="#phase-4-scanner-depth" aria-label="Permanent link to Phase 4 — Scanner Depth">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Passive scanner engine</td><td>Backend</td><td>tests/scanner-passive-engine.mjs</td></tr><tr><td>Passive redirect scheme rule</td><td>Backend</td><td>tests/scanner-passive-redirect-scheme.mjs</td></tr><tr><td>Passive reflected XSS rule</td><td>Backend</td><td>tests/scanner-passive-reflected-xss.mjs</td></tr><tr><td>Passive debug endpoint rule</td><td>Backend</td><td>tests/scanner-passive-debug-endpoint.mjs</td></tr><tr><td>Retest engine</td><td>Backend</td><td>tests/scanner-retest-engine.mjs</td></tr></tbody></table></div>
-<h2 id="phase-5-alternate-proxy-modes">Phase 5 — Alternate Proxy Modes</h2>
+<h2 id="phase-5-alternate-proxy-modes">Phase 5 — Alternate Proxy Modes<a class="anchor" href="#phase-5-alternate-proxy-modes" aria-label="Permanent link to Phase 5 — Alternate Proxy Modes">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>SOCKS5 inbound proxy</td><td>Backend</td><td>tests/traffic-socks-inbound.mjs</td></tr><tr><td>Reverse proxy mode</td><td>Backend</td><td>tests/traffic-reverse-mode.mjs</td></tr><tr><td>DNS proxy</td><td>Backend</td><td>tests/traffic-dns-proxy.mjs</td></tr><tr><td>CONNECT tunnel</td><td>E2E-tested</td><td>tests/connect-tunnel.mjs</td></tr></tbody></table></div>
-<h2 id="phase-6-exploit-lab-templates">Phase 6 — Exploit Lab Templates</h2>
+<h2 id="phase-6-exploit-lab-templates">Phase 6 — Exploit Lab Templates<a class="anchor" href="#phase-6-exploit-lab-templates" aria-label="Permanent link to Phase 6 — Exploit Lab Templates">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Exploit engine</td><td>Backend</td><td>tests/exploit-engine.mjs</td></tr><tr><td>Authz matrix template</td><td>Backend</td><td>tests/exploit-template-authz-matrix.mjs</td></tr><tr><td>OAST callback template</td><td>Backend</td><td>tests/exploit-template-oast-callback.mjs</td></tr><tr><td>Report evidence template</td><td>Backend</td><td>tests/exploit-template-report-evidence.mjs</td></tr><tr><td>Webhook replay template</td><td>Backend</td><td>tests/exploit-template-webhook-replay.mjs</td></tr><tr><td>Race window template</td><td>Backend</td><td>tests/exploit-template-race-window.mjs</td></tr><tr><td>Cache key diff template</td><td>Backend</td><td>tests/exploit-template-cache-key-diff.mjs</td></tr><tr><td>File upload roundtrip template</td><td>Backend</td><td>tests/exploit-template-file-upload.mjs</td></tr><tr><td>WebSocket sequence template</td><td>Backend</td><td>tests/exploit-template-websocket-sequence.mjs</td></tr><tr><td>OAuth flow template</td><td>Backend</td><td>tests/exploit-template-oauth-flow.mjs</td></tr><tr><td>MFA flow bypass template</td><td>Backend</td><td>tests/exploit-template-mfa-flow.mjs</td></tr><tr><td>Model output sink template</td><td>Backend</td><td>tests/exploit-template-model-output-sink.mjs</td></tr><tr><td>Redaction invariant template</td><td>Backend</td><td>tests/exploit-template-redaction-invariant.mjs</td></tr><tr><td>Artifact boundary template</td><td>Backend</td><td>tests/exploit-template-artifact-boundary.mjs</td></tr><tr><td>gRPC sequence template</td><td>Backend</td><td>tests/exploit-template-grpc-sequence.mjs</td></tr><tr><td>Multi-step chain template</td><td>Backend</td><td>tests/exploit-template-multi-step-chain.mjs</td></tr><tr><td>State diff helpers</td><td>Backend</td><td>(via index exports)</td></tr><tr><td>Side-effect guard helpers</td><td>Backend</td><td>(via index exports)</td></tr><tr><td>Browser verifier helpers</td><td>Backend</td><td>(via index exports)</td></tr></tbody></table></div>
-<h2 id="phase-7-http-2-streaming-playback">Phase 7 — HTTP/2 + Streaming + Playback</h2>
+<h2 id="phase-7-http-2-streaming-playback">Phase 7 — HTTP/2 + Streaming + Playback<a class="anchor" href="#phase-7-http-2-streaming-playback" aria-label="Permanent link to Phase 7 — HTTP/2 + Streaming + Playback">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>HTTP/2 transport</td><td>Backend</td><td>tests/traffic-http2-transport.mjs</td></tr><tr><td>HTTP/2 frame editor</td><td>Backend</td><td>tests/traffic-http2-frame-editor.mjs</td></tr><tr><td>Streaming large body</td><td>Backend</td><td>tests/traffic-streaming-large-body.mjs</td></tr><tr><td>Streaming SSE</td><td>Backend</td><td>tests/traffic-streaming-sse.mjs</td></tr><tr><td>Playback client</td><td>Backend</td><td>tests/traffic-playback-client.mjs</td></tr><tr><td>Playback server</td><td>Backend</td><td>tests/traffic-playback-server.mjs</td></tr></tbody></table></div>
-<h2 id="phase-8-skilllet-metadata-automation-recipes">Phase 8 — Skilllet Metadata + Automation Recipes</h2>
+<h2 id="phase-8-skilllet-metadata-automation-recipes">Phase 8 — Skilllet Metadata + Automation Recipes<a class="anchor" href="#phase-8-skilllet-metadata-automation-recipes" aria-label="Permanent link to Phase 8 — Skilllet Metadata + Automation Recipes">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Skilllet metadata</td><td>Backend</td><td>tests/scanner-skilllet-metadata.mjs</td></tr><tr><td>Automation engine</td><td>Backend</td><td>tests/automation-engine.mjs</td></tr><tr><td>Automation recipes</td><td>Backend</td><td>tests/automation-recipes.mjs</td></tr></tbody></table></div>
-<h2 id="phase-9-extension-sdk">Phase 9 — Extension SDK</h2>
+<h2 id="phase-9-extension-sdk">Phase 9 — Extension SDK<a class="anchor" href="#phase-9-extension-sdk" aria-label="Permanent link to Phase 9 — Extension SDK">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Extension engine</td><td>Backend</td><td>tests/extension-engine.mjs</td></tr><tr><td>SDK contract</td><td>Backend</td><td>tests/extension-sdk-contract.mjs</td></tr><tr><td>Signed package</td><td>Backend</td><td>tests/extension-signed-package.mjs</td></tr><tr><td>Third-party compatibility</td><td>Backend</td><td>tests/extension-third-party-compatibility-engine.mjs</td></tr></tbody></table></div>
-<h2 id="phase-10-browser-scan-oracle">Phase 10 — Browser Scan Oracle</h2>
+<h2 id="phase-10-browser-scan-oracle">Phase 10 — Browser Scan Oracle<a class="anchor" href="#phase-10-browser-scan-oracle" aria-label="Permanent link to Phase 10 — Browser Scan Oracle">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>DOM tracer canary reflection</td><td>Backend</td><td>tests/dom-tracer-canary-reflection.mjs</td></tr><tr><td>DOM tracer SPA fixture</td><td>Backend</td><td>tests/dom-tracer-fixture-spa.mjs</td></tr></tbody></table></div>
-<h2 id="phase-11-param-miner-content-discovery">Phase 11 — Param Miner + Content Discovery</h2>
+<h2 id="phase-11-param-miner-content-discovery">Phase 11 — Param Miner + Content Discovery<a class="anchor" href="#phase-11-param-miner-content-discovery" aria-label="Permanent link to Phase 11 — Param Miner + Content Discovery">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Param miner</td><td>Backend</td><td>tests/scanner-param-miner.mjs</td></tr><tr><td>Content discovery engine</td><td>Backend</td><td>tests/content-discovery-engine.mjs</td></tr></tbody></table></div>
-<h2 id="phase-12-automation-api-sbom-stats">Phase 12 — Automation API + SBOM + Stats</h2>
+<h2 id="phase-12-automation-api-sbom-stats">Phase 12 — Automation API + SBOM + Stats<a class="anchor" href="#phase-12-automation-api-sbom-stats" aria-label="Permanent link to Phase 12 — Automation API + SBOM + Stats">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>SBOM CycloneDX 1.5 round-trip</td><td>Backend</td><td>tests/sbom-cyclonedx-roundtrip.mjs</td></tr><tr><td>SBOM SPDX 2.3 round-trip</td><td>Backend</td><td>tests/sbom-spdx-roundtrip.mjs</td></tr><tr><td>SBOM includes evidence references</td><td>Backend</td><td>tests/sbom-includes-evidence-references.mjs</td></tr><tr><td>Stats counter decay</td><td>Backend</td><td>tests/stats-counter-decay.mjs</td></tr><tr><td>Stats rule: 5xx cluster finding</td><td>Backend</td><td>tests/stats-rule-5xx-cluster-finding.mjs</td></tr><tr><td>Stats rule: redirect chain finding</td><td>Backend</td><td>tests/stats-rule-redirect-chain-finding.mjs</td></tr><tr><td>OAST SSRF end-to-end</td><td>E2E-tested</td><td>tests/scanner-oast-ssrf.mjs</td></tr><tr><td>Callback listener service</td><td>E2E-tested</td><td>tests/callback-listener-service.mjs</td></tr></tbody></table></div>
-<h2 id="phase-13-proxy-browser-proxy-chain-diversity">Phase 13 — Proxy Browser / Proxy-Chain Diversity</h2>
+<h2 id="phase-13-proxy-browser-proxy-chain-diversity">Phase 13 — Proxy Browser / Proxy-Chain Diversity<a class="anchor" href="#phase-13-proxy-browser-proxy-chain-diversity" aria-label="Permanent link to Phase 13 — Proxy Browser / Proxy-Chain Diversity">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Proxy browser/proxy-chain diversity checkpoint</td><td>Backend</td><td>tests/proxy-browser-proxy-chain-diversity.mjs</td></tr><tr><td>external live-host diversity</td><td>Backend</td><td>tests/proxy-browser-proxy-chain-diversity.mjs</td></tr><tr><td>proxyforge-proxy-browser-proxy-chain-diversity-package</td><td>Backend</td><td>tests/proxy-browser-proxy-chain-diversity.mjs</td></tr></tbody></table></div>
-<h2 id="phase-14-agent-option-audit">Phase 14 — Agent Option Audit</h2>
+<h2 id="phase-14-agent-option-audit">Phase 14 — Agent Option Audit<a class="anchor" href="#phase-14-agent-option-audit" aria-label="Permanent link to Phase 14 — Agent Option Audit">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>MVP Agent Option Audit</td><td>Backend</td><td>tests/agent-option-audit.mjs</td></tr><tr><td>Agent option audit gate</td><td>Backend</td><td>tests/agent-option-audit.mjs</td></tr></tbody></table></div>
-<h2 id="phase-17-optional-native-side-cars">Phase 17 — Optional Native Side-Cars</h2>
+<h2 id="phase-17-optional-native-side-cars">Phase 17 — Optional Native Side-Cars<a class="anchor" href="#phase-17-optional-native-side-cars" aria-label="Permanent link to Phase 17 — Optional Native Side-Cars">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Transparent proxy (TPROXY / Linux tproxy side-car stub)</td><td>Backend</td><td>tests/traffic-transparent-linux.mjs</td></tr><tr><td>Raw TCP/UDP transport (Node.js builtins stub)</td><td>Backend</td><td>tests/traffic-raw-tcp-udp.mjs</td></tr><tr><td>HTTP/3 / QUIC transport (quiche/quinn side-car stub)</td><td>Backend</td><td>tests/traffic-http3-end-to-end.mjs</td></tr><tr><td>WireGuard capture mode (boringtun side-car stub)</td><td>Backend</td><td>tests/traffic-wireguard.mjs</td></tr></tbody></table></div>
-<h2 id="phase-18-release-hardening">Phase 18 — Release Hardening</h2>
+<h2 id="phase-18-release-hardening">Phase 18 — Release Hardening<a class="anchor" href="#phase-18-release-hardening" aria-label="Permanent link to Phase 18 — Release Hardening">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Feature</th><th>Status</th><th>Test</th></tr></thead><tbody><tr><td>Path traversal prevention (IPC project root validation)</td><td>Backend</td><td>tests/security-regression-path-traversal.mjs</td></tr><tr><td>Zip-slip / archive path escape prevention (HAR/bundle import)</td><td>Backend</td><td>tests/security-regression-zip-slip.mjs</td></tr><tr><td>IPC parameter validation rejects malformed/injected payloads</td><td>Backend</td><td>tests/security-regression-ipc-schema.mjs</td></tr><tr><td>OAST signature verification rejects forged callbacks</td><td>Backend</td><td>tests/security-regression-oast-forgery.mjs</td></tr><tr><td>Body/transcript caps prevent runaway memory (StreamCapture + capBodySize)</td><td>Backend</td><td>tests/security-regression-body-caps.mjs</td></tr><tr><td>AI handoff boundary redaction blocks PII/credential leakage</td><td>Backend</td><td>tests/security-regression-ai-redaction.mjs</td></tr></tbody></table></div>
-<h2 id="gates-status">Gates Status</h2>
+<h2 id="gates-status">Gates Status<a class="anchor" href="#gates-status" aria-label="Permanent link to Gates Status">#</a></h2>
 <div class="table-wrap"><table><thead><tr><th>Gate</th><th>Status</th><th>Criteria</th></tr></thead><tbody><tr><td>G1 — Scanner core</td><td>Complete</td><td>Payload engine, oracle, evidence matrix, insertion points, and active scanner tests pass.</td></tr><tr><td>G2 — Traffic Tier 1</td><td>Complete</td><td>HAR, cut/export, filters, rule packs, HTTP/2, streaming, playback, and content-view tests pass.</td></tr><tr><td>G3 — OAST loop</td><td>Complete</td><td>Callback listener, provider diversity, relay isolation, scanner SSRF, and signed OAST evidence tests pass.</td></tr><tr><td>G4 — SBOM</td><td>Complete</td><td>CycloneDX, SPDX, evidence-reference SBOM, and release trust tests pass.</td></tr><tr><td>G5 — Packaging</td><td>Complete</td><td>Linux/Windows package production schema gates, non-publishing build scripts, Electron fuse policy, and native artifact workflow are present.</td></tr><tr><td>G6 — Alpha cut</td><td>Complete</td><td><code>v0.1.0-alpha.1</code> tag target, release notes, README alpha copy, bug-bash/hotfix process, and native artifact receipt workflow are complete.</td></tr></tbody></table></div>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="operator-guide.html"><span>Previous</span>Operator Guide</a><a class="pager-link pager-next" href="agentic-interface.html"><span>Next</span>Agentic Interface</a></nav>
     </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#phase-0-guardrails">Phase 0 — Guardrails</a></li><li class="toc-level-2"><a href="#phase-1-scanner-primitives">Phase 1 — Scanner Primitives</a></li><li class="toc-level-2"><a href="#phase-2-traffic-tier-1">Phase 2 — Traffic Tier 1</a></li><li class="toc-level-2"><a href="#phase-3-scanner-ui-workspace">Phase 3 — Scanner UI Workspace</a></li><li class="toc-level-2"><a href="#phase-3b-contexts-auth-modes">Phase 3b — Contexts, Auth, Modes</a></li><li class="toc-level-2"><a href="#phase-4-scanner-depth">Phase 4 — Scanner Depth</a></li><li class="toc-level-2"><a href="#phase-5-alternate-proxy-modes">Phase 5 — Alternate Proxy Modes</a></li><li class="toc-level-2"><a href="#phase-6-exploit-lab-templates">Phase 6 — Exploit Lab Templates</a></li><li class="toc-level-2"><a href="#phase-7-http-2-streaming-playback">Phase 7 — HTTP/2 + Streaming + Playback</a></li><li class="toc-level-2"><a href="#phase-8-skilllet-metadata-automation-recipes">Phase 8 — Skilllet Metadata + Automation Recipes</a></li><li class="toc-level-2"><a href="#phase-9-extension-sdk">Phase 9 — Extension SDK</a></li><li class="toc-level-2"><a href="#phase-10-browser-scan-oracle">Phase 10 — Browser Scan Oracle</a></li><li class="toc-level-2"><a href="#phase-11-param-miner-content-discovery">Phase 11 — Param Miner + Content Discovery</a></li><li class="toc-level-2"><a href="#phase-12-automation-api-sbom-stats">Phase 12 — Automation API + SBOM + Stats</a></li><li class="toc-level-2"><a href="#phase-13-proxy-browser-proxy-chain-diversity">Phase 13 — Proxy Browser / Proxy-Chain Diversity</a></li><li class="toc-level-2"><a href="#phase-14-agent-option-audit">Phase 14 — Agent Option Audit</a></li><li class="toc-level-2"><a href="#phase-17-optional-native-side-cars">Phase 17 — Optional Native Side-Cars</a></li><li class="toc-level-2"><a href="#phase-18-release-hardening">Phase 18 — Release Hardening</a></li><li class="toc-level-2"><a href="#gates-status">Gates Status</a></li></ol>
+    </aside>
   </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
 </body>
 </html>

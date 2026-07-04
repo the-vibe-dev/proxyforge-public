@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OAST Provider Guide - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OAST Provider Guide - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/oast-provider-guide.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a aria-current="page" href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a aria-current="page" href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/OAST_PROVIDER_GUIDE.md">docs/OAST_PROVIDER_GUIDE.md</a></p>
+  <h1>OAST Provider Guide</h1>
+</header>
+      <h1 id="proxyforge-oast-provider-guide">ProxyForge OAST Provider Guide<a class="anchor" href="#proxyforge-oast-provider-guide" aria-label="Permanent link to ProxyForge OAST Provider Guide">#</a></h1>
+<blockquote>OAST = Out-of-band Application Security Testing.</blockquote>
+<blockquote>This guide covers how ProxyForge generates, signs, injects, and correlates OAST payloads.</blockquote>
+<h2 id="what-is-oast-and-why-it-matters">What is OAST and why it matters<a class="anchor" href="#what-is-oast-and-why-it-matters" aria-label="Permanent link to What is OAST and why it matters">#</a></h2>
+<p>Some vulnerabilities — SSRF, blind XXE, log4Shell, deserialization gadgets — produce no visible response difference when triggered. The only way to confirm exploitation is through an <strong>out-of-band channel</strong>: the target server reaches out to an attacker-controlled listener.</p>
+<p>OAST replaces guesswork with a cryptographic proof: a unique signed token is embedded in the probe, the target calls back to a listener you control, and ProxyForge correlates the interaction to the originating scanner exchange and promotes it to a verified finding.</p>
+<h2 id="how-proxyforge-signs-oast-tokens">How ProxyForge signs OAST tokens<a class="anchor" href="#how-proxyforge-signs-oast-tokens" aria-label="Permanent link to How ProxyForge signs OAST tokens">#</a></h2>
+<p>Each OAST payload carries an HMAC-SHA256 token derived from the project ID and the payload ID:</p>
+<div class="highlight"><pre class="code-block"><code>token = HMAC-SHA256(key=projectSecret, msg=&quot;&lt;projectId&gt;:&lt;payloadId&gt;&quot;).hex[:24]</code></pre></div>
+<p>The token is embedded in the callback URL. When a callback arrives, <code>correlateCallback(token, projectId)</code> looks up the token in the in-memory payload store and confirms it belongs to the correct project. This prevents cross-project token spoofing and lets you run multiple concurrent projects against different listeners without collision.</p>
+<h2 id="configuring-a-byo-oast-listener">Configuring a BYO OAST listener<a class="anchor" href="#configuring-a-byo-oast-listener" aria-label="Permanent link to Configuring a BYO OAST listener">#</a></h2>
+<p>ProxyForge ships a built-in local HTTP listener (<code>CallbackListenerService</code>) suitable for localhost testing. For internet-reachable or DNS-based callbacks you need an external listener.</p>
+<p>To wire in your own listener, create a listener profile and pass it to <code>CallbackListenerService.start()</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;id&quot;: &quot;my-oast-listener&quot;,
+  &quot;mode&quot;: &quot;local-http&quot;,
+  &quot;host&quot;: &quot;0.0.0.0&quot;,
+  &quot;publicBaseUrl&quot;: &quot;https://oast.yourdomain.com&quot;,
+  &quot;protocols&quot;: [&quot;http&quot;, &quot;dns&quot;],
+  &quot;httpPort&quot;: 8443,
+  &quot;dnsPort&quot;: 5353,
+  &quot;signingKeyId&quot;: &quot;my-project-secret&quot;
+}</code></pre></div>
+<p><code>publicBaseUrl</code> is the externally routable base URL injected into probe payloads. ProxyForge never assumes the listener and the scanner run on the same host.</p>
+<h2 id="oastbaseurl-and-oasttoken-in-mutationcontext"><code>oastBaseUrl</code> and <code>oastToken</code> in MutationContext<a class="anchor" href="#oastbaseurl-and-oasttoken-in-mutationcontext" aria-label="Permanent link to `oastBaseUrl` and `oastToken` in MutationContext">#</a></h2>
+<p>When the active scanner generates payload variants for OAST-capable families (SSRF, log4Shell, deserialization), it populates <code>MutationContext</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="typescript"><code>interface MutationContext {
+  family: PayloadFamily;
+  baseValue: string;
+  insertionPointKind: InsertionPointKind;
+  oastBaseUrl?: string;   // e.g. &quot;https://oast.yourdomain.com&quot;
+  oastToken?: string;     // HMAC token for this probe
+  // ...
+}</code></pre></div>
+<p>Payload variants with <code>requiresOast: true</code> are silently skipped when <code>oastBaseUrl</code> is absent, so non-OAST scans degrade gracefully without errors.</p>
+<h2 id="oastpayloadbroker-ts-api-electron-scanner-oastpayloadbroker-ts"><code>oastPayloadBroker.ts</code> API (electron/scanner/oastPayloadBroker.ts)<a class="anchor" href="#oastpayloadbroker-ts-api-electron-scanner-oastpayloadbroker-ts" aria-label="Permanent link to `oastPayloadBroker.ts` API (electron/scanner/oastPayloadBroker.ts)">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Function</th><th>Description</th></tr></thead><tbody><tr><td><code>createOastPayload(projectId, checkId, insertionPointId, exchangeId, oastBaseUrl, protocol, projectSecret)</code></td><td>Mints a signed payload, stores it, returns <code>OastPayload</code></td></tr><tr><td><code>recordOastInteraction(payloadId, rawInteraction, sourceIp?, requestLine?)</code></td><td>Records a callback interaction; marks payload <code>triggered</code></td></tr><tr><td><code>correlateCallback(token, projectId)</code></td><td>Looks up a payload by token + project; returns payload or null</td></tr><tr><td><code>getInteractionsForPayload(payloadId)</code></td><td>Returns all interactions for a payload</td></tr><tr><td><code>buildOastProofPayload(payload, interaction)</code></td><td>Produces a <code>{ verified, evidence[] }</code> proof object</td></tr></tbody></table></div>
+<h2 id="oast-payload-lifecycle">OAST payload lifecycle<a class="anchor" href="#oast-payload-lifecycle" aria-label="Permanent link to OAST payload lifecycle">#</a></h2>
+<div class="highlight"><pre class="code-block"><code>1. create    — createOastPayload() mints token, stores OastPayload{status:&#39;pending&#39;}
+2. inject    — token URL embedded in probe (e.g. ?url=https://oast.host/&lt;token&gt;)
+3. callback  — target server fetches or resolves the token URL / hostname
+4. correlate — correlateCallback(token, projectId) matches interaction → payload
+5. promote   — buildOastProofPayload() confirms verification; scanner promotes to Finding</code></pre></div>
+<p>Status transitions: <code>pending</code> → <code>triggered</code> (on first <code>recordOastInteraction</code>). Payloads that never trigger can be swept by an expiry pass using their <code>createdAt</code> timestamp.</p>
+<h2 id="example-confirmed-ssrf-finding">Example: confirmed SSRF finding<a class="anchor" href="#example-confirmed-ssrf-finding" aria-label="Permanent link to Example: confirmed SSRF finding">#</a></h2>
+<p>After a successful OAST SSRF probe the promoted finding looks like:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-scanner-oast-issue-promotion-package&quot;,
+  &quot;reportReady&quot;: true,
+  &quot;issue&quot;: {
+    &quot;checkId&quot;: &quot;oast-ssrf&quot;,
+    &quot;confidence&quot;: &quot;confirmed&quot;,
+    &quot;title&quot;: &quot;Out-of-band callback was triggered&quot;
+  },
+  &quot;requirements&quot;: {
+    &quot;sourceExchangeLinked&quot;: true,
+    &quot;scannerExchangeLinked&quot;: true,
+    &quot;callbackPayloadLinked&quot;: true,
+    &quot;callbackInteractionLinked&quot;: true,
+    &quot;oastTokenObserved&quot;: true,
+    &quot;rawScannerRequestPreserved&quot;: true,
+    &quot;rawScannerResponsePreserved&quot;: true,
+    &quot;rawCallbackInteractionPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>All raw material (request, response, callback body) is preserved at full fidelity until <strong>report export time</strong>, at which point credentials are redacted. This satisfies the <code>reportPhaseOnlyRedaction</code> gate required for audit-grade evidence packages.</p>
+<h2 id="related-tests">Related tests<a class="anchor" href="#related-tests" aria-label="Permanent link to Related tests">#</a></h2>
+<ul><li><code>tests/scanner-oast-ssrf.mjs</code> — full E2E: probe → callback → project-store correlation</li><li><code>tests/callback-listener-service.mjs</code> — local HTTP listener lifecycle</li><li><code>tests/oast-provider-diversity.mjs</code> — multiple simultaneous listener profiles</li><li><code>tests/project-store-oast-workflow.mjs</code> — payload/interaction persistence round-trip</li></ul>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="modes-wireguard.html"><span>Previous</span>WireGuard Mode</a><a class="pager-link pager-next" href="agent-codex.html"><span>Next</span>Codex Agent</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#what-is-oast-and-why-it-matters">What is OAST and why it matters</a></li><li class="toc-level-2"><a href="#how-proxyforge-signs-oast-tokens">How ProxyForge signs OAST tokens</a></li><li class="toc-level-2"><a href="#configuring-a-byo-oast-listener">Configuring a BYO OAST listener</a></li><li class="toc-level-2"><a href="#oastbaseurl-and-oasttoken-in-mutationcontext"><code>oastBaseUrl</code> and <code>oastToken</code> in MutationContext</a></li><li class="toc-level-2"><a href="#oastpayloadbroker-ts-api-electron-scanner-oastpayloadbroker-ts"><code>oastPayloadBroker.ts</code> API (electron/scanner/oastPayloadBroker.ts)</a></li><li class="toc-level-2"><a href="#oast-payload-lifecycle">OAST payload lifecycle</a></li><li class="toc-level-2"><a href="#example-confirmed-ssrf-finding">Example: confirmed SSRF finding</a></li><li class="toc-level-2"><a href="#related-tests">Related tests</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2407 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Schemas - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Agent Schemas - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/agent-schemas.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a aria-current="page" href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a aria-current="page" href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/agents/SCHEMAS.md">docs/agents/SCHEMAS.md</a></p>
+  <h1>Agent Schemas</h1>
+</header>
+      <h1 id="agent-json-schemas">Agent JSON Schemas<a class="anchor" href="#agent-json-schemas" aria-label="Permanent link to Agent JSON Schemas">#</a></h1>
+<p>All agent commands emit a shared envelope:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-result&quot;,
+  &quot;schemaVersion&quot;: 1,
+  &quot;command&quot;: &quot;status&quot;,
+  &quot;generatedAt&quot;: &quot;2026-05-24T00:00:00.000Z&quot;,
+  &quot;status&quot;: &quot;completed&quot;,
+  &quot;mode&quot;: &quot;read-only&quot;,
+  &quot;project&quot;: {
+    &quot;name&quot;: &quot;Assessment&quot;,
+    &quot;scopeCount&quot;: 1,
+    &quot;exchangeCount&quot;: 1,
+    &quot;findingCount&quot;: 0
+  },
+  &quot;safety&quot;: {
+    &quot;redacted&quot;: false,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+    &quot;scopeAllowlist&quot;: [&quot;example.test&quot;],
+    &quot;trafficSent&quot;: false,
+    &quot;requestCount&quot;: 0,
+    &quot;approvals&quot;: [],
+    &quot;gates&quot;: [&quot;full-fidelity-operational-output&quot;]
+  },
+  &quot;artifacts&quot;: [],
+  &quot;data&quot;: {},
+  &quot;audit&quot;: []
+}</code></pre></div>
+<h2 id="status-values">Status Values<a class="anchor" href="#status-values" aria-label="Permanent link to Status Values">#</a></h2>
+<ul><li><code>completed</code>: command finished and the output is usable.</li><li><code>planned</code>: command prepared a workflow but sent no traffic.</li><li><code>queued</code>: command created an approved execution package for another backend.</li><li><code>blocked</code>: safety or input validation stopped the command.</li></ul>
+<h2 id="phase-boundary">Phase Boundary<a class="anchor" href="#phase-boundary" aria-label="Permanent link to Phase Boundary">#</a></h2>
+<p>Operational/executor commands preserve Authorization, Cookie, X-API-Key, token, session, secret, password, API key fields, raw request bodies, raw response bodies, and callback tokens so agents can replay, exploit, scan, and gather intel correctly. Redaction happens only when generating submission/reporting artifacts such as report exports and signed bundles.</p>
+<h2 id="platform-and-release-evidence">Platform And Release Evidence<a class="anchor" href="#platform-and-release-evidence" aria-label="Permanent link to Platform And Release Evidence">#</a></h2>
+<p><code>proxyforge-platform-release-parity-evidence-package</code> is the proof bundle for UI, desktop shell, packaging, release gates, install docs, and security-review parity:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-platform-release-parity-evidence-package&quot;,
+  &quot;artifactCount&quot;: 6,
+  &quot;smokeCount&quot;: 16,
+  &quot;gateCount&quot;: 4,
+  &quot;documentationCount&quot;: 3,
+  &quot;requirements&quot;: {
+    &quot;denseNavigationCovered&quot;: true,
+    &quot;visualQaCovered&quot;: true,
+    &quot;linuxElectronShellCovered&quot;: true,
+    &quot;windowsElectronShellCovered&quot;: true,
+    &quot;linuxArtifactsCovered&quot;: true,
+    &quot;windowsArtifactsCovered&quot;: true,
+    &quot;packagedHeadlessCliCovered&quot;: true,
+    &quot;packagedAgentCliCovered&quot;: true,
+    &quot;packagedRuntimeProxyCertOastReportCovered&quot;: true,
+    &quot;packagedBrowserRoutingCovered&quot;: true,
+    &quot;linuxInstallTrustUninstallCovered&quot;: true,
+    &quot;windowsInstallerUninstallCovered&quot;: true,
+    &quot;windowsTrustStorePinCovered&quot;: true,
+    &quot;fastSuiteCovered&quot;: true,
+    &quot;fullNightlySuiteCovered&quot;: true,
+    &quot;installDocsCovered&quot;: true,
+    &quot;securityReviewCovered&quot;: true,
+    &quot;platformPinsCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should use this package to decide whether Platform and Release rows are still at parity after package refreshes. It includes Linux AppImage/deb/unpacked evidence, Windows NSIS/portable/unpacked evidence, <code>PROXYFORGE_RELEASE_SMOKE=1</code> shell proof, packaged headless and agent CLI proof, browser routing, Linux trusted-CA install proof, the <code>windows-trust-runner</code> <code>ERROR_NOT_SUPPORTED</code> trust-store pin, <code>test:ci:fast</code>, <code>test:ci:full</code>, release docs, and release security review material. It preserves raw executor tokens, cookies, callback tokens, and request/response bodies until a report command emits submission artifacts.</p>
+<h2 id="ui-scale-production-evidence">UI Scale Production Evidence<a class="anchor" href="#ui-scale-production-evidence" aria-label="Permanent link to UI Scale Production Evidence">#</a></h2>
+<p><code>proxyforge-ui-scale-production-evidence-package</code> is the proof bundle for dense analyst UI scale and responsive overflow hardening:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-ui-scale-production-evidence-package&quot;,
+  &quot;viewportCount&quot;: 3,
+  &quot;largeProjectProfileCount&quot;: 2,
+  &quot;workflowProofCount&quot;: 9,
+  &quot;requirements&quot;: {
+    &quot;desktopTabletMobileCovered&quot;: true,
+    &quot;allMajorSurfacesReachable&quot;: true,
+    &quot;noViewportOverlapOrOverflow&quot;: true,
+    &quot;textFitAndLongLabelsCovered&quot;: true,
+    &quot;keyboardAndAccessibleNamesCovered&quot;: true,
+    &quot;stableFixedControlsCovered&quot;: true,
+    &quot;largeProjectDataDensityCovered&quot;: true,
+    &quot;boundedRowWindowsCovered&quot;: true,
+    &quot;latencyBudgetsCovered&quot;: true,
+    &quot;reportAttachmentScaleCovered&quot;: true,
+    &quot;workflowSurfaceCoverage&quot;: true,
+    &quot;packagedModeCovered&quot;: true,
+    &quot;docsAndSchemasCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use this package before trusting ProxyForge for large workspaces or compact displays. It records desktop, tablet, and mobile proofs; all major surfaces; zero overlap and horizontal overflow; long-label fitting; keyboard and accessible-name coverage; stable fixed-format controls; bounded retained row windows for large Proxy/Target/Intruder/WebSocket/Report datasets; latency budgets; packaged <code>resources/app.asar</code> proof; and report-export-only redaction. Operational UI evidence keeps raw requests, raw responses, tokens, cookies, keys, and callbacks intact until report export.</p>
+<h2 id="release-security-production-evidence">Release Security Production Evidence<a class="anchor" href="#release-security-production-evidence" aria-label="Permanent link to Release Security Production Evidence">#</a></h2>
+<p><code>proxyforge-release-security-production-evidence-package</code> is the proof bundle for the release-wide security review row:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-release-security-production-evidence-package&quot;,
+  &quot;proofCount&quot;: 12,
+  &quot;reviewFindingCount&quot;: 20,
+  &quot;requirements&quot;: {
+    &quot;formalSecurityReviewPassed&quot;: true,
+    &quot;allSecurityCategoriesCovered&quot;: true,
+    &quot;noCriticalHighFindings&quot;: true,
+    &quot;localListenersCovered&quot;: true,
+    &quot;secretBoundaryCovered&quot;: true,
+    &quot;reviewRedactionCovered&quot;: true,
+    &quot;exploitControlsCovered&quot;: true,
+    &quot;agentControlsCovered&quot;: true,
+    &quot;aiProviderControlsCovered&quot;: true,
+    &quot;platformPinsCovered&quot;: true,
+    &quot;signedTrustCovered&quot;: true,
+    &quot;productionCiCovered&quot;: true,
+    &quot;cleanMachineRuntimeEvidenceCovered&quot;: true,
+    &quot;artifactHygieneCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;docsAndSchemasCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the Production Ready evidence for release security only. It proves the formal zero-warning security review, local listener bindings, exploit controls, agent controls, AI provider controls, platform pins, signed trust, production CI gates, clean Linux/Windows runtime evidence, artifact hygiene, package refresh, docs/schemas, and full-fidelity executor material. It also proves the boundary that operational artifacts keep tokens, cookies, keys, raw requests, raw responses, and callback tokens until report/export commands produce redacted submission artifacts.</p>
+<h2 id="platform-shell-production-evidence">Platform Shell Production Evidence<a class="anchor" href="#platform-shell-production-evidence" aria-label="Permanent link to Platform Shell Production Evidence">#</a></h2>
+<p><code>proxyforge-platform-shell-production-evidence-package</code> is the proof bundle for the Linux/Windows packaged Electron shell row:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-platform-shell-production-evidence-package&quot;,
+  &quot;smokeCount&quot;: 15,
+  &quot;requirements&quot;: {
+    &quot;linuxShellLaunchCovered&quot;: true,
+    &quot;windowsShellLaunchCovered&quot;: true,
+    &quot;structuredReleaseSmokeCovered&quot;: true,
+    &quot;packagedHeadlessCovered&quot;: true,
+    &quot;packagedAgentCovered&quot;: true,
+    &quot;externalCwdAgentCovered&quot;: true,
+    &quot;appRootAsarCovered&quot;: true,
+    &quot;packagedRuntimeCovered&quot;: true,
+    &quot;packagedBrowserRoutingCovered&quot;: true,
+    &quot;linuxPackageProductionGateCovered&quot;: true,
+    &quot;windowsPackageProductionGateCovered&quot;: true,
+    &quot;trustStorePinAccepted&quot;: true,
+    &quot;knownHostLimitsPinned&quot;: true,
+    &quot;releaseDocsCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the Production Ready evidence for the desktop shell itself. It ties Linux and Windows <code>PROXYFORGE_RELEASE_SMOKE=1</code> packaged Electron launch, packaged headless and agent CLIs, external-cwd <code>~/vantix</code> app.asar agent execution, packaged runtime proxy/cert/OAST/report proof, packaged browser routing, Linux/Windows package production gates, the accepted <code>windows-trust-runner</code> trust-store pin, known host-limit pins, and full-fidelity executor material into one compact handoff. It does not make unrelated release/security/full-nightly rows complete.</p>
+<h2 id="agent-control-production-evidence">Agent Control Production Evidence<a class="anchor" href="#agent-control-production-evidence" aria-label="Permanent link to Agent Control Production Evidence">#</a></h2>
+<p><code>proxyforge-agent-control-production-evidence-package</code> is the proof bundle for Codex CLI, Claude CLI, and <code>~/vantix</code> driving ProxyForge through the packaged agent surface:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-control-production-evidence-package&quot;,
+  &quot;requiredCapabilityCount&quot;: 68,
+  &quot;requirements&quot;: {
+    &quot;sourceCommandSurfaceCovered&quot;: true,
+    &quot;packagedLinuxCommandSurfaceCovered&quot;: true,
+    &quot;packagedWindowsCommandSurfaceCovered&quot;: true,
+    &quot;packagedExternalCwdCovered&quot;: true,
+    &quot;persistentMitmCovered&quot;: true,
+    &quot;chromiumDataCollectionCovered&quot;: true,
+    &quot;projectStoreRecoveryCovered&quot;: true,
+    &quot;searchViewingCovered&quot;: true,
+    &quot;replayIntruderRepeaterCovered&quot;: true,
+    &quot;scannerBcheckCovered&quot;: true,
+    &quot;extensionCallbackExploitReportCovered&quot;: true,
+    &quot;automationVantixCovered&quot;: true,
+    &quot;policyAuditCovered&quot;: true,
+    &quot;scopeApprovalRateLimitCovered&quot;: true,
+    &quot;longRunningSoakCovered&quot;: true,
+    &quot;linuxWindowsPackageInputsCovered&quot;: true,
+    &quot;docsAndSchemasCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use this package to decide whether the control plane can be trusted for autonomous intel gathering and execution without scraping the GUI. It covers packaged app.asar status for the current 70 commands, external-cwd <code>~/vantix</code> invocation, persistent MITM, Chromium and cookie capture, proxy import, Project Store <code>project-store-status</code>, <code>project-store-recover</code>, and <code>project-store-backup</code>, search/view/Sequencer/Decoder, replay/bulk replay/live-target profiling/WebSocket/Intruder, Repeater desync/race, insertion-point extraction, Scanner/Anvil/OAST issue promotion, extension fixtures, callback provider host proof/relay/retention/replay and signed relay isolation evidence, exploit preview/run, reports/bundles, automation scheduler/CI/parity/service lifecycle/installed-host smoke, Vantix handoff, scope/approval/rate-limit/audit gates, and long-running soak packages. Operational outputs keep tokens, cookies, keys, callbacks, raw requests, raw responses, Project Store recovery journals, backup manifests, and WebSocket payloads; report/bundle commands redact only for submission.</p>
+<h2 id="proxy-edge-profile-evidence">Proxy Edge Profile Evidence<a class="anchor" href="#proxy-edge-profile-evidence" aria-label="Permanent link to Proxy Edge Profile Evidence">#</a></h2>
+<p><code>proxyforge-proxy-edge-profile-package</code> is the compact evidence package agents should use before treating the Proxy/HTTPS lane as parity-ready for replay, scanning, exploitation prep, Chromium capture, and report handoff:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-proxy-edge-profile-package&quot;,
+  &quot;hostCount&quot;: 3,
+  &quot;routeCount&quot;: 4,
+  &quot;protocolCoverage&quot;: [&quot;HTTP/2&quot;, &quot;HTTP/1.1&quot;, &quot;WebSocket&quot;],
+  &quot;packageRefreshProof&quot;: {
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-proxy-http-listener-capture-package&quot;,
+      &quot;proxyforge-proxy-connect-tunnel-metadata-package&quot;,
+      &quot;proxyforge-https-mitm-evidence-package&quot;,
+      &quot;proxyforge-proxy-intercept-evidence-package&quot;,
+      &quot;proxyforge-proxy-match-replace-rule-library&quot;,
+      &quot;proxyforge-browser-routing-proxy-chain-package&quot;,
+      &quot;proxyforge-websocket-capture-evidence-package&quot;
+    ],
+    &quot;stalePackageIds&quot;: []
+  },
+  &quot;requirements&quot;: {
+    &quot;httpListenerCaptureCovered&quot;: true,
+    &quot;connectTunnelCovered&quot;: true,
+    &quot;httpsMitmCovered&quot;: true,
+    &quot;interceptControlsCovered&quot;: true,
+    &quot;matchReplaceCovered&quot;: true,
+    &quot;http2FidelityCovered&quot;: true,
+    &quot;crossToolHandoffCovered&quot;: true,
+    &quot;websocketEdgeCovered&quot;: true,
+    &quot;browserProxyChainCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should keep this package with Proxy artifacts when they drive <code>mitm-start</code>, Chromium routing, proxy import, Repeater/WebSocket replay, Scanner promotion, Repeater desync/race, or exploit preparation. It proves listener capture, CONNECT, HTTPS MITM, intercept controls, match/replace, HTTP/2 fidelity and multiplexing, cross-tool handoff, WebSocket capture/intercept/state, browser-routing/proxy-chain evidence, package refresh digests, and the rule that executor tokens, cookies, keys, and payloads remain unredacted until report export.</p>
+<p><code>proxyforge-proxy-browser-proxy-chain-diversity-package</code> is the browser/proxy-chain diversity proof agents should preserve before treating Chromium capture, managed browser routing, upstream proxies, CONNECT chains, PAC/direct routing, or mixed certificate trust modes as broadly covered:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-proxy-browser-proxy-chain-diversity-package&quot;,
+  &quot;profileCount&quot;: 4,
+  &quot;browserFamilies&quot;: [&quot;chromium&quot;, &quot;chrome&quot;, &quot;edge&quot;, &quot;firefox&quot;],
+  &quot;platforms&quot;: [&quot;linux&quot;, &quot;windows&quot;],
+  &quot;proxyModes&quot;: [&quot;upstream-auth&quot;, &quot;connect-chain&quot;, &quot;pac&quot;, &quot;direct&quot;],
+  &quot;certificateModes&quot;: [&quot;project-ca&quot;, &quot;trusted-ca&quot;, &quot;pinned-nonblocking&quot;, &quot;manual-import&quot;],
+  &quot;protocolCoverage&quot;: [&quot;HTTP/1.1&quot;, &quot;HTTP/2&quot;, &quot;CONNECT&quot;, &quot;WebSocket&quot;],
+  &quot;linkedPackageKind&quot;: &quot;proxyforge-proxy-edge-profile-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;multiBrowserFamilyCovered&quot;: true,
+    &quot;linuxWindowsProfileCoverage&quot;: true,
+    &quot;proxyChainModeDiversityCovered&quot;: true,
+    &quot;httpsMitmTrustModesCovered&quot;: true,
+    &quot;connectHttp2WebSocketCovered&quot;: true,
+    &quot;isolatedProfileAndCookieStoresCovered&quot;: true,
+    &quot;upstreamCredentialPreservationCovered&quot;: true,
+    &quot;edgeProfileLinked&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should keep raw upstream proxy credentials, browser cookies, bearer tokens, WebSocket keys, route notes, profile paths, and certificate trust notes in this executor package. Redaction belongs only in report/export artifacts, not in the package used by Codex, Claude, or <code>~/vantix</code> automation.</p>
+<h2 id="fast-regression-production-evidence">Fast Regression Production Evidence<a class="anchor" href="#fast-regression-production-evidence" aria-label="Permanent link to Fast Regression Production Evidence">#</a></h2>
+<p><code>proxyforge-fast-regression-production-evidence-package</code> is the proof bundle for the curated fast regression gate itself:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-fast-regression-production-evidence-package&quot;,
+  &quot;stepCount&quot;: 82,
+  &quot;requirements&quot;: {
+    &quot;currentSummaryPassed&quot;: true,
+    &quot;completedEveryStep&quot;: true,
+    &quot;noFailedSteps&quot;: true,
+    &quot;broadSurfaceCoverage&quot;: true,
+    &quot;releaseReadinessCovered&quot;: true,
+    &quot;platformReleaseCovered&quot;: true,
+    &quot;uiScaleProductionCovered&quot;: true,
+    &quot;platformShellProductionCovered&quot;: true,
+    &quot;agentControlProductionCovered&quot;: true,
+    &quot;fullNightlyProductionCovered&quot;: true,
+    &quot;fullNightlyRetainedHistoryCovered&quot;: true,
+    &quot;safetyEnterpriseCovered&quot;: true,
+    &quot;projectPersistenceCovered&quot;: true,
+    &quot;projectImportCompatibilityCovered&quot;: true,
+    &quot;agenticControlCovered&quot;: true,
+    &quot;analysisToolRefreshCovered&quot;: true,
+    &quot;browserWorkflowCovered&quot;: true,
+    &quot;proxyScannerRepeaterIntruderCovered&quot;: true,
+    &quot;reportAndSecurityCovered&quot;: true,
+    &quot;artifactUploadReady&quot;: true,
+    &quot;retentionPolicyCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the production proof for whether <code>npm run test:ci:fast</code> remains broad enough to trust before package refreshes. It references <code>test-results/ci-fast-suite-summary.json</code>, required step names and kinds, release/security/project/agent/browser/proxy/scanner/repeater/intruder/report lanes, and the operational secret boundary. It is not a submission artifact; report commands redact later.</p>
+<h2 id="full-nightly-production-evidence">Full/Nightly Production Evidence<a class="anchor" href="#full-nightly-production-evidence" aria-label="Permanent link to Full/Nightly Production Evidence">#</a></h2>
+<p><code>proxyforge-full-nightly-production-evidence-package</code> is the proof bundle for the scheduled full/nightly regression gate:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-full-nightly-production-evidence-package&quot;,
+  &quot;stepCount&quot;: 80,
+  &quot;trendRunCount&quot;: 3,
+  &quot;requirements&quot;: {
+    &quot;fullSuitePlanValid&quot;: true,
+    &quot;coverageOwnershipComplete&quot;: true,
+    &quot;uniqueStepNamesCovered&quot;: true,
+    &quot;requiredProductionGatesCovered&quot;: true,
+    &quot;proxyScannerRepeaterIntruderCovered&quot;: true,
+    &quot;callbackExploitReportBrowserCovered&quot;: true,
+    &quot;uploadPolicyCovered&quot;: true,
+    &quot;retentionPolicyCovered&quot;: true,
+    &quot;zeroFlakeBudgetCovered&quot;: true,
+    &quot;currentSummaryLinked&quot;: true,
+    &quot;planOnlyBoundaryCovered&quot;: true,
+    &quot;trendDashboardCovered&quot;: true,
+    &quot;scheduledHistoryContinuityCovered&quot;: true,
+    &quot;historicalRuntimePassCovered&quot;: true,
+    &quot;latestRuntimeRunPassed&quot;: true,
+    &quot;noRecentFailedRuns&quot;: true,
+    &quot;fastSuiteLinked&quot;: true,
+    &quot;docsAndSchemasCovered&quot;: true,
+    &quot;artifactPathsSafe&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;trendDashboard&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-full-nightly-trend-dashboard&quot;,
+    &quot;runCount&quot;: 3,
+    &quot;passRate&quot;: 1,
+    &quot;zeroFlakeViolations&quot;: 0
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use this package to decide whether the scheduled full/nightly gate has real retained evidence rather than just a workflow file. It covers the full-suite plan, coverage owners, upload and failure retention policy, scheduled <code>actions/cache/restore</code> plus <code>actions/cache/save</code> continuity for <code>test-results/ci-full-suite-history/</code>, zero-flake budget, safe artifact paths, <code>test-results/ci-full-suite-summary.json</code>, retained trend dashboard history, a historical full runtime pass, latest runtime pass, fast-suite linkage, and the explicit boundary that a plan-only summary validates metadata but does not claim runtime completion. Operational summaries preserve tokens, cookies, keys, callbacks, raw requests, and raw responses until report export.</p>
+<p><code>proxyforge-full-nightly-retained-history-evidence-package</code> is the companion proof bundle for retained runtime summaries:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-full-nightly-retained-history-evidence-package&quot;,
+  &quot;retainedRunCount&quot;: 3,
+  &quot;runtimeRunCount&quot;: 3,
+  &quot;requirements&quot;: {
+    &quot;planValid&quot;: true,
+    &quot;uploadPolicyIncludesHistory&quot;: true,
+    &quot;retentionPolicyCovered&quot;: true,
+    &quot;currentRuntimeSummaryRetained&quot;: true,
+    &quot;planOnlyRunsExcludedFromRuntimeHistory&quot;: true,
+    &quot;minimumRuntimeHistoryCovered&quot;: true,
+    &quot;fullRunHistoryCovered&quot;: true,
+    &quot;latestRuntimeRunPassed&quot;: true,
+    &quot;noRecentFailedRuns&quot;: true,
+    &quot;coverageOwnershipStable&quot;: true,
+    &quot;requiredProductionStepsRetained&quot;: true,
+    &quot;artifactPathsSafe&quot;: true,
+    &quot;digestIntegrityCovered&quot;: true,
+    &quot;zeroFlakeBudgetCovered&quot;: true,
+    &quot;dashboardArtifactCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;dashboard&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-full-nightly-retained-history-dashboard&quot;,
+    &quot;historyArtifactPath&quot;: &quot;test-results/ci-full-suite-history/dashboard.json&quot;,
+    &quot;consecutiveRuntimePasses&quot;: 3
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use the retained-history package before promoting the full/nightly row. It proves per-run runtime summaries under <code>test-results/ci-full-suite-history/</code>, the retained dashboard, current runtime summary linkage, digest integrity, full-run and skip-browser history, zero-flake policy, and that plan-only summaries do not count as runtime proof. Playwright browser artifacts live under <code>test-results/playwright-artifacts/</code> so browser cleanup cannot remove retained runtime summaries. Operational summaries preserve raw executor material until report export.</p>
+<p><code>proxyforge-full-nightly-hosted-retained-history-evidence-package</code> is the hosted CI receipt layer for the same gate:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-full-nightly-hosted-retained-history-evidence-package&quot;,
+  &quot;hostedRunCount&quot;: 3,
+  &quot;scheduledRunCount&quot;: 2,
+  &quot;requirements&quot;: {
+    &quot;hostedRunReceiptsCovered&quot;: true,
+    &quot;scheduledRunReceiptsCovered&quot;: true,
+    &quot;workflowIdentityCovered&quot;: true,
+    &quot;branchContinuityCovered&quot;: true,
+    &quot;hostedRunsCompletedSuccessfully&quot;: true,
+    &quot;retainedHistoryRestoreSaveCovered&quot;: true,
+    &quot;hostedArtifactUploadCovered&quot;: true,
+    &quot;retainedDashboardLinksHostedRuns&quot;: true,
+    &quot;minimumRuntimeHistoryCovered&quot;: true,
+    &quot;requiredProductionStepsRetained&quot;: true,
+    &quot;digestIntegrityCovered&quot;: true,
+    &quot;noFailedHostedRuns&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;dashboard&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-full-nightly-retained-history-dashboard&quot;,
+    &quot;historyArtifactPath&quot;: &quot;test-results/ci-full-suite-history/dashboard.json&quot;
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use this package to separate manual hosted warmups from actual scheduled CI accumulation. Manual <code>workflow_dispatch</code> runs can prove the hosted lane and cache mechanics, but the row should not move to Production Ready until scheduled run receipts are linked by run id to retained summaries, prove <code>actions/cache/restore</code> plus <code>actions/cache/save</code>, include uploaded summary and dashboard artifacts, preserve full-fidelity operational material, and keep redaction at report export only.</p>
+<h2 id="install-docs-production-evidence">Install Docs Production Evidence<a class="anchor" href="#install-docs-production-evidence" aria-label="Permanent link to Install Docs Production Evidence">#</a></h2>
+<p><code>proxyforge-install-docs-production-evidence-package</code> is the proof bundle for packaged install, operator, release, and agent documentation:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-install-docs-production-evidence-package&quot;,
+  &quot;documentCount&quot;: 8,
+  &quot;packagedDocumentCount&quot;: 8,
+  &quot;requirements&quot;: {
+    &quot;installGuidePackaged&quot;: true,
+    &quot;operatorGuidePackaged&quot;: true,
+    &quot;releaseChecklistPackaged&quot;: true,
+    &quot;releaseEvidencePackaged&quot;: true,
+    &quot;agentDocsPackaged&quot;: true,
+    &quot;packageScriptCovered&quot;: true,
+    &quot;linuxInstallCovered&quot;: true,
+    &quot;windowsInstallCovered&quot;: true,
+    &quot;smokeCommandsCovered&quot;: true,
+    &quot;certTrustCovered&quot;: true,
+    &quot;browserRoutingCovered&quot;: true,
+    &quot;dpapiAndTrustPinCovered&quot;: true,
+    &quot;agenticOperationCovered&quot;: true,
+    &quot;highRiskWorkflowsCovered&quot;: true,
+    &quot;troubleshootingCovered&quot;: true,
+    &quot;productionSignoffCovered&quot;: true,
+    &quot;releaseEvidenceSynchronized&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should use this package to decide whether the packaged docs remain safe to follow from Codex CLI, Claude CLI, or <code>~/vantix</code> before driving ProxyForge. The package covers Linux AppImage/deb/clean-container install proof, Windows NSIS/portable/zip lanes, <code>release:smoke:linux</code>, <code>release:smoke:windows</code>, <code>PROXYFORGE_RELEASE_SMOKE</code>, browser routing, certificate trust, DPAPI cookie proof, the <code>windows-trust-runner</code> trust-store pin, persistent MITM, replay/desync/race/scanner/exploit/OAST workflows, troubleshooting, Production Ready signoff, and the rule that operational tokens, cookies, keys, callbacks, raw requests, and raw responses are preserved until report export.</p>
+<h2 id="windows-package-production-evidence">Windows Package Production Evidence<a class="anchor" href="#windows-package-production-evidence" aria-label="Permanent link to Windows Package Production Evidence">#</a></h2>
+<p><code>proxyforge-windows-package-production-evidence-package</code> is the proof bundle for the Windows package lane:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-windows-package-production-evidence-package&quot;,
+  &quot;artifactCount&quot;: 4,
+  &quot;smokeCount&quot;: 12,
+  &quot;requirements&quot;: {
+    &quot;nativeArtifactsCovered&quot;: true,
+    &quot;zipFallbackHygieneCovered&quot;: true,
+    &quot;nativeBuildCovered&quot;: true,
+    &quot;unpackedGuiCovered&quot;: true,
+    &quot;nsisInstallUninstallCovered&quot;: true,
+    &quot;installedHeadlessCovered&quot;: true,
+    &quot;installedRuntimeCovered&quot;: true,
+    &quot;browserRoutingCovered&quot;: true,
+    &quot;dpapiCookieCovered&quot;: true,
+    &quot;trustStorePinAccepted&quot;: true,
+    &quot;portableWrapperPinned&quot;: true,
+    &quot;releaseDocsCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the formal acceptance record for Windows package production readiness when using the current <code>windows-trust-runner</code> lane. It proves native NSIS, portable, and win-unpacked artifacts, zip fallback hygiene, unpacked and installed GUI launch, installed headless CLI plus scan/report, installed runtime proxy/cert/OAST/report, browser routing, DPAPI sample-cookie extraction, quiet uninstall, the <code>ERROR_NOT_SUPPORTED</code> trust-store pin, and the portable-wrapper stdout pin. It does not redact operational Windows captures; report commands redact later.</p>
+<h2 id="linux-package-production-evidence">Linux Package Production Evidence<a class="anchor" href="#linux-package-production-evidence" aria-label="Permanent link to Linux Package Production Evidence">#</a></h2>
+<p><code>proxyforge-linux-package-production-evidence-package</code> is the proof bundle for the Linux package lane:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-linux-package-production-evidence-package&quot;,
+  &quot;artifactCount&quot;: 3,
+  &quot;smokeCount&quot;: 18,
+  &quot;requirements&quot;: {
+    &quot;appImageDebUnpackedArtifactsCovered&quot;: true,
+    &quot;nativeBuildCovered&quot;: true,
+    &quot;appImageRuntimeAndGuiCovered&quot;: true,
+    &quot;debMetadataDependencyCovered&quot;: true,
+    &quot;unpackedRuntimeAndGuiCovered&quot;: true,
+    &quot;packagedHeadlessCovered&quot;: true,
+    &quot;packagedAgentCovered&quot;: true,
+    &quot;packagedRuntimeCovered&quot;: true,
+    &quot;browserRoutingCovered&quot;: true,
+    &quot;cleanContainerInstallRuntimeGuiCovered&quot;: true,
+    &quot;cleanContainerTrustedCaCovered&quot;: true,
+    &quot;cleanContainerUninstallCovered&quot;: true,
+    &quot;knownWarningsPinned&quot;: true,
+    &quot;releaseDocsCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the formal acceptance record for Linux package production readiness. It proves AppImage, deb, and linux-unpacked artifacts, AppImage and unpacked GUI/runtime smokes, deb metadata and dependency coverage for <code>libgbm1</code> and <code>libasound2</code>, packaged headless scan/report, packaged agent and external-cwd invocation, packaged runtime proxy/cert/OAST/report, packaged browser routing, clean-container deb install/runtime/GUI/trusted-CA/uninstall proof, and known warning pins. The counted browser trust proof is isolated Chromium trusted-CA capture without <code>--ignore-certificate-errors</code>; operational captures stay full fidelity until report export.</p>
+<h2 id="ai-provider-evidence">AI Provider Evidence<a class="anchor" href="#ai-provider-evidence" aria-label="Permanent link to AI Provider Evidence">#</a></h2>
+<p><code>proxyforge-ai-provider-production-evidence-package</code> is the production proof bundle for Codex CLI, Claude CLI, and OpenAI-compatible HTTP/local providers:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-ai-provider-production-evidence-package&quot;,
+  &quot;proofCount&quot;: 14,
+  &quot;requirements&quot;: {
+    &quot;codexCliProviderCovered&quot;: true,
+    &quot;claudeCliProviderCovered&quot;: true,
+    &quot;openAiCompatibleProviderCovered&quot;: true,
+    &quot;providerConfigPersistenceCovered&quot;: true,
+    &quot;cliProviderDiversityCovered&quot;: true,
+    &quot;httpProviderInteropCovered&quot;: true,
+    &quot;streamingTelemetryCovered&quot;: true,
+    &quot;tokenCostAccountingCovered&quot;: true,
+    &quot;promptLibraryCovered&quot;: true,
+    &quot;baselinesComparisonsBenchmarksCovered&quot;: true,
+    &quot;controlledActionsCovered&quot;: true,
+    &quot;scopeBlockingCovered&quot;: true,
+    &quot;noDirectActionTrafficCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;longRunProfilingCovered&quot;: true,
+    &quot;docsAndSchemasCovered&quot;: true,
+    &quot;securityPolicyCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>Agents should treat this package as the formal acceptance record for AI provider production readiness. It proves provider execution and action staging only; Repeater, Scanner, Exploit Lab, Automation, and Reports execution still happens behind their own scope, approval, throttle, and audit gates. Provider prompts and action packages preserve full raw executor context, tokens, keys, cookies, and callbacks until a report/export command explicitly redacts them.</p>
+<p><code>proxyforge-ai-parity-evidence-package</code> is the proof bundle for Codex, Claude, and OpenAI-compatible local provider parity:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-ai-parity-evidence-package&quot;,
+  &quot;providerCount&quot;: 3,
+  &quot;providerRunCount&quot;: 3,
+  &quot;promptTemplateCount&quot;: 4,
+  &quot;baselineCount&quot;: 2,
+  &quot;comparisonCount&quot;: 2,
+  &quot;benchmarkRunCount&quot;: 1,
+  &quot;requirements&quot;: {
+    &quot;codexProviderCovered&quot;: true,
+    &quot;claudeProviderCovered&quot;: true,
+    &quot;openAiCompatibleProviderCovered&quot;: true,
+    &quot;cliProviderExecutionCovered&quot;: true,
+    &quot;httpProviderExecutionCovered&quot;: true,
+    &quot;streamingTelemetryCovered&quot;: true,
+    &quot;promptEvaluationCovered&quot;: true,
+    &quot;promptTemplatesCovered&quot;: true,
+    &quot;baselinesCovered&quot;: true,
+    &quot;comparisonsCovered&quot;: true,
+    &quot;benchmarkReplayCovered&quot;: true,
+    &quot;tokenCostAccountingCovered&quot;: true,
+    &quot;controlledActionsCovered&quot;: true,
+    &quot;scopeBlockingCovered&quot;: true,
+    &quot;fullFidelityContextPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Provider runs include full prompt context, stream events, token/cost accounting, prompt evaluations, suggested actions, context digests, and raw executor evidence. <code>proxyforge-ai-action-execution</code> packages are UI-controlled receipts for Repeater staging, replay matrices, Scanner queueing, Exploit Lab dry-run review, automation recording, and report drafting; traffic is sent only by the gated tool backend.</p>
+<h2 id="automation-evidence">Automation Evidence<a class="anchor" href="#automation-evidence" aria-label="Permanent link to Automation Evidence">#</a></h2>
+<p><code>automation-parity-export</code> emits <code>proxyforge-agent-automation-parity-evidence-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-automation-parity-evidence-package&quot;,
+  &quot;workflowCount&quot;: 4,
+  &quot;executionCount&quot;: 4,
+  &quot;ciProviderPresetCount&quot;: 4,
+  &quot;requirements&quot;: {
+    &quot;macroRecordingCovered&quot;: true,
+    &quot;scheduledWorkflowCovered&quot;: true,
+    &quot;onTagWorkflowCovered&quot;: true,
+    &quot;ciWorkflowCovered&quot;: true,
+    &quot;scopedExecutionCovered&quot;: true,
+    &quot;approvalBlockingCovered&quot;: true,
+    &quot;durableSchedulerQueueCovered&quot;: true,
+    &quot;leaseRecoveryCovered&quot;: true,
+    &quot;schedulerRestoreCovered&quot;: true,
+    &quot;ciHeadlessCliCovered&quot;: true,
+    &quot;ciProviderPresetsCovered&quot;: true,
+    &quot;reportArtifactExportCovered&quot;: true,
+    &quot;serviceLifecycleCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p><code>automation-service-plan</code> emits <code>proxyforge-automation-service-lifecycle-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-automation-service-lifecycle-package&quot;,
+  &quot;platformCount&quot;: 2,
+  &quot;plans&quot;: [
+    {
+      &quot;platform&quot;: &quot;linux-systemd-user&quot;,
+      &quot;installCommand&quot;: &quot;install -Dm0644 ... &amp;&amp; systemctl --user enable ...&quot;,
+      &quot;startCommand&quot;: &quot;systemctl --user start ...&quot;,
+      &quot;statusCommand&quot;: &quot;systemctl --user status ...&quot;,
+      &quot;stopCommand&quot;: &quot;systemctl --user stop ...&quot;,
+      &quot;uninstallCommand&quot;: &quot;systemctl --user disable --now ...&quot;,
+      &quot;agentCommand&quot;: &quot;proxyforge-agent automation-scheduler-tick --execute --service-run --json&quot;
+    },
+    {
+      &quot;platform&quot;: &quot;windows-task-scheduler&quot;,
+      &quot;installCommand&quot;: &quot;schtasks /Create ...&quot;,
+      &quot;startCommand&quot;: &quot;schtasks /Run ...&quot;,
+      &quot;statusCommand&quot;: &quot;schtasks /Query ...&quot;,
+      &quot;stopCommand&quot;: &quot;schtasks /End ...&quot;,
+      &quot;uninstallCommand&quot;: &quot;schtasks /Delete ...&quot;
+    }
+  ],
+  &quot;requirements&quot;: {
+    &quot;linuxSystemdInstallStartCovered&quot;: true,
+    &quot;windowsTaskSchedulerInstallStartCovered&quot;: true,
+    &quot;startStatusStopUninstallCovered&quot;: true,
+    &quot;schedulerTickCommandCovered&quot;: true,
+    &quot;durableStatePathsCovered&quot;: true,
+    &quot;secretEnvironmentCovered&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p><code>automation-service-smoke</code> emits <code>proxyforge-automation-service-installed-host-smoke-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-automation-service-installed-host-smoke-package&quot;,
+  &quot;productionReady&quot;: true,
+  &quot;requirements&quot;: {
+    &quot;serviceStarted&quot;: true,
+    &quot;statusProbeCovered&quot;: true,
+    &quot;stopCovered&quot;: true,
+    &quot;durableStatusFileCovered&quot;: true,
+    &quot;durableStateFileCovered&quot;: true,
+    &quot;jsonlLogCovered&quot;: true,
+    &quot;schedulerTickCovered&quot;: true,
+    &quot;pidLifecycleCovered&quot;: true,
+    &quot;crossPlatformNodeRunnerCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use <code>automation-list</code>, <code>automation-run</code>, <code>automation-ci-export</code>, <code>automation-scheduler-tick</code>, <code>automation-service-plan</code>, and <code>automation-service-smoke</code> for day-to-day agent control. Automation execution results include workflow steps, request caps, approval-block receipts, scheduler leases, CI/headless configs, OS service manifests, installed-host status/state/log files, and <code>operationalRawMaterial</code> with source raw requests/responses. These are executor artifacts; reporting commands redact later.</p>
+<h2 id="exploit-lab-evidence">Exploit Lab Evidence<a class="anchor" href="#exploit-lab-evidence" aria-label="Permanent link to Exploit Lab Evidence">#</a></h2>
+<p><code>proxyforge-exploit-parity-evidence-package</code> is the proof bundle for agent-driven exploit validation:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-exploit-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;pocTemplatesCovered&quot;: true,
+    &quot;nonDestructivePreviewsCovered&quot;: true,
+    &quot;approvalGatesCovered&quot;: true,
+    &quot;scopeGatesCovered&quot;: true,
+    &quot;stopOnProofCovered&quot;: true,
+    &quot;savedExploitChainsCovered&quot;: true,
+    &quot;callbackAssistedValidationCovered&quot;: true,
+    &quot;reportReadyPackagesCovered&quot;: true,
+    &quot;packageReviewCovered&quot;: true,
+    &quot;packageComparisonCovered&quot;: true,
+    &quot;backendRunnerCovered&quot;: true,
+    &quot;repeaterBackendCovered&quot;: true,
+    &quot;destructiveClassExcluded&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package with <code>exploit-preview</code> and approval-gated <code>exploit-run</code> results when Codex, Claude, or Vantix agents need to prove that PoC previews, scope/approval gates, callback validation, Repeater backend transport, saved chain packages, digest review/compare/import, and raw executor secrets stayed available until report export.</p>
+<p><code>proxyforge-exploit-package-refresh-evidence-package</code> links the Exploit Lab parity package to its backend execution, saved-chain, report-package, review/import, comparison, and callback-validation proof:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-exploit-package-refresh-evidence-package&quot;,
+  &quot;packageRefreshProof&quot;: {
+    &quot;requiredPackageKinds&quot;: [
+      &quot;proxyforge-exploit-parity-evidence-package&quot;,
+      &quot;proxyforge-exploit-backend-execution&quot;,
+      &quot;proxyforge-exploit-chain-plan&quot;,
+      &quot;proxyforge-exploit-report-package&quot;,
+      &quot;proxyforge-exploit-package-review&quot;,
+      &quot;proxyforge-exploit-chain-comparison&quot;,
+      &quot;proxyforge-exploit-callback-validation-package&quot;
+    ],
+    &quot;stalePackageIds&quot;: [],
+    &quot;freshDigest&quot;: &quot;fnv-digest&quot;
+  },
+  &quot;requirements&quot;: {
+    &quot;parityRefreshCovered&quot;: true,
+    &quot;backendExecutionRefreshCovered&quot;: true,
+    &quot;repeaterBackendRefreshCovered&quot;: true,
+    &quot;savedChainRefreshCovered&quot;: true,
+    &quot;callbackValidationRefreshCovered&quot;: true,
+    &quot;reportPackageRefreshCovered&quot;: true,
+    &quot;packageReviewRefreshCovered&quot;: true,
+    &quot;packageComparisonRefreshCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;destructiveClassStillExcluded&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package before treating Exploit Lab evidence as fresh enough for report or production signoff. It proves stale-package checks, Repeater backend refresh, callback-validation linkage, destructive-class exclusion, full-fidelity operational tokens/callbacks/raw traffic, and report-export-only redaction.</p>
+<h2 id="persistent-mitm-session">Persistent MITM Session<a class="anchor" href="#persistent-mitm-session" aria-label="Permanent link to Persistent MITM Session">#</a></h2>
+<p><code>mitm-start</code> emits the same envelope once, then keeps the process alive. Use <code>--ensure-ca</code> to generate the project CA before capture and <code>--upstream-tls strict|relaxed</code> to choose upstream certificate validation. The <code>data</code> object contains:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;sessionId&quot;: &quot;agent-mitm-...&quot;,
+  &quot;pid&quot;: 12345,
+  &quot;status&quot;: &quot;running&quot;,
+  &quot;proxyUrl&quot;: &quot;http://127.0.0.1:8080&quot;,
+  &quot;statusPath&quot;: &quot;./agent-session/session.json&quot;,
+  &quot;logPath&quot;: &quot;./agent-session/exchanges.jsonl&quot;,
+  &quot;httpsInspection&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;upstreamTlsMode&quot;: &quot;strict&quot;,
+    &quot;upstreamProxy&quot;: {
+      &quot;enabled&quot;: true,
+      &quot;url&quot;: &quot;http://127.0.0.1:8081/&quot;,
+      &quot;noProxy&quot;: [&quot;metadata.local&quot;],
+      &quot;message&quot;: &quot;Upstream proxy chaining through 127.0.0.1:8081&quot;
+    },
+    &quot;certificate&quot;: {
+      &quot;ready&quot;: true,
+      &quot;rootCertificatePath&quot;: &quot;./agent-session/certs/projects/default-project/proxyforge-root-ca.pem&quot;,
+      &quot;fingerprintSha256&quot;: &quot;AA:...&quot;
+    }
+  },
+  &quot;exchangeCount&quot;: 0,
+  &quot;capabilities&quot;: [&quot;http-proxy&quot;, &quot;connect-tunnel&quot;, &quot;https-mitm&quot;, &quot;project-ca-status&quot;, &quot;upstream-tls-mode&quot;, &quot;upstream-proxy-chain&quot;, &quot;streamed-response-capture&quot;, &quot;websocket-capture&quot;]
+}</code></pre></div>
+<p>Agents should poll <code>mitm-status</code> for counters and <code>mitm-export</code> for full-fidelity operational exchanges. <code>mitm-start --upstream-proxy http://127.0.0.1:8081 --upstream-proxy-authorization &quot;Bearer ...&quot;</code> preserves proxy-chain credentials and target credentials in operational JSONL until report export. Streamed HTTP responses are forwarded before upstream end when response editing is inactive and appear with <code>streamed-response</code>, <code>chunked-response</code>, and optional <code>capture-truncated</code> tags. Treat session directories as sensitive operator-controlled workspaces.</p>
+<h2 id="search-index">Search Index<a class="anchor" href="#search-index" aria-label="Permanent link to Search Index">#</a></h2>
+<p><code>search-index</code> builds a persistent full-fidelity semantic index for agents that need repeatable large-project lookup:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;query&quot;: &quot;authz&quot;,
+  &quot;indexPath&quot;: &quot;./artifacts/search-index.json&quot;,
+  &quot;index&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-search-semantic-index&quot;,
+    &quot;schemaVersion&quot;: 1,
+    &quot;exchangeCount&quot;: 42,
+    &quot;tokenCount&quot;: 12000,
+    &quot;indexedTokenCount&quot;: 4096,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+  },
+  &quot;matchCount&quot;: 3,
+  &quot;matches&quot;: [
+    {
+      &quot;exchangeId&quot;: &quot;hx-1&quot;,
+      &quot;score&quot;: 0.84,
+      &quot;providerId&quot;: &quot;proxyforge-local-index&quot;,
+      &quot;labels&quot;: [&quot;authz&quot;, &quot;authorization&quot;, &quot;role&quot;]
+    }
+  ]
+}</code></pre></div>
+<p>If <code>--out</code> is omitted, <code>data.index.content</code> contains the full JSON index. If <code>--out</code> is provided, the path contains raw requests, cookies, tokens, and response bodies for operational agent execution; treat it as sensitive until a reporting command redacts submission artifacts.</p>
+<p>Add <code>--soak</code> when an agent needs repeatable large-project/vector-index evidence before relying on semantic lookup across a big workspace:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;soakReport&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-search-large-project-soak-report&quot;,
+    &quot;status&quot;: &quot;pass&quot;,
+    &quot;exchangeCount&quot;: 384,
+    &quot;queryCount&quot;: 3,
+    &quot;totalMatches&quot;: 36,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+    &quot;indexRestored&quot;: true
+  }
+}</code></pre></div>
+<p>Use <code>--soak-out ./artifacts/search-soak.json</code> for large outputs. The soak artifact embeds the full operational index corpus unless written to disk and must be treated like captured traffic, not like a redacted report.</p>
+<p>For authorized external/local semantic providers, <code>search-index</code> can call a scoped rerank endpoint only when <code>--execute</code> is present. Without <code>--execute</code>, it emits <code>proxyforge-agent-search-live-provider-invocation-plan</code> and sends no provider traffic:</p>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>node scripts/proxyforge-agent.mjs search-index --project ./workspace.proxyforge.json --query &quot;authz bypass&quot; --provider-url http://127.0.0.1:9000/rank --provider-token &quot;$SEARCH_PROVIDER_TOKEN&quot; --scope 127.0.0.1 --execute --provider-out ./artifacts/search-provider.json --json</code></pre></div>
+<p>Executed provider calls emit <code>proxyforge-agent-search-live-provider-invocation-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-search-live-provider-invocation-package&quot;,
+  &quot;provider&quot;: {
+    &quot;id&quot;: &quot;agent-live-semantic&quot;,
+    &quot;label&quot;: &quot;Agent live semantic provider&quot;,
+    &quot;model&quot;: &quot;rerank-v1&quot;,
+    &quot;url&quot;: &quot;http://127.0.0.1:9000/rank&quot;
+  },
+  &quot;providerRequest&quot;: {
+    &quot;rawRequest&quot;: &quot;POST /rank HTTP/1.1\r\nAuthorization: Bearer ...&quot;,
+    &quot;body&quot;: &quot;{\&quot;documents\&quot;:[{\&quot;corpus\&quot;:\&quot;...Authorization: Bearer real token...\&quot;}]}&quot;
+  },
+  &quot;providerResponse&quot;: {
+    &quot;rawResponse&quot;: &quot;HTTP/1.1 200 OK\r\n...&quot;,
+    &quot;body&quot;: &quot;{\&quot;matches\&quot;:[{\&quot;exchangeId\&quot;:\&quot;hx-1\&quot;,\&quot;score\&quot;:0.98}]}&quot;
+  },
+  &quot;providerMatches&quot;: [
+    {
+      &quot;exchangeId&quot;: &quot;hx-1&quot;,
+      &quot;score&quot;: 0.98,
+      &quot;rationale&quot;: &quot;Provider-ranked authz evidence.&quot;,
+      &quot;labels&quot;: [&quot;authz&quot;, &quot;role&quot;]
+    }
+  ],
+  &quot;requirements&quot;: {
+    &quot;providerHostScopeCovered&quot;: true,
+    &quot;explicitExecuteCovered&quot;: true,
+    &quot;liveProviderRequestCovered&quot;: true,
+    &quot;providerScoreMergeCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The provider request embeds the operational semantic corpus with raw headers, cookies, tokens, request bodies, and response bodies. Treat <code>--provider-out</code> artifacts as executor evidence; final report commands are the first place redaction should occur.</p>
+<p><code>proxyforge-search-parity-evidence-package</code> is the agent-readable proof bundle for Search parity. It records the full-text run, structured predicate run, semantic run, optional provider-ranked run, persistent semantic index, restored index, provider-style index matches, large-project soak report, and tool handoffs:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-search-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;fullTextSearchCovered&quot;: true,
+    &quot;metadataBodyRawCovered&quot;: true,
+    &quot;structuredPredicatesCovered&quot;: true,
+    &quot;negationCovered&quot;: true,
+    &quot;orQueriesCovered&quot;: true,
+    &quot;semanticRankingCovered&quot;: true,
+    &quot;providerScoreMergeCovered&quot;: true,
+    &quot;persistentIndexCovered&quot;: true,
+    &quot;largeProjectSoakCovered&quot;: true,
+    &quot;toolHandoffCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package when Codex, Claude, or Vantix agents need to prove that search results can be replayed into <code>view</code>, report staging, or later tool execution without losing raw headers, cookies, request bodies, provider labels, or index provenance.</p>
+<h2 id="viewer-evidence">Viewer Evidence<a class="anchor" href="#viewer-evidence" aria-label="Permanent link to Viewer Evidence">#</a></h2>
+<p><code>proxyforge-viewer-parity-evidence-package</code> is the proof bundle for agents that depend on exact viewing and report handoff:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-viewer-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;rawViewCovered&quot;: true,
+    &quot;prettyJsonViewCovered&quot;: true,
+    &quot;htmlViewCovered&quot;: true,
+    &quot;jwtViewCovered&quot;: true,
+    &quot;graphqlViewCovered&quot;: true,
+    &quot;imageViewCovered&quot;: true,
+    &quot;binaryViewCovered&quot;: true,
+    &quot;sourceAwareSnapshotsCovered&quot;: true,
+    &quot;evidencePinsCovered&quot;: true,
+    &quot;replayComparisonExportsCovered&quot;: true,
+    &quot;reportAttachmentCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package after <code>view</code> or report staging when an agent needs to prove that raw request/response bytes, decoded previews, source-aware snapshots, pinned snippets, and replay comparison rows stayed linked to stable exchange ids until the reporting command performs submission redaction.</p>
+<h2 id="logger-evidence">Logger Evidence<a class="anchor" href="#logger-evidence" aria-label="Permanent link to Logger Evidence">#</a></h2>
+<p><code>proxyforge-logger-parity-evidence-package</code> is the proof bundle for agents that depend on tool-generated traffic logs and archive review workflows:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-logger-parity-evidence-package&quot;,
+  &quot;entryCount&quot;: 8,
+  &quot;archiveImportReviewCount&quot;: 5,
+  &quot;savedFilterSetCount&quot;: 2,
+  &quot;requirements&quot;: {
+    &quot;toolGeneratedTrafficCovered&quot;: true,
+    &quot;captureControlsCovered&quot;: true,
+    &quot;savedFiltersCovered&quot;: true,
+    &quot;customColumnsLinked&quot;: true,
+    &quot;archiveImportExportCovered&quot;: true,
+    &quot;archiveMappingCovered&quot;: true,
+    &quot;archiveConflictDedupeCovered&quot;: true,
+    &quot;mergeStrategiesCovered&quot;: true,
+    &quot;replayReviewCovered&quot;: true,
+    &quot;reportAttachmentCovered&quot;: true,
+    &quot;provenanceSigningCovered&quot;: true,
+    &quot;redactionPolicyCovered&quot;: true,
+    &quot;customColumnPackageRefreshCovered&quot;: true,
+    &quot;fullFidelityRawMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package when Codex, Claude, or Vantix agents need to prove Logger entries from Proxy, Target, Repeater, Scanner, Intruder, Exploit Lab, Automations, and Extensions stayed filterable and report-attachable, and that archive imports preserved raw requests, raw responses, tokens, cookies, API keys, conflict review, signed provenance, and merge decisions until report export.</p>
+<p><code>proxyforge-logger-custom-column-compatibility-fixtures</code> is the column-level proof bundle agents should keep beside Logger parity evidence when custom Logger columns drive triage:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-logger-custom-column-compatibility-fixtures&quot;,
+  &quot;fixtureCount&quot;: 8,
+  &quot;passedFixtures&quot;: 8,
+  &quot;packageRefresh&quot;: {
+    &quot;sourceColumnCount&quot;: 4,
+    &quot;sourceEntryCount&quot;: 2,
+    &quot;sourceDigestPreview&quot;: &quot;fnv-digest&quot;,
+    &quot;fixtureDigestPreview&quot;: &quot;fnv-digest&quot;,
+    &quot;rawMaterialDigestPreview&quot;: &quot;fnv-digest&quot;,
+    &quot;operationalSecretSignals&quot;: [&quot;authorization-header&quot;, &quot;cookie-header&quot;, &quot;x-api-key-header&quot;]
+  },
+  &quot;requirements&quot;: {
+    &quot;apiSurfaceCovered&quot;: true,
+    &quot;fixtureRefreshCovered&quot;: true,
+    &quot;encodedMaterialCovered&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Supported Logger column helpers include request/response header lookup, body predicates, params, cookies, request/response JSON field and jsonPath lookup, path segments/extensions, <code>helpers.default</code>, <code>helpers.urlDecode</code>, <code>helpers.urlEncode</code>, <code>helpers.base64Decode</code>, and <code>helpers.base64Encode</code>. Agents should treat these fixtures as execution evidence and redact only when a report/export command builds submission material.</p>
+<h2 id="organizer-evidence">Organizer Evidence<a class="anchor" href="#organizer-evidence" aria-label="Permanent link to Organizer Evidence">#</a></h2>
+<p><code>proxyforge-organizer-parity-evidence-package</code> is the proof bundle for curated analyst evidence workflows:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-organizer-parity-evidence-package&quot;,
+  &quot;collectionCount&quot;: 2,
+  &quot;packageArtifactCount&quot;: 2,
+  &quot;requirements&quot;: {
+    &quot;collectionsCovered&quot;: true,
+    &quot;multiToolCurationCovered&quot;: true,
+    &quot;notesStatusHighlightCovered&quot;: true,
+    &quot;reviewerAssignmentCovered&quot;: true,
+    &quot;reviewerSlaCovered&quot;: true,
+    &quot;csvExportCovered&quot;: true,
+    &quot;shareLinksCovered&quot;: true,
+    &quot;packageExportCovered&quot;: true,
+    &quot;passphraseSealedPackageCovered&quot;: true,
+    &quot;signedPackageCovered&quot;: true,
+    &quot;trustPolicyCovered&quot;: true,
+    &quot;importReviewDiffCovered&quot;: true,
+    &quot;conflictDedupeCovered&quot;: true,
+    &quot;mergeModesCovered&quot;: true,
+    &quot;conflictAuditCovered&quot;: true,
+    &quot;fullFidelityRawMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package when agents need to prove that Proxy, Logger, Repeater, Scanner, and Search evidence stayed curated with reviewer ownership, SLA metadata, sealed/signed package import review, conflict audit, merge decisions, raw HTTP material, passphrases, and signing secrets intact until a reporting-phase command exports submission material.</p>
+<h2 id="sequencer-analysis">Sequencer Analysis<a class="anchor" href="#sequencer-analysis" aria-label="Permanent link to Sequencer Analysis">#</a></h2>
+<p><code>sequencer-analyze</code> analyzes explicit samples from <code>--samples</code>, <code>--sample-file</code>, or extracted project traffic. Add <code>--soak</code>, <code>--min-samples</code>, and <code>--min-reliability</code> when agents need large-sample reliability evidence:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;sampleCount&quot;: 5000,
+  &quot;samples&quot;: [&quot;agent-secret-token-0000-...&quot;, &quot;agent-secret-token-0001-...&quot;],
+  &quot;result&quot;: {
+    &quot;sampleCount&quot;: 5000,
+    &quot;uniqueCount&quot;: 5000,
+    &quot;reliability&quot;: {
+      &quot;level&quot;: &quot;reliable&quot;,
+      &quot;sampleTarget&quot;: 5000,
+      &quot;maxSupportedSamples&quot;: 20000
+    },
+    &quot;estimatedEntropyBits&quot;: 192,
+    &quot;statisticalTests&quot;: []
+  },
+  &quot;soakPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-sequencer-large-sample-soak-package&quot;,
+    &quot;status&quot;: &quot;pass&quot;,
+    &quot;budgets&quot;: {
+      &quot;minSamples&quot;: 5000,
+      &quot;minReliability&quot;: &quot;reliable&quot;,
+      &quot;minEntropyBits&quot;: 96
+    },
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+  }
+}</code></pre></div>
+<p>The <code>samples</code> array preserves token material exactly as supplied or extracted for executor analysis. Use reporting commands before sharing Sequencer evidence outside the operational workspace.</p>
+<p><code>proxyforge-sequencer-parity-evidence-package</code> is the proof bundle for agents that depend on token collection, location extraction, statistical analysis, chart data, and report handoff:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-sequencer-parity-evidence-package&quot;,
+  &quot;resultCount&quot;: 5,
+  &quot;liveCaptureCount&quot;: 3,
+  &quot;profileComparisonCount&quot;: 1,
+  &quot;exportArtifactCount&quot;: 1,
+  &quot;requirements&quot;: {
+    &quot;manualTokenCollectionCovered&quot;: true,
+    &quot;trafficTokenCollectionCovered&quot;: true,
+    &quot;browserPreviewCollectionCovered&quot;: true,
+    &quot;tokenLocationExtractionCovered&quot;: true,
+    &quot;liveCapturePersistenceCovered&quot;: true,
+    &quot;entropyAnalysisCovered&quot;: true,
+    &quot;collisionAnalysisCovered&quot;: true,
+    &quot;positionAnalysisCovered&quot;: true,
+    &quot;characterAndBitChartsCovered&quot;: true,
+    &quot;statisticalTestsCovered&quot;: true,
+    &quot;largeSampleReliabilityCovered&quot;: true,
+    &quot;fipsCapCovered&quot;: true,
+    &quot;profileComparisonCovered&quot;: true,
+    &quot;exportArtifactsCovered&quot;: true,
+    &quot;fullFidelityTokenSamplesPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Use this package with <code>sequencer-analyze --soak</code> and Sequencer export artifacts to prove cookie, form-field, and custom token extraction; 5,000-sample reliability; 20,000-sample FIPS-ready cap behavior; profile comparison; and full-fidelity operational token samples before any report command redacts them.</p>
+<h2 id="project-parity-evidence">Project Parity Evidence<a class="anchor" href="#project-parity-evidence" aria-label="Permanent link to Project Parity Evidence">#</a></h2>
+<p>Use this package when Codex, Claude, or Vantix agents need to prove a project workspace can be saved, restored, migrated, and reused by browser/cookie workflows without losing executor material:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-project-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;localPersistenceRestoreCovered&quot;: true,
+    &quot;proxyforgeJsonRoundTripCovered&quot;: true,
+    &quot;schemaVersionMigrationCovered&quot;: true,
+    &quot;schemaIntegrityCovered&quot;: true,
+    &quot;sessionProfileRestoreCovered&quot;: true,
+    &quot;managedBrowserLaunchProfilesCovered&quot;: true,
+    &quot;linuxWindowsBrowserMatrixCovered&quot;: true,
+    &quot;cookieExtractionCovered&quot;: true,
+    &quot;cookieDecryptionReadinessCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The package covers local v1 save/restore, <code>.proxyforge.json</code> roundtrips, legacy schema migration into v1, legacy proxy XML history, HAR, JSONL MITM log, raw HTTP archive imports, migrated scope/traffic/session data, selected session profile restore, Linux/Windows Chrome/Chromium/Edge/Firefox launch matrices, browser cookie extraction and decryption readiness, DPAPI/Secret Service host-lane notes, raw request/response preservation, cookie headers, bearer tokens, API keys, and report-export-only redaction.</p>
+<h2 id="project-import-compatibility-evidence">Project Import Compatibility Evidence<a class="anchor" href="#project-import-compatibility-evidence" aria-label="Permanent link to Project Import Compatibility Evidence">#</a></h2>
+<p>Use this package when an agent needs to prove imported history from legacy proxy, HAR, raw HTTP text, JSONL MITM logs, and ProxyForge project exports can be merged at scale without losing executor material:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-project-import-compatibility-evidence-package&quot;,
+  &quot;sourceCount&quot;: 5,
+  &quot;importedExchangeCount&quot;: 166,
+  &quot;mergedExchangeCount&quot;: 165,
+  &quot;duplicateCount&quot;: 1,
+  &quot;conflictCount&quot;: 1,
+  &quot;requirements&quot;: {
+    &quot;legacyProxyXmlCorpusCovered&quot;: true,
+    &quot;harCorpusCovered&quot;: true,
+    &quot;rawHttpCorpusCovered&quot;: true,
+    &quot;agentJsonlCorpusCovered&quot;: true,
+    &quot;proxyforgeRoundTripCovered&quot;: true,
+    &quot;largeCorpusScaleCovered&quot;: true,
+    &quot;duplicateDetectionCovered&quot;: true,
+    &quot;conflictPreservationCovered&quot;: true,
+    &quot;parserDiagnosticsCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;importedScopeCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The package includes a <code>proxyforge-project-import-merge-manifest</code> with source summaries, format counts, host/scope coverage, duplicate diagnostics, conflict diagnostics, id-collision diagnostics, package refresh digests, and the merged v1 snapshot. It is executor material: legacy proxy Authorization headers, HAR cookies, raw HTTP API keys, JSONL callback material, and ProxyForge session cookies remain full fidelity until a report/export command creates submission artifacts.</p>
+<p><code>proxyforge-project-customer-scale-interop-evidence-package</code> is the higher-volume companion for customer-scale workspaces and cross-tool profiling:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-project-customer-scale-interop-evidence-package&quot;,
+  &quot;importedExchangeCount&quot;: 3280,
+  &quot;mergedExchangeCount&quot;: 3279,
+  &quot;hostCount&quot;: 40,
+  &quot;routeCount&quot;: 3278,
+  &quot;profile&quot;: {
+    &quot;searchIndexedRows&quot;: 3279,
+    &quot;searchQueryCount&quot;: 18,
+    &quot;viewerDecodedSamples&quot;: 420,
+    &quot;loggerRows&quot;: 3279,
+    &quot;targetRoutes&quot;: 3278,
+    &quot;repeaterCandidates&quot;: 540,
+    &quot;scannerCandidates&quot;: 860,
+    &quot;intruderCandidates&quot;: 610,
+    &quot;reportAttachments&quot;: 920,
+    &quot;projectStoreBackupBytes&quot;: 1200000
+  },
+  &quot;requirements&quot;: {
+    &quot;mixedCorpusCovered&quot;: true,
+    &quot;customerScaleCorpusCovered&quot;: true,
+    &quot;hostAndRouteDiversityCovered&quot;: true,
+    &quot;duplicateConflictDiagnosticsCovered&quot;: true,
+    &quot;searchViewerScaleCovered&quot;: true,
+    &quot;loggerTargetScaleCovered&quot;: true,
+    &quot;repeaterScannerIntruderHandoffCovered&quot;: true,
+    &quot;reportAttachmentScaleCovered&quot;: true,
+    &quot;projectStoreRoundTripProfileCovered&quot;: true,
+    &quot;performanceBudgetsCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should preserve this package when a customer-scale imported workspace is used as the basis for Search, Viewer, Logger, Target, Repeater, Scanner, Intruder, Project Store backup/reopen, or report attachment decisions. The package keeps representative raw executor samples and operational secret samples full fidelity; reporting commands redact later.</p>
+<p><code>proxyforge-project-customer-workspace-restore-interop-package</code> is the restored-workspace companion. It is produced by the same customer-scale gate after importing multiple customer-like workspaces into Project Store, backing them up, reopening the backups, and recording cross-tool restore counts:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-project-customer-workspace-restore-interop-package&quot;,
+  &quot;totals&quot;: {
+    &quot;workspaceCount&quot;: 4,
+    &quot;importedExchangeCount&quot;: 1390,
+    &quot;persistedExchangeCount&quot;: 1390,
+    &quot;restoredExchangeCount&quot;: 1390,
+    &quot;sourceFormats&quot;: [
+      &quot;agent-jsonl&quot;,
+      &quot;legacy-proxy-xml&quot;,
+      &quot;har&quot;,
+      &quot;proxyforge-v1&quot;,
+      &quot;raw-http&quot;
+    ]
+  },
+  &quot;requirements&quot;: {
+    &quot;multipleCustomerWorkspacesCovered&quot;: true,
+    &quot;mixedThirdPartyCorpusCovered&quot;: true,
+    &quot;projectStoreBackupRestoreCovered&quot;: true,
+    &quot;restoreIntegrityCovered&quot;: true,
+    &quot;crossToolRestoreProfileCovered&quot;: true,
+    &quot;performanceBudgetsCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should preserve this package when a restored customer workspace becomes the operating base for Search, Viewer, Logger, Target, Repeater, Scanner, Intruder, or report workflows. Raw request/response samples and restore-session tokens remain full fidelity in executor evidence; only report/bundle exports redact for submission.</p>
+<h2 id="safety-and-enterprise-parity-evidence">Safety And Enterprise Parity Evidence<a class="anchor" href="#safety-and-enterprise-parity-evidence" aria-label="Permanent link to Safety And Enterprise Parity Evidence">#</a></h2>
+<p>Use this package before treating active testing, enterprise policy, or SSO controls as parity-ready:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-safety-enterprise-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;scopeGateCovered&quot;: true,
+    &quot;throttleGateCovered&quot;: true,
+    &quot;requestCapCovered&quot;: true,
+    &quot;approvalGateCovered&quot;: true,
+    &quot;bypassOverrideAuditCovered&quot;: true,
+    &quot;auditLoggingCovered&quot;: true,
+    &quot;signedAuditExportCovered&quot;: true,
+    &quot;governancePackageCovered&quot;: true,
+    &quot;ssoIdentityMappingCovered&quot;: true,
+    &quot;ssoFederationFixtureCovered&quot;: true,
+    &quot;remotePolicyTransportCovered&quot;: true,
+    &quot;enterpriseBackendSoakCovered&quot;: true,
+    &quot;remoteAuditRetentionCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The package covers allowed and blocked scope decisions, throttle floors, request caps, exploit/Intruder/callback approval gates, policy override and bypass audit, signed audit exports, signed governance packages, SSO identity mapping, SSO federation/JIT fixtures, remote policy push/pull receipts, enterprise backend soak, remote audit retention, raw requests/responses, bearer tokens, cookies, API keys, signing secrets, SSO assertion secrets, and report-export-only redaction.</p>
+<h2 id="data-collection">Data Collection<a class="anchor" href="#data-collection" aria-label="Permanent link to Data Collection">#</a></h2>
+<p><code>proxy-import</code> ingests ProxyForge projects, MITM JSONL logs, HAR files, legacy proxy XML history, raw HTTP text archives, and agent result exports into a full-fidelity operational package:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-proxy-import&quot;,
+  &quot;sourceFormat&quot;: &quot;agent-jsonl&quot;,
+  &quot;exchangeCount&quot;: 12,
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;exchanges&quot;: [
+    {
+      &quot;id&quot;: &quot;hx-1&quot;,
+      &quot;method&quot;: &quot;POST&quot;,
+      &quot;url&quot;: &quot;https://app.example.test/api/refunds&quot;,
+      &quot;requestRaw&quot;: &quot;POST /api/refunds HTTP/1.1\r\nAuthorization: Bearer ...&quot;,
+      &quot;responseRaw&quot;: &quot;HTTP/1.1 202 Accepted\r\n...&quot;
+    }
+  ]
+}</code></pre></div>
+<p><code>content-discovery-plan</code> is dry and returns scoped candidates generated from observed traffic. <code>content-discovery-run</code> is planned until <code>--execute</code> is passed, then returns a <code>proxyforge-agent-content-discovery-run-summary</code>, retained full-fidelity request/response results, throttle/concurrency telemetry, and an optional <code>proxyforge-agent-content-discovery-runner-soak-package</code> when <code>--soak</code> is set. <code>crawl-run</code> is also planned until <code>--execute</code> is passed, then returns <code>data.summary.exchanges</code>, routes, insertion points, and a follow-on <code>data.contentDiscovery</code> plan. These outputs are executor material and keep cookies, tokens, raw request bodies, and raw response bodies intact until reporting.</p>
+<p><code>live-target-profile</code> is dry until <code>--execute</code> is passed. It accepts <code>--manifest ./live-targets.json</code> or project history, scope-checks every URL, sends bounded live probes, and returns <code>data.package.kind = &quot;proxyforge-agent-live-target-profile-package&quot;</code> with host/route/status/content-type diversity, raw requests, raw responses, Scanner candidate commands, Intruder marked raw requests, replay handoff commands, and report-export-only redaction:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-live-target-profile-package&quot;,
+  &quot;liveRequestCount&quot;: 4,
+  &quot;hostCount&quot;: 1,
+  &quot;routeCount&quot;: 4,
+  &quot;statusClassCount&quot;: 3,
+  &quot;scannerCandidateCount&quot;: 4,
+  &quot;intruderCandidateCount&quot;: 3,
+  &quot;requirements&quot;: {
+    &quot;scopedLiveTargetsCovered&quot;: true,
+    &quot;liveTrafficExecuted&quot;: true,
+    &quot;externalHostDiversityCovered&quot;: true,
+    &quot;routeDiversityCovered&quot;: true,
+    &quot;statusClassDiversityCovered&quot;: true,
+    &quot;scannerCandidateHandoffCovered&quot;: true,
+    &quot;intruderCandidateHandoffCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>This package is operational executor evidence. It intentionally keeps bearer tokens, cookies, API keys, marked Intruder raw requests, response bodies, and Scanner candidate context intact until a reporting-phase export redacts them.</p>
+<p>The Target GUI import path accepts HAR, legacy proxy XML history, ProxyForge project exchanges, raw HTTP archive JSON, and request/response text into imported Target routes and insertion points. Imported query, path, header, cookie, and body material remains executor-full-fidelity until report export.</p>
+<p><code>target-access-review</code> is read-only and returns <code>data.review.kind = &quot;proxyforge-agent-target-access-control-review&quot;</code> with role lanes, route decisions, observed status codes, drift classifications (<code>none</code>, <code>overexposed</code>, <code>underexposed</code>, <code>missing-observation</code>), linked exchange ids, raw exchanges, and next commands for <code>replay-matrix</code>, <code>scanner-run --checks authz-diff</code>, and report export. It is executor material and keeps raw headers, cookies, tokens, and response bodies intact until reporting.</p>
+<p><code>target-map-compare</code> is read-only and returns <code>data.comparison.kind = &quot;proxyforge-agent-target-site-map-comparison&quot;</code> with baseline/candidate route counts, normalization rules, <code>stats.added</code>, <code>stats.removed</code>, <code>stats.changed</code>, <code>stats.statusChanged</code>, <code>stats.mimeChanged</code>, <code>stats.parameterChanged</code>, <code>stats.authzSensitiveChanged</code>, per-delta <code>changeTypes</code>, affected parameters, route snapshots, linked exchange ids, raw exchanges, digest preview, and next commands for access review, content discovery, and report export. It is executor material and keeps raw headers, cookies, tokens, and response bodies intact until reporting.</p>
+<p>Target parity evidence uses <code>proxyforge-target-parity-evidence-package</code>. It is executor material and must preserve cookies, bearer tokens, refreshed session material, route bodies, crawl responses, comparison bodies, and Scanner/Reports linkage until a reporting-phase export redacts them:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-target-parity-evidence-package&quot;,
+  &quot;routeCount&quot;: 4,
+  &quot;hostCount&quot;: 2,
+  &quot;crawlPathCount&quot;: 4,
+  &quot;insertionPointCount&quot;: 8,
+  &quot;technologyCount&quot;: 4,
+  &quot;parameterCount&quot;: 8,
+  &quot;requirements&quot;: {
+    &quot;siteMapUrlTreeCovered&quot;: true,
+    &quot;crawlPathViewCovered&quot;: true,
+    &quot;scopedCrawlerCovered&quot;: true,
+    &quot;authenticatedSessionReuseCovered&quot;: true,
+    &quot;technologyInventoryCovered&quot;: true,
+    &quot;parameterInsertionInventoryCovered&quot;: true,
+    &quot;contentDiscoveryHandoffCovered&quot;: true,
+    &quot;accessControlReviewCovered&quot;: true,
+    &quot;siteMapComparisonCovered&quot;: true,
+    &quot;reportsHandoffCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;packageRefreshProof&quot;: {
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-target-site-map-analysis&quot;,
+      &quot;proxyforge-target-content-discovery-handoff&quot;,
+      &quot;proxyforge-target-access-control-review&quot;,
+      &quot;proxyforge-target-site-map-comparison&quot;,
+      &quot;proxyforge-target-site-map-evidence&quot;
+    ],
+    &quot;stalePackageIds&quot;: [],
+    &quot;freshDigest&quot;: &quot;fnv-digest&quot;
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<h2 id="replay-transport">Replay Transport<a class="anchor" href="#replay-transport" aria-label="Permanent link to Replay Transport">#</a></h2>
+<p>Core Repeater parity evidence uses <code>proxyforge-repeater-parity-evidence-package</code>. It is executor material and preserves edited raw requests, replay responses, saved request bodies, tab snapshots/diffs, session profile headers/cookies, authorization matrix bodies, and operational tokens until report export. The Repeater request library importer accepts ProxyForge library JSON, project exchange arrays, HAR, legacy proxy XML history, raw HTTP archive JSON, and request-only raw HTTP while keeping imported Authorization, Cookie, API-key, and body material full fidelity:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-repeater-parity-evidence-package&quot;,
+  &quot;tabCount&quot;: 2,
+  &quot;savedRequestCount&quot;: 1,
+  &quot;sessionProfileCount&quot;: 1,
+  &quot;sessionInjectionCount&quot;: 1,
+  &quot;requirements&quot;: {
+    &quot;manualRequestEditorCovered&quot;: true,
+    &quot;manualSendRuntimeCovered&quot;: true,
+    &quot;tabsAndGroupedWorkspacesCovered&quot;: true,
+    &quot;savedRequestsCovered&quot;: true,
+    &quot;snapshotsAndDiffsCovered&quot;: true,
+    &quot;sessionProfileInjectionCovered&quot;: true,
+    &quot;authorizationMatrixCovered&quot;: true,
+    &quot;transportControlsCovered&quot;: true,
+    &quot;bulkReplayHandoffCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;packageRefreshProof&quot;: {
+    &quot;requiredPackageKinds&quot;: [
+      &quot;proxyforge-repeater-manual-request-editor&quot;,
+      &quot;proxyforge-repeater-manual-send-runtime&quot;,
+      &quot;proxyforge-repeater-workspace-tabs&quot;,
+      &quot;proxyforge-repeater-saved-request-library&quot;,
+      &quot;proxyforge-repeater-session-profile-injection&quot;,
+      &quot;proxyforge-repeater-authorization-matrix&quot;,
+      &quot;proxyforge-repeater-transport-controls&quot;,
+      &quot;proxyforge-repeater-bulk-replay-handoff&quot;
+    ],
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-repeater-manual-request-editor&quot;,
+      &quot;proxyforge-repeater-manual-send-runtime&quot;,
+      &quot;proxyforge-repeater-workspace-tabs&quot;,
+      &quot;proxyforge-repeater-saved-request-library&quot;,
+      &quot;proxyforge-repeater-session-profile-injection&quot;,
+      &quot;proxyforge-repeater-authorization-matrix&quot;,
+      &quot;proxyforge-repeater-transport-controls&quot;,
+      &quot;proxyforge-repeater-bulk-replay-handoff&quot;
+    ],
+    &quot;stalePackageIds&quot;: [],
+    &quot;freshDigest&quot;: &quot;fnv-digest&quot;,
+    &quot;rawMaterialDigestPreview&quot;: &quot;fnv-digest&quot;
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p><code>replay-run</code> supports transport controls for redirect, timeout, and connection-sensitive analysis:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;transportSettings&quot;: {
+    &quot;redirectMode&quot;: &quot;follow&quot;,
+    &quot;maxRedirects&quot;: 5,
+    &quot;connectionMode&quot;: &quot;keep-alive&quot;,
+    &quot;timeoutMs&quot;: 10000
+  },
+  &quot;response&quot;: {
+    &quot;status&quot;: 200,
+    &quot;finalUrl&quot;: &quot;https://app.example.test/final&quot;,
+    &quot;redirectHistory&quot;: [
+      {
+        &quot;from&quot;: &quot;https://app.example.test/redirect&quot;,
+        &quot;to&quot;: &quot;https://app.example.test/final&quot;,
+        &quot;status&quot;: 302,
+        &quot;location&quot;: &quot;/final&quot;
+      }
+    ],
+    &quot;rawResponse&quot;: &quot;HTTP/1.1 200 OK\r\n...&quot;
+  }
+}</code></pre></div>
+<p>Timeouts return <code>status: blocked</code> with <code>data.response.error</code>, while the envelope still preserves the original request headers and body for executor debugging. Redirect following remains scope gated; an out-of-scope redirect target is not fetched.</p>
+<h2 id="bulk-replay-soak">Bulk Replay Soak<a class="anchor" href="#bulk-replay-soak" aria-label="Permanent link to Bulk Replay Soak">#</a></h2>
+<p><code>bulk-replay</code> is dry by default. With <code>--execute</code>, it replays scoped project exchanges. Add <code>--soak</code>, <code>--concurrency</code>, <code>--limit</code>, and <code>--result-window-size</code> when agents need high-volume Repeater evidence:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;summary&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-bulk-replay-summary&quot;,
+    &quot;candidateCount&quot;: 50,
+    &quot;totalRequests&quot;: 50,
+    &quot;completedRequests&quot;: 50,
+    &quot;failedRequests&quot;: 0,
+    &quot;maxConcurrency&quot;: 5,
+    &quot;maxInFlight&quot;: 5,
+    &quot;retainedResultCount&quot;: 10,
+    &quot;droppedResultCount&quot;: 40,
+    &quot;durationMs&quot;: 1800,
+    &quot;requestRatePerSecond&quot;: 27.78,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+  },
+  &quot;soakPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-bulk-replay-high-volume-soak-package&quot;,
+    &quot;status&quot;: &quot;pass&quot;,
+    &quot;reportReady&quot;: true
+  }
+}</code></pre></div>
+<p>Retained <code>data.results</code> include the replayed request headers/bodies and response bodies. Treat them as executor material because Authorization, Cookie, X-API-Key, tokens, raw request bodies, and raw response bodies remain intact until report export.</p>
+<h2 id="intruder-runs">Intruder Runs<a class="anchor" href="#intruder-runs" aria-label="Permanent link to Intruder Runs">#</a></h2>
+<p><code>intruder-run</code> is dry by default. It auto-builds a payload-position plan from the selected request or <code>--raw-request</code>; live traffic requires explicit <code>--execute</code> and scope. Dry plans include <code>plan.attackModeMatrix</code>, which enumerates Sniper, Battering Ram, Pitchfork, and Cluster Bomb expansion counts, payload-position semantics, representative payload tuples, representative raw requests, and warnings such as reused payload sets or capped Cartesian products. The same matrix includes <code>payloadTransformations</code> with applied processors, recursive rules, input counts, expanded counts, and sample expanded payloads. Agent processors include <code>url-encode</code>, <code>double-url-encode</code>, <code>base64</code>, <code>html-encode</code>, <code>json-escape</code>, <code>hex-encode</code>, <code>uppercase</code>, and <code>lowercase</code>; recursive rules include <code>case-variants</code>, <code>url-recursive</code>, <code>path-depth</code>, <code>delimiter-variants</code>, <code>extension-bypass</code>, and <code>null-byte</code>. The GUI Intruder attack library exports/imports <code>proxyforge-intruder-attack-library</code> JSON with saved attacks and payload generators, preserving raw requests, payloads, processors, recursive rules, grep/extract settings, Authorization headers, cookies, and API keys until report export. Add <code>--soak</code> when an agent needs an <code>intruder-high-volume-soak</code> package proving streamed chunks, retained result windows, request-rate telemetry, and resource-pool concurrency. For paused or sliced runs, keep <code>proxyforge-intruder-checkpoint-resume-package</code> evidence with queue status, checkpoint offsets, resume links, resource-pool state, payload-rule state, retained/dropped result-window metadata, and raw executor material. For result triage, keep <code>proxyforge-intruder-grep-extract-comparison-package</code> evidence with retained result samples, grep/extract signals, baseline/candidate deltas, clustered response signatures, statistical outlier rankings, and Scanner promotion context. For broader Intruder parity proof, keep <code>proxyforge-intruder-live-target-profile-package</code> evidence because it links the attack-mode matrix, checkpoint/resume package, grep/extract package, high-volume streaming telemetry, resource-pool concurrency, 2xx/4xx target diversity, authz differential behavior, payload transformations, package-refresh digests, full-fidelity raw executor material, and report-export-only redaction.</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;plan&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-intruder-run-plan&quot;,
+    &quot;targetUrl&quot;: &quot;https://app.example.test/api/refunds?orderId=100&quot;,
+    &quot;attackMode&quot;: &quot;sniper&quot;,
+    &quot;payloadPositions&quot;: 1,
+    &quot;estimatedRequestCount&quot;: 128,
+    &quot;attackModeMatrix&quot;: {
+      &quot;kind&quot;: &quot;proxyforge-agent-intruder-attack-mode-matrix&quot;,
+      &quot;payloadTransformations&quot;: {
+        &quot;processors&quot;: [&quot;uppercase&quot;, &quot;html-encode&quot;],
+        &quot;rules&quot;: [&quot;case-variants&quot;, &quot;url-recursive&quot;, &quot;path-depth&quot;, &quot;delimiter-variants&quot;, &quot;extension-bypass&quot;, &quot;null-byte&quot;],
+        &quot;expandedPayloadCounts&quot;: [8, 6]
+      },
+      &quot;modes&quot;: [
+        { &quot;mode&quot;: &quot;sniper&quot;, &quot;requestCount&quot;: 4 },
+        { &quot;mode&quot;: &quot;battering-ram&quot;, &quot;requestCount&quot;: 2 },
+        { &quot;mode&quot;: &quot;pitchfork&quot;, &quot;requestCount&quot;: 2 },
+        { &quot;mode&quot;: &quot;cluster-bomb&quot;, &quot;requestCount&quot;: 6 }
+      ]
+    },
+    &quot;resourcePoolMaxConcurrent&quot;: 4,
+    &quot;streamChunkSize&quot;: 32,
+    &quot;resultWindowSize&quot;: 25,
+    &quot;rawRequest&quot;: &quot;POST /api/refunds?orderId=§orderId§ HTTP/1.1\r\nCookie: session=...\r\n\r\n...&quot;
+  },
+  &quot;summary&quot;: {
+    &quot;totalRequests&quot;: 128,
+    &quot;streaming&quot;: {
+      &quot;maxConcurrency&quot;: 4,
+      &quot;maxInFlight&quot;: 4,
+      &quot;completedChunks&quot;: 4,
+      &quot;retainedResultCount&quot;: 25,
+      &quot;droppedResultCount&quot;: 103,
+      &quot;durationMs&quot;: 2200,
+      &quot;requestRatePerSecond&quot;: 58.18
+    },
+    &quot;results&quot;: [
+      {
+        &quot;payload&quot;: &quot;admin&quot;,
+        &quot;requestRaw&quot;: &quot;POST /api/refunds?orderId=admin HTTP/1.1\r\nAuthorization: Bearer ...&quot;,
+        &quot;responseRaw&quot;: &quot;HTTP/1.1 403 Forbidden\r\n...&quot;
+      }
+    ]
+  },
+  &quot;soakPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-intruder-high-volume-soak-package&quot;,
+    &quot;status&quot;: &quot;pass&quot;,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+  }
+}</code></pre></div>
+<p>The plan, summary, retained results, and soak package are operational executor outputs. They preserve payloads, raw requests, Authorization headers, cookies, keys, response bodies, grep/extract matches, and timing data until a reporting-phase command redacts submission artifacts.</p>
+<p>Checkpoint and triage packages use the same redaction boundary:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;checkpointPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-intruder-checkpoint-resume-package&quot;,
+    &quot;checkpointCount&quot;: 2,
+    &quot;resumeLinks&quot;: [{ &quot;expectedOffset&quot;: 32, &quot;actualStartOffset&quot;: 32, &quot;linked&quot;: true }],
+    &quot;requirements&quot;: {
+      &quot;checkpointPauseCovered&quot;: true,
+      &quot;resumeCovered&quot;: true,
+      &quot;queueStateCovered&quot;: true,
+      &quot;rawExecutorMaterialPreserved&quot;: true,
+      &quot;operationalSecretsPreserved&quot;: true,
+      &quot;reportPhaseOnlyRedaction&quot;: true
+    }
+  },
+  &quot;analysisPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-intruder-grep-extract-comparison-package&quot;,
+    &quot;grepMatchCount&quot;: 4,
+    &quot;extractMatchCount&quot;: 4,
+    &quot;comparisonCount&quot;: 3,
+    &quot;clusterCount&quot;: 2,
+    &quot;rankingCount&quot;: 4,
+    &quot;requirements&quot;: {
+      &quot;grepMatchCovered&quot;: true,
+      &quot;extractRegexCovered&quot;: true,
+      &quot;baselineComparisonCovered&quot;: true,
+      &quot;clusteringCovered&quot;: true,
+      &quot;statisticalRankingCovered&quot;: true,
+      &quot;scannerPromotionCovered&quot;: true
+    }
+  }
+}</code></pre></div>
+<p>Live-target profile packages stitch the Intruder proof set together for agents that need to decide whether a run family is broad enough for parity promotion:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-intruder-live-target-profile-package&quot;,
+  &quot;targetUrlCount&quot;: 3,
+  &quot;attackModeCount&quot;: 4,
+  &quot;totalRequestsSent&quot;: 384,
+  &quot;retainedResultCount&quot;: 88,
+  &quot;droppedResultCount&quot;: 296,
+  &quot;maxInFlight&quot;: 5,
+  &quot;statusClasses&quot;: [&quot;2xx&quot;, &quot;4xx&quot;],
+  &quot;packageRefreshProof&quot;: {
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-intruder-attack-mode-matrix&quot;,
+      &quot;proxyforge-intruder-checkpoint-resume-package&quot;,
+      &quot;proxyforge-intruder-grep-extract-comparison-package&quot;
+    ],
+    &quot;staleSummaryIds&quot;: []
+  },
+  &quot;requirements&quot;: {
+    &quot;liveTargetDiversityCovered&quot;: true,
+    &quot;attackModeDiversityCovered&quot;: true,
+    &quot;highVolumeStreamingCovered&quot;: true,
+    &quot;resourcePoolConcurrencyCovered&quot;: true,
+    &quot;checkpointResumeCovered&quot;: true,
+    &quot;grepExtractTriageCovered&quot;: true,
+    &quot;authzDifferentialCovered&quot;: true,
+    &quot;payloadTransformCoverageCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The live-target profile is still operational executor evidence. Agents can use the requirement booleans to decide whether Intruder diversity, soak, checkpoint, and grep/extract proof is present, but they must keep raw requests, response bodies, bearer tokens, cookies, and keys intact until report export.</p>
+<h2 id="repeater-desync-and-race">Repeater Desync And Race<a class="anchor" href="#repeater-desync-and-race" aria-label="Permanent link to Repeater Desync And Race">#</a></h2>
+<p><code>repeater-desync-plan</code> is dry by default and returns <code>data.plan.requests</code> with baseline, poison, and victim raw requests plus <code>data.plan.parserDifferential</code>, a parser-framing package that compares <code>strict-rfc</code>, <code>frontend-content-length</code>, <code>backend-transfer-encoding</code>, and <code>cl0-backend</code> outcomes for each raw request. Preserve <code>ambiguityFlags</code>, per-profile <code>signal</code>, <code>leftoverPreview</code>, <code>interpretedRequestCount</code>, and <code>queued-followup</code> evidence before deciding whether <code>repeater-desync-probe --execute</code> is authorized. The execute command sends the plan through the socket-backed single-connection runtime. <code>repeater-race-run --execute</code> sends a synchronized race group with <code>--sync last-byte</code> or <code>--sync single-packet</code>. Add <code>--soak</code>, <code>--min-requests</code>, <code>--max-release-skew-ms</code>, and <code>--max-race-window-ms</code> when agents need high-concurrency proof.</p>
+<p>The execution result appears at <code>data.result</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;id&quot;: &quot;repeater-desync-runtime-...&quot;,
+  &quot;transport&quot;: &quot;parallel-last-byte&quot;,
+  &quot;syncTechnique&quot;: &quot;last-byte&quot;,
+  &quot;status&quot;: &quot;proof&quot;,
+  &quot;requestCount&quot;: 3,
+  &quot;responseOrder&quot;: [&quot;1/3 baseline:Parallel race request 1 200&quot;],
+  &quot;jitterMs&quot;: 8,
+  &quot;raceWindowMs&quot;: 2,
+  &quot;releaseSkewMs&quot;: 2,
+  &quot;responses&quot;: [
+    {
+      &quot;requestId&quot;: &quot;agent-race-plan-request-1&quot;,
+      &quot;status&quot;: 200,
+      &quot;rawRequest&quot;: &quot;GET /transfer HTTP/1.1\r\nHost: app.example.test\r\nCookie: session=...\r\n\r\n&quot;,
+      &quot;rawResponse&quot;: &quot;HTTP/1.1 200 OK\r\n...&quot;
+    }
+  ],
+  &quot;rawTranscript&quot;: &quot;&gt;&gt;&gt; request\n...\n&lt;&lt;&lt; response\n...&quot;
+}</code></pre></div>
+<p>With <code>--soak</code>, the envelope also includes <code>data.soakPackage</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-repeater-race-high-concurrency-soak-package&quot;,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;budgets&quot;: {
+    &quot;minRequests&quot;: 12,
+    &quot;maxFailures&quot;: 0,
+    &quot;maxReleaseSkewMs&quot;: 100,
+    &quot;maxRaceWindowMs&quot;: 100
+  },
+  &quot;observed&quot;: {
+    &quot;transport&quot;: &quot;parallel-single-packet&quot;,
+    &quot;syncTechnique&quot;: &quot;single-packet&quot;,
+    &quot;requestCount&quot;: 12,
+    &quot;observedResponses&quot;: 12,
+    &quot;missingResponses&quot;: 0,
+    &quot;releaseSkewMs&quot;: 4,
+    &quot;raceWindowMs&quot;: 4,
+    &quot;responseStatusCounts&quot;: {
+      &quot;200&quot;: 12
+    }
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportReady&quot;: true
+}</code></pre></div>
+<p>The runtime production handoff is <code>proxyforge-repeater-race-desync-production-package</code>. Preserve it when agents need one artifact that ties the parser plan, single-connection probe, race proof, soak proof, scope block, timing budgets, response order, and raw transcript material together:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-repeater-race-desync-production-package&quot;,
+  &quot;runtimeProfileCount&quot;: 3,
+  &quot;requestCount&quot;: 22,
+  &quot;observedResponseCount&quot;: 22,
+  &quot;highRiskParserCandidateCount&quot;: 1,
+  &quot;maxReleaseSkewMs&quot;: 8,
+  &quot;maxRaceWindowMs&quot;: 8,
+  &quot;transportModes&quot;: [
+    &quot;parallel-last-byte&quot;,
+    &quot;parallel-single-packet&quot;,
+    &quot;single-connection&quot;
+  ],
+  &quot;packageRefreshProof&quot;: {
+    &quot;parserDigest&quot;: &quot;fnv...&quot;,
+    &quot;runtimeDigests&quot;: [&quot;fnv...&quot;],
+    &quot;blockedDigests&quot;: [&quot;fnv...&quot;],
+    &quot;productionDigest&quot;: &quot;fnv...&quot;,
+    &quot;staleRuntimeIds&quot;: []
+  },
+  &quot;requirements&quot;: {
+    &quot;parserDifferentialCovered&quot;: true,
+    &quot;singleConnectionProofCovered&quot;: true,
+    &quot;lastByteRaceCovered&quot;: true,
+    &quot;singlePacketRaceSoakCovered&quot;: true,
+    &quot;scopeBlockingCovered&quot;: true,
+    &quot;timingBudgetCovered&quot;: true,
+    &quot;responseOrderCovered&quot;: true,
+    &quot;rawTranscriptPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>These are operational executor outputs: raw requests, cookies, keys, tokens, response bodies, timing, and transcripts remain intact until <code>report-preview</code>, <code>report-export</code>, <code>bundle-sign</code>, or another reporting-phase command is used.</p>
+<h2 id="scanner-calibration">Scanner Calibration<a class="anchor" href="#scanner-calibration" aria-label="Permanent link to Scanner Calibration">#</a></h2>
+<p><code>scanner-run</code> is dry through <code>scanner-plan</code> unless <code>--execute</code> is present. Read <code>status.data.scannerCatalog</code> to discover active checks and use <code>--check-pack baseline</code>, <code>input-attacks</code>, <code>api-graphql</code>, <code>auth-state</code>, or <code>full-active</code> when agents need a stable pack selector. <code>input-attacks</code> covers reflected XSS, SQL injection, path traversal, open redirect, and command injection; <code>full-active --max-requests 13</code> covers every built-in active check. Add <code>--soak</code>, <code>--min-requests</code>, and <code>--min-findings</code> when agents need live calibration and false-positive tuning evidence:</p>
+<p>Passive Scanner parity evidence uses <code>proxyforge-scanner-passive-dedupe-parity-package</code>. Preserve <code>checkCoverage</code>, <code>confidenceSummary</code>, <code>severitySummary</code>, <code>dedupeClusters</code>, <code>severityReviews</code>, <code>falsePositiveControls</code>, <code>reportAttachments</code>, <code>raw request/response</code> samples, <code>operationalSecretSignals</code>, and <code>requirements</code>; it is executor material and redacts only during report export.</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;parityPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-scanner-passive-dedupe-parity-package&quot;,
+    &quot;requirements&quot;: {
+      &quot;passiveChecksCovered&quot;: true,
+      &quot;dedupeCovered&quot;: true,
+      &quot;routeVariantDedupeCovered&quot;: true,
+      &quot;confidenceSummaryCovered&quot;: true,
+      &quot;severityNormalizationCovered&quot;: true,
+      &quot;falsePositiveTuningCovered&quot;: true,
+      &quot;issueRulePolicyCovered&quot;: true,
+      &quot;reportAttachmentCovered&quot;: true,
+      &quot;activeScannerHandoffCovered&quot;: true,
+      &quot;rawRequestResponsePreserved&quot;: true,
+      &quot;operationalSecretsPreserved&quot;: true,
+      &quot;reportPhaseOnlyRedaction&quot;: true
+    },
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+    &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+  }
+}</code></pre></div>
+<p>Active check-pack parity evidence uses <code>proxyforge-active-scan-check-pack-evidence-package</code>. When present, preserve <code>checkPackMatrix</code>, <code>checkCoverage</code>, <code>scopeGate</code>, <code>rawProbeSamples</code>, <code>operationalSecretSignals</code>, and <code>requirements</code>; it is executor material and redacts only during report export.</p>
+<p>Crawl-derived insertion audit parity evidence uses <code>proxyforge-crawl-audit-insertion-evidence-package</code>. Preserve query/form/path coverage, duplicate merges, out-of-scope skips, active Scanner handoff, raw probe samples, operational secret signals, and report-export-only redaction.</p>
+<p>Scanner live-target profile evidence uses <code>proxyforge-scanner-live-target-profile-package</code>. Agents should preserve it when deciding whether Scanner proof is broad enough for production hardening because it links passive dedupe, insertion inventory, active-scan evidence, OAST issue promotion, Anvil compatibility, retest deltas, calibration soak packages, target host/route/status diversity, check-family coverage, false-positive tuning controls, package-refresh digests, stale-package checks, and full-fidelity executor secrets:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-scanner-live-target-profile-package&quot;,
+  &quot;targetHostCount&quot;: 2,
+  &quot;routeCount&quot;: 3,
+  &quot;statusClasses&quot;: [&quot;2xx&quot;, &quot;4xx&quot;],
+  &quot;totalRequests&quot;: 12,
+  &quot;checkCoverage&quot;: [&quot;security-headers&quot;, &quot;authz-diff&quot;, &quot;graphql-introspection&quot;],
+  &quot;packageRefreshProof&quot;: {
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-scanner-passive-dedupe-parity-package&quot;,
+      &quot;proxyforge-insertion-point-inventory-package&quot;,
+      &quot;proxyforge-scanner-active-scan-evidence-package&quot;,
+      &quot;proxyforge-scanner-oast-issue-promotion-package&quot;,
+      &quot;proxyforge-anvil-custom-check-parity-package&quot;,
+      &quot;proxyforge-scanner-retest-evidence-delta-package&quot;
+    ],
+    &quot;stalePackageIds&quot;: []
+  },
+  &quot;requirements&quot;: {
+    &quot;liveTargetDiversityCovered&quot;: true,
+    &quot;checkPackDepthCovered&quot;: true,
+    &quot;longRunningTuningCovered&quot;: true,
+    &quot;passiveDedupeCovered&quot;: true,
+    &quot;insertionInventoryCovered&quot;: true,
+    &quot;anvilCompatibilityCovered&quot;: true,
+    &quot;oastPromotionCovered&quot;: true,
+    &quot;retestEvidenceCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agent history-derived insertion point packages use <code>proxyforge-agent-insertion-point-inventory-package</code> from <code>insertion-points</code>. Preserve <code>coverage</code>, <code>points</code>, <code>rawExchanges</code>, <code>requirements</code>, and <code>content</code>; the command extracts query, path, header, cookie, form, JSON, XML, multipart, and GraphQL candidates for Scanner/Intruder/Target handoff while keeping raw executor material full-fidelity:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-insertion-point-inventory-package&quot;,
+  &quot;targetUrl&quot;: &quot;https://app.example.test/api/refunds?orderId=100&quot;,
+  &quot;coverage&quot;: [
+    { &quot;type&quot;: &quot;query&quot;, &quot;count&quot;: 1 },
+    { &quot;type&quot;: &quot;header&quot;, &quot;count&quot;: 2 },
+    { &quot;type&quot;: &quot;cookie&quot;, &quot;count&quot;: 1 },
+    { &quot;type&quot;: &quot;json&quot;, &quot;count&quot;: 3 },
+    { &quot;type&quot;: &quot;graphql&quot;, &quot;count&quot;: 0 }
+  ],
+  &quot;points&quot;: [
+    {
+      &quot;exchangeId&quot;: &quot;hx-1&quot;,
+      &quot;location&quot;: &quot;json&quot;,
+      &quot;name&quot;: &quot;amount&quot;,
+      &quot;route&quot;: &quot;POST /api/refunds?orderId=100&quot;,
+      &quot;evidence&quot;: &quot;JSON body field \&quot;amount\&quot;&quot;,
+      &quot;valuePreview&quot;: &quot;7900&quot;
+    }
+  ],
+  &quot;rawExchanges&quot;: [
+    {
+      &quot;id&quot;: &quot;hx-1&quot;,
+      &quot;requestRaw&quot;: &quot;POST /api/refunds?orderId=100 HTTP/1.1\nAuthorization: Bearer live-token\nCookie: session=live-session\n\n{\&quot;amount\&quot;:7900}&quot;,
+      &quot;responseRaw&quot;: &quot;HTTP/1.1 403 Forbidden\n\n{\&quot;error\&quot;:\&quot;denied\&quot;}&quot;
+    }
+  ],
+  &quot;requirements&quot;: {
+    &quot;scannerReadyCorpus&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Scanner OAST issue promotion uses <code>scanner-oast-promote</code> after an OAST SSRF check and callback poll have correlated. Preserve <code>proxyforge-scanner-oast-issue-promotion-package</code> fields, including source/scanner exchanges, callback payloads, callback interactions, issue draft, retest commands, raw material, and report-export-only redaction:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-scanner-oast-issue-promotion-package&quot;,
+  &quot;issue&quot;: {
+    &quot;id&quot;: &quot;issue-scanner-oast-...&quot;,
+    &quot;title&quot;: &quot;Out-of-band callback was triggered&quot;,
+    &quot;severity&quot;: &quot;high&quot;,
+    &quot;confidence&quot;: &quot;certain&quot;
+  },
+  &quot;evidence&quot;: {
+    &quot;scannerExchange&quot;: {
+      &quot;id&quot;: &quot;hx-scanner-oast&quot;,
+      &quot;requestRaw&quot;: &quot;GET /ssrf?url=https://callbacks.example.test/probe/cb-token HTTP/1.1\nAuthorization: Bearer live-token\nCookie: session=live-session\n\n&quot;,
+      &quot;responseRaw&quot;: &quot;HTTP/1.1 200 OK\n\n{\&quot;callbackStatus\&quot;:204}&quot;
+    },
+    &quot;callbackPayload&quot;: {
+      &quot;id&quot;: &quot;cb-1&quot;,
+      &quot;token&quot;: &quot;cb-token&quot;,
+      &quot;endpoint&quot;: &quot;https://callbacks.example.test/probe/cb-token&quot;
+    },
+    &quot;callbackInteraction&quot;: {
+      &quot;id&quot;: &quot;int-1&quot;,
+      &quot;raw&quot;: &quot;GET /probe/cb-token HTTP/1.1\nAuthorization: Bearer callback-token\n\n&quot;
+    }
+  },
+  &quot;requirements&quot;: {
+    &quot;sourceExchangeLinked&quot;: true,
+    &quot;scannerExchangeLinked&quot;: true,
+    &quot;callbackPayloadLinked&quot;: true,
+    &quot;callbackInteractionLinked&quot;: true,
+    &quot;oastTokenObserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<h2 id="agent-websocket-packages">Agent WebSocket Packages<a class="anchor" href="#agent-websocket-packages" aria-label="Permanent link to Agent WebSocket Packages">#</a></h2>
+<p>Agent WebSocket commands return full-fidelity operational payloads. Use <code>websocket-list</code> for inventory, <code>websocket-replay --execute</code> for live frame replay, <code>websocket-fuzz --execute</code> for bounded probe runs, and <code>websocket-transcript-export</code> for JSON/Markdown transcript handoff:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-websocket-replay-result&quot;,
+  &quot;plan&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-websocket-replay-plan&quot;,
+    &quot;sourceFrame&quot;: {
+      &quot;id&quot;: &quot;ws-1&quot;,
+      &quot;connectionId&quot;: &quot;ws-conn-1&quot;,
+      &quot;url&quot;: &quot;ws://app.example.test/socket&quot;,
+      &quot;payload&quot;: &quot;{\&quot;token\&quot;:\&quot;live-token\&quot;,\&quot;session\&quot;:\&quot;live-session\&quot;}&quot;
+    },
+    &quot;request&quot;: {
+      &quot;url&quot;: &quot;ws://app.example.test/socket&quot;,
+      &quot;opcode&quot;: 1,
+      &quot;payloadEncoding&quot;: &quot;text&quot;,
+      &quot;payload&quot;: &quot;{\&quot;token\&quot;:\&quot;live-token\&quot;,\&quot;session\&quot;:\&quot;live-session\&quot;}&quot;
+    }
+  },
+  &quot;result&quot;: {
+    &quot;handshakeAccepted&quot;: true,
+    &quot;acceptVerified&quot;: true,
+    &quot;sentFrame&quot;: {
+      &quot;payload&quot;: &quot;{\&quot;token\&quot;:\&quot;live-token\&quot;,\&quot;session\&quot;:\&quot;live-session\&quot;}&quot;,
+      &quot;payloadEncoding&quot;: &quot;text&quot;
+    },
+    &quot;receivedFrames&quot;: [
+      {
+        &quot;type&quot;: &quot;text&quot;,
+        &quot;payload&quot;: &quot;{\&quot;ok\&quot;:true,\&quot;token\&quot;:\&quot;live-token\&quot;}&quot;
+      }
+    ]
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+}</code></pre></div>
+<p>Transcript exports use <code>proxyforge-agent-websocket-transcript</code> and include <code>frames</code>, <code>connectionIds</code>, <code>hosts</code>, <code>paths</code>, <code>content</code>, <code>secretHandling</code>, and <code>reportRedactionBoundary</code>. Fuzz exports use <code>proxyforge-agent-websocket-fuzz-result</code> and include <code>summary</code>, per-probe <code>outcome</code>, full probe payloads, and received frames. These artifacts remain executor material until report export.</p>
+<p>Scanner retest parity evidence uses <code>proxyforge-scanner-retest-evidence-delta-package</code> from <code>scanner-retest</code> or <code>scanner-evidence-export</code>. Preserve <code>issue</code>, <code>workflow</code>, <code>comparison</code>, <code>outcomeCoverage</code>, <code>controls.requestEdits</code>, <code>reportAttachments</code>, <code>rawExchangeSamples</code>, <code>operationalSecretSignals</code>, and <code>requirements</code>; this package keeps baseline and retest proof full-fidelity until a reporting command performs submission redaction.</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;plan&quot;: {
+    &quot;targetUrl&quot;: &quot;https://app.example.test/api/refunds&quot;,
+    &quot;checks&quot;: [&quot;security-headers&quot;, &quot;cors-origin&quot;, &quot;authz-diff&quot;],
+    &quot;throttleMs&quot;: 0,
+    &quot;maxRequests&quot;: 7,
+    &quot;falsePositiveControls&quot;: [&quot;dedupe-key&quot;, &quot;confidence-reason&quot;, &quot;retest-before-report&quot;]
+  },
+  &quot;calibrationPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-scanner-live-calibration-soak-package&quot;,
+    &quot;status&quot;: &quot;pass&quot;,
+    &quot;budgets&quot;: {
+      &quot;minRequests&quot;: 7,
+      &quot;minFindings&quot;: 1,
+      &quot;minTuningProfiles&quot;: 1
+    },
+    &quot;observed&quot;: {
+      &quot;totalRequests&quot;: 8,
+      &quot;findingCount&quot;: 2,
+      &quot;suppressedFindingCount&quot;: 0,
+      &quot;falsePositiveControls&quot;: [
+        &quot;suppress-error-page-security-header-noise&quot;,
+        &quot;preserve-confidence-reason-per-finding&quot;
+      ],
+      &quot;findingDedupeKeys&quot;: [&quot;authz-diff:app.example.test:/api/refunds:authenticated-state-comparison-preserved-privileged-response&quot;]
+    },
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+  }
+}</code></pre></div>
+<p><code>data.seedExchange</code> preserves the selected raw request/response, including Authorization, Cookie, keys, and bodies, so agents can retest and explain confidence without losing executor context. Report commands perform submission redaction later.</p>
+<h2 id="anvil-custom-scan-checks">Anvil Custom Scan Checks<a class="anchor" href="#anvil-custom-scan-checks" aria-label="Permanent link to Anvil Custom Scan Checks">#</a></h2>
+<p><code>anvil-plan</code> is read-only. <code>anvil-run</code> stays planned unless <code>--execute</code> is present, but execution is offline/project-history custom-check evaluation and does not send live traffic. <code>anvil-package-export</code> writes a reusable full-fidelity artifact when <code>--out</code> is supplied.</p>
+<p>The run envelope includes <code>data.parityPackage.kind = &quot;proxyforge-anvil-custom-check-parity-package&quot;</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;parityPackage&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-anvil-custom-check-parity-package&quot;,
+    &quot;definition&quot;: {
+      &quot;name&quot;: &quot;Privileged workflow metadata exposure&quot;,
+      &quot;language&quot;: &quot;v2-beta&quot;,
+      &quot;source&quot;: &quot;metadata:\n  name: \&quot;Privileged workflow metadata exposure\&quot;\n\ngiven response then\n  report issue:&quot;
+    },
+    &quot;fixtureCoverage&quot;: {
+      &quot;fixtureCount&quot;: 2,
+      &quot;positiveFixtureCount&quot;: 1,
+      &quot;negativeFixtureCount&quot;: 1,
+      &quot;passedCount&quot;: 2
+    },
+    &quot;headless&quot;: {
+      &quot;builtInChecksDisabled&quot;: true,
+      &quot;extensionChecksDisabled&quot;: true,
+      &quot;reportReady&quot;: true
+    },
+    &quot;requirements&quot;: {
+      &quot;plainTextDefinitionPreserved&quot;: true,
+      &quot;reusableLibraryCovered&quot;: true,
+      &quot;positiveNegativeFixturesCovered&quot;: true,
+      &quot;fixtureValidationPassed&quot;: true,
+      &quot;headlessCustomOnlyCovered&quot;: true,
+      &quot;signedPackageReviewCovered&quot;: true,
+      &quot;scannerIssueHandoffCovered&quot;: true,
+      &quot;reportsHandoffCovered&quot;: true,
+      &quot;rawExecutorMaterialPreserved&quot;: true,
+      &quot;operationalSecretsPreserved&quot;: true,
+      &quot;reportPhaseOnlyRedaction&quot;: true
+    },
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+    &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+  }
+}</code></pre></div>
+<p>Preserve <code>.anvil</code> source, reusable library content, positive/negative fixture raw requests and responses, validation/headless run content, signed package review, Scanner issue handoff, Reports attachments, <code>rawExchangeSamples</code>, and <code>operationalSecretSignals</code> until a reporting-phase command exports submission material.</p>
+<h2 id="decoder-and-comparer-parity">Decoder And Comparer Parity<a class="anchor" href="#decoder-and-comparer-parity" aria-label="Permanent link to Decoder And Comparer Parity">#</a></h2>
+<p>Decoder and Comparer parity artifacts are operational evidence, not submission material. Preserve tokens, cookies, keys, compact JWT/JWE values, request/response bodies, binary bytes, and comparison bodies until a reporting-phase export redacts them. Agents can run <code>decoder-chain</code> against inline input, selected requests, selected responses, or files. The operational package shape is:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-decoder-transform-chain-package&quot;,
+  &quot;transformIds&quot;: [&quot;base64-decode&quot;, &quot;json-pretty&quot;],
+  &quot;run&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-decoder-transform-chain-run&quot;,
+    &quot;steps&quot;: [{ &quot;transformId&quot;: &quot;base64-decode&quot;, &quot;ok&quot;: true }],
+    &quot;finalOutput&quot;: &quot;{\&quot;token\&quot;:\&quot;agent-secret-token\&quot;}&quot;,
+    &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+    &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+  },
+  &quot;requirements&quot;: {
+    &quot;transformChainExecuted&quot;: true,
+    &quot;rawInputPreserved&quot;: true,
+    &quot;rawOutputPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>Decoder parity evidence uses <code>proxyforge-decoder-parity-evidence-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-decoder-parity-evidence-package&quot;,
+  &quot;transformCategories&quot;: [
+    { &quot;category&quot;: &quot;encode&quot;, &quot;count&quot;: 6 },
+    { &quot;category&quot;: &quot;decode&quot;, &quot;count&quot;: 9 },
+    { &quot;category&quot;: &quot;hash&quot;, &quot;count&quot;: 2 },
+    { &quot;category&quot;: &quot;format&quot;, &quot;count&quot;: 2 }
+  ],
+  &quot;requirements&quot;: {
+    &quot;encodeDecodeHashFormatCovered&quot;: true,
+    &quot;recursiveSmartRecipeCovered&quot;: true,
+    &quot;jwtJwsSigningPreviewCovered&quot;: true,
+    &quot;jweDecryptEditReencryptCovered&quot;: true,
+    &quot;binaryHexInspectionCovered&quot;: true,
+    &quot;transformLibraryCovered&quot;: true,
+    &quot;reportHandoffCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Comparer parity evidence uses <code>proxyforge-comparer-parity-evidence-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-comparer-parity-evidence-package&quot;,
+  &quot;coverage&quot;: {
+    &quot;advancedModes&quot;: [&quot;words&quot;, &quot;bytes&quot;, &quot;structured-http&quot;, &quot;binary-hex&quot;],
+    &quot;normalizationPresetIds&quot;: [&quot;raw&quot;, &quot;ignore-whitespace&quot;, &quot;http-noise&quot;, &quot;authz-review&quot;, &quot;text-only&quot;]
+  },
+  &quot;requirements&quot;: {
+    &quot;textLineUnifiedDiffCovered&quot;: true,
+    &quot;wordDiffCovered&quot;: true,
+    &quot;byteDiffCovered&quot;: true,
+    &quot;structuredHttpDiffCovered&quot;: true,
+    &quot;binaryHexComparisonCovered&quot;: true,
+    &quot;normalizationPresetsCovered&quot;: true,
+    &quot;replayDeltaReviewCovered&quot;: true,
+    &quot;savedComparisonLibraryCovered&quot;: true,
+    &quot;evidenceHandoffCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<h2 id="analysis-tool-refresh-evidence">Analysis Tool Refresh Evidence<a class="anchor" href="#analysis-tool-refresh-evidence" aria-label="Permanent link to Analysis Tool Refresh Evidence">#</a></h2>
+<p>When an agent depends on Search, Logger, Organizer, Viewer, Sequencer, Decoder, and Comparer in the same workflow, preserve <code>proxyforge-analysis-tool-refresh-evidence-package</code> beside the source packages. It links all seven parity artifacts, records package-refresh digests, marks stale package ids, and keeps raw executor material full-fidelity until a report/export command redacts submission material:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-analysis-tool-refresh-evidence-package&quot;,
+  &quot;packageRefreshProof&quot;: {
+    &quot;requiredPackageKinds&quot;: [
+      &quot;proxyforge-search-parity-evidence-package&quot;,
+      &quot;proxyforge-logger-parity-evidence-package&quot;,
+      &quot;proxyforge-organizer-parity-evidence-package&quot;,
+      &quot;proxyforge-viewer-parity-evidence-package&quot;,
+      &quot;proxyforge-sequencer-parity-evidence-package&quot;,
+      &quot;proxyforge-decoder-parity-evidence-package&quot;,
+      &quot;proxyforge-comparer-parity-evidence-package&quot;
+    ],
+    &quot;linkedPackageKinds&quot;: [
+      &quot;proxyforge-search-parity-evidence-package&quot;,
+      &quot;proxyforge-logger-parity-evidence-package&quot;,
+      &quot;proxyforge-organizer-parity-evidence-package&quot;,
+      &quot;proxyforge-viewer-parity-evidence-package&quot;,
+      &quot;proxyforge-sequencer-parity-evidence-package&quot;,
+      &quot;proxyforge-decoder-parity-evidence-package&quot;,
+      &quot;proxyforge-comparer-parity-evidence-package&quot;
+    ],
+    &quot;stalePackageIds&quot;: [],
+    &quot;freshDigest&quot;: &quot;fnv-digest&quot;,
+    &quot;rawMaterialDigestPreview&quot;: &quot;fnv-digest&quot;
+  },
+  &quot;requirements&quot;: {
+    &quot;searchRefreshCovered&quot;: true,
+    &quot;loggerRefreshCovered&quot;: true,
+    &quot;organizerRefreshCovered&quot;: true,
+    &quot;viewerRefreshCovered&quot;: true,
+    &quot;sequencerRefreshCovered&quot;: true,
+    &quot;decoderRefreshCovered&quot;: true,
+    &quot;comparerRefreshCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<h2 id="report-export-parity">Report Export Parity<a class="anchor" href="#report-export-parity" aria-label="Permanent link to Report Export Parity">#</a></h2>
+<p><code>report-preview</code>, <code>report-export</code>, <code>bundle-sign</code>, and <code>bundle-verify</code> are reporting-phase commands. Their outputs are submission material and should redact executor tokens, cookies, keys, raw secrets, and signing secrets while keeping evidence ids, host/path, finding text, remediation text, and attachment provenance useful. Report parity evidence uses <code>proxyforge-report-parity-evidence-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-report-parity-evidence-package&quot;,
+  &quot;formats&quot;: [
+    { &quot;format&quot;: &quot;markdown&quot;, &quot;rendered&quot;: true, &quot;redacted&quot;: true },
+    { &quot;format&quot;: &quot;html&quot;, &quot;rendered&quot;: true, &quot;redacted&quot;: true },
+    { &quot;format&quot;: &quot;json&quot;, &quot;rendered&quot;: true, &quot;redacted&quot;: true },
+    { &quot;format&quot;: &quot;pdf&quot;, &quot;rendered&quot;: true, &quot;redacted&quot;: true },
+    { &quot;format&quot;: &quot;bundle&quot;, &quot;rendered&quot;: true, &quot;redacted&quot;: true }
+  ],
+  &quot;bundleVerification&quot;: {
+    &quot;validStatus&quot;: &quot;valid&quot;,
+    &quot;tamperStatus&quot;: &quot;invalid&quot;,
+    &quot;signatureCovers&quot;: [&quot;manifest&quot;, &quot;evidence&quot;, &quot;crossToolEvidenceAttachments&quot;, &quot;reportMarkdown&quot;]
+  },
+  &quot;requirements&quot;: {
+    &quot;allSubmissionFormatsCovered&quot;: true,
+    &quot;signedBundleVerificationCovered&quot;: true,
+    &quot;tamperRejectionCovered&quot;: true,
+    &quot;customTemplateCovered&quot;: true,
+    &quot;crossToolEvidenceAttachmentsCovered&quot;: true,
+    &quot;pdfRenderQaCovered&quot;: true,
+    &quot;reportExportsRedacted&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>Preserve the package with release evidence when promoting report workflows. It proves Markdown/HTML/JSON/PDF/bundle rendering, executive/technical/remediation/evidence/appendix sections, custom operator template rendering, signed bundle verification, tamper rejection, cross-tool attachments, and PDF render QA metadata.</p>
+<p>Report production readiness evidence uses <code>proxyforge-report-production-readiness-package</code> when agents need stronger proof before a release or customer handoff:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-report-production-readiness-package&quot;,
+  &quot;rendererComparison&quot;: [
+    { &quot;renderer&quot;: &quot;markdown&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;html&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;json&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;bundle&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;pdf-html&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;fallback-pdf&quot;, &quot;redacted&quot;: true },
+    { &quot;renderer&quot;: &quot;pdf-render-qa-metadata&quot;, &quot;redacted&quot;: true }
+  ],
+  &quot;signedBundleInterop&quot;: {
+    &quot;localValidStatus&quot;: &quot;valid&quot;,
+    &quot;externalValidStatus&quot;: &quot;valid&quot;,
+    &quot;externalNoSecretStatus&quot;: &quot;unverified&quot;,
+    &quot;externalTamperStatus&quot;: &quot;invalid&quot;,
+    &quot;signatureCovers&quot;: [&quot;manifest&quot;, &quot;evidence&quot;, &quot;crossToolEvidenceAttachments&quot;, &quot;reportMarkdown&quot;]
+  },
+  &quot;accessibilityReview&quot;: {
+    &quot;htmlLanguageDeclared&quot;: true,
+    &quot;mainLandmarkPresent&quot;: true,
+    &quot;taggedPdfReadiness&quot;: true,
+    &quot;passed&quot;: true
+  },
+  &quot;scaleProfile&quot;: {
+    &quot;normalizedExchangeCount&quot;: 200,
+    &quot;totalAttachmentCount&quot;: 220,
+    &quot;estimatedPdfPageCount&quot;: 40
+  },
+  &quot;requirements&quot;: {
+    &quot;rendererComparisonCovered&quot;: true,
+    &quot;externalSignedBundleInteropCovered&quot;: true,
+    &quot;accessibilityReviewCovered&quot;: true,
+    &quot;longProjectAttachmentScaleCovered&quot;: true,
+    &quot;pdfLargeReportWarningCovered&quot;: true,
+    &quot;reportExportsRedacted&quot;: true,
+    &quot;signedBundleTamperRejectionCovered&quot;: true,
+    &quot;rawOperationalInputsPreservedPreExport&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>Agents should preserve this package with the release evidence trail. It is submission-phase evidence, so exported content is redacted; the package still proves that executor artifacts were full-fidelity before report export and that bundle signatures verify after JSON serialization.</p>
+<p>External shared-bundle diversity evidence uses <code>proxyforge-report-external-bundle-diversity-package</code> when agents need to hand the same report evidence across bug bounty portals, customer GRC imports, partner MSSP vaults, and internal remediation boards:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-report-external-bundle-diversity-package&quot;,
+  &quot;bundleProfiles&quot;: [
+    {
+      &quot;profileId&quot;: &quot;bug-bounty-portal-handoff&quot;,
+      &quot;shareChannel&quot;: &quot;bug-bounty-portal&quot;,
+      &quot;recipient&quot;: &quot;Bug bounty program portal&quot;,
+      &quot;templateId&quot;: &quot;evidence-bundle&quot;,
+      &quot;verificationStatus&quot;: &quot;valid&quot;,
+      &quot;noSecretStatus&quot;: &quot;unverified&quot;,
+      &quot;noSecretDigestMatches&quot;: true,
+      &quot;tamperStatus&quot;: &quot;invalid&quot;,
+      &quot;canonicalRoundTripStatus&quot;: &quot;valid&quot;,
+      &quot;redacted&quot;: true
+    }
+  ],
+  &quot;diversity&quot;: {
+    &quot;profileCount&quot;: 4,
+    &quot;shareChannelCount&quot;: 4,
+    &quot;recipientCount&quot;: 4,
+    &quot;keyIdCount&quot;: 4,
+    &quot;templateCount&quot;: 4,
+    &quot;attachmentKindCount&quot;: 10,
+    &quot;crossToolKindCount&quot;: 6,
+    &quot;canonicalDigestCount&quot;: 4
+  },
+  &quot;requirements&quot;: {
+    &quot;externalSharedBundleDiversityCovered&quot;: true,
+    &quot;signedBundleVerificationCovered&quot;: true,
+    &quot;digestOnlyNoSecretReviewCovered&quot;: true,
+    &quot;tamperRejectionCovered&quot;: true,
+    &quot;canonicalRoundTripCovered&quot;: true,
+    &quot;crossToolAttachmentDiversityCovered&quot;: true,
+    &quot;templateLibraryInteropCovered&quot;: true,
+    &quot;reportExportsRedacted&quot;: true,
+    &quot;rawOperationalInputsPreservedPreExport&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>Agents should keep this package next to report production readiness evidence when external bundle sharing is in scope. It is still a reporting-phase artifact: signing secrets, bearer tokens, cookies, API keys, callback tokens, raw exploit material, and raw requests/responses stay intact in executor artifacts, then report and bundle outputs redact for submission.</p>
+<p>Template library import/export interop evidence uses <code>proxyforge-report-template-library-interop-package</code> when agents need to move operator report templates between workspaces without scraping the GUI:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-report-template-library-interop-package&quot;,
+  &quot;exportedLibrary&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-report-template-library&quot;,
+    &quot;templateCount&quot;: 4,
+    &quot;templateIds&quot;: [
+      &quot;executive-board-summary&quot;,
+      &quot;technical-remediation-runbook&quot;,
+      &quot;signed-evidence-bundle&quot;,
+      &quot;bug-bounty-narrative&quot;
+    ]
+  },
+  &quot;importReview&quot;: {
+    &quot;existingTemplateCount&quot;: 1,
+    &quot;incomingTemplateCount&quot;: 4,
+    &quot;acceptedTemplateCount&quot;: 4,
+    &quot;conflictCount&quot;: 1,
+    &quot;conflicts&quot;: [
+      {
+        &quot;existingId&quot;: &quot;executive-board-summary&quot;,
+        &quot;incomingId&quot;: &quot;executive-board-summary&quot;,
+        &quot;importedId&quot;: &quot;executive-board-summary-imported&quot;,
+        &quot;resolution&quot;: &quot;renamed-import&quot;
+      }
+    ]
+  },
+  &quot;renderProofs&quot;: [
+    {
+      &quot;templateId&quot;: &quot;bug-bounty-narrative&quot;,
+      &quot;reportTemplateId&quot;: &quot;custom&quot;,
+      &quot;redacted&quot;: true,
+      &quot;unresolvedTokenCount&quot;: 0
+    }
+  ],
+  &quot;requirements&quot;: {
+    &quot;templateLibraryExportCovered&quot;: true,
+    &quot;templateLibraryImportCovered&quot;: true,
+    &quot;duplicateConflictReviewCovered&quot;: true,
+    &quot;builtinTemplateInteropCovered&quot;: true,
+    &quot;customTemplateInteropCovered&quot;: true,
+    &quot;templateVariablesResolved&quot;: true,
+    &quot;bundleRenderCovered&quot;: true,
+    &quot;reportExportsRedacted&quot;: true,
+    &quot;rawOperationalInputsPreservedPreExport&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  }
+}</code></pre></div>
+<p>Agents should preserve this package when report templates are exchanged between Codex, Claude, Vantix, or analyst workspaces. It proves export hashes, import acceptance, duplicate conflict review, built-in/custom template rendering, variable resolution, and Markdown/HTML/bundle output redaction; raw executor material remains full fidelity before reporting-phase export.</p>
+<h2 id="extension-parity-evidence">Extension Parity Evidence<a class="anchor" href="#extension-parity-evidence" aria-label="Permanent link to Extension Parity Evidence">#</a></h2>
+<p>Use this package when Codex, Claude, or Vantix agents need to prove extension-like workflows are ready for parity hardening beyond the basic compatibility fixture output:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-extension-parity-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;catalogInstallCovered&quot;: true,
+    &quot;localManifestCovered&quot;: true,
+    &quot;enableDisableRunLogsCovered&quot;: true,
+    &quot;hookCoverageCovered&quot;: true,
+    &quot;sandboxApiCovered&quot;: true,
+    &quot;legacyCompatibilityCovered&quot;: true,
+    &quot;legacySdkDepthCovered&quot;: true,
+    &quot;thirdPartySdkEdgeCovered&quot;: true,
+    &quot;policyDenialCovered&quot;: true,
+    &quot;dependencyReviewCovered&quot;: true,
+    &quot;headlessCiCovered&quot;: true,
+    &quot;signedManifestCovered&quot;: true,
+    &quot;signedUpdatePolicyCovered&quot;: true,
+    &quot;runtimeDiagnosticsCovered&quot;: true,
+    &quot;evidenceHandoffCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The package covers catalog installs, local manifest imports, enable/disable run logs, sandbox API hooks, legacy proxy-compatible request/response listeners, proxy listeners, scanner checks, insertion-point providers, message editor tabs, context menu factories, session-handling actions, extension state listeners, helper request/build operations, third-party SDK edge packages, policy-denied operations, dependency review, headless CI execution, signed manifests and updates, runtime diagnostics, evidence handoff, and raw token/cookie/API-key preservation until a reporting-phase export performs redaction.</p>
+<p>Deeper extension SDK coverage is retained as <code>proxyforge-extension-legacy-sdk-compatibility-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-extension-legacy-sdk-compatibility-package&quot;,
+  &quot;coveredApis&quot;: [
+    &quot;IHttpListener&quot;,
+    &quot;IProxyListener&quot;,
+    &quot;IScannerCheck&quot;,
+    &quot;IScannerInsertionPointProvider&quot;,
+    &quot;IMessageEditorTab&quot;,
+    &quot;IContextMenuFactory&quot;,
+    &quot;ISessionHandlingAction&quot;,
+    &quot;IExtensionStateListener&quot;,
+    &quot;IExtensionHelpers&quot;,
+    &quot;ILegacyExtensionCallbacks&quot;
+  ],
+  &quot;missingApis&quot;: [],
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;reportReady&quot;: true
+}</code></pre></div>
+<p>Agents should keep the package together with compatibility fixtures and migration guidance. It preserves raw request/response material for SDK probes and records whether a legacy extension API is directly supported, adapter-required, denied by policy before side effects, or unsupported.</p>
+<p>Third-party extension edge coverage is retained as <code>proxyforge-extension-third-party-sdk-compatibility-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-extension-third-party-sdk-compatibility-package&quot;,
+  &quot;coveredCategories&quot;: [
+    &quot;http-message-mutation&quot;,
+    &quot;helpers-transform&quot;,
+    &quot;context-menu-multi-selection&quot;,
+    &quot;session-handling-token-refresh&quot;,
+    &quot;scanner-insertion-point&quot;,
+    &quot;editor-state-lifecycle&quot;,
+    &quot;unsupported-api-fail-closed&quot;,
+    &quot;manifest-dependency-edge&quot;,
+    &quot;package-refresh&quot;
+  ],
+  &quot;missingCategories&quot;: [],
+  &quot;requirements&quot;: {
+    &quot;profileDiversityCovered&quot;: true,
+    &quot;httpRequestResponseMutationCovered&quot;: true,
+    &quot;helpersTransformCovered&quot;: true,
+    &quot;contextMenuMultiSelectionCovered&quot;: true,
+    &quot;sessionHandlingTokenRefreshCovered&quot;: true,
+    &quot;insertionPointProviderCovered&quot;: true,
+    &quot;editorStateLifecycleCovered&quot;: true,
+    &quot;unsupportedApisFailClosedCovered&quot;: true,
+    &quot;dependencyAndManifestEdgesCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;sdkPackageLinked&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;operationalSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;reportReady&quot;: true
+}</code></pre></div>
+<p>Agents should preserve this package when evaluating migrated extension package/local/agent manifests. It proves <code>IHttpRequestResponse</code> mutations and annotations, <code>IExtensionHelpers</code> transforms, multi-message context menus, session token refresh, custom scanner insertion points, editor/state lifecycle cleanup, fail-closed unsupported APIs, dependency/manifest migration edges, and package-refresh digests while keeping executor tokens and raw traffic intact.</p>
+<h2 id="extension-fixtures">Extension Fixtures<a class="anchor" href="#extension-fixtures" aria-label="Permanent link to Extension Fixtures">#</a></h2>
+<p><code>extension-fixtures</code> is read-only and produces operational compatibility evidence for migrated legacy proxy-compatible extension behavior:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-extension-compatibility-fixture-package&quot;,
+  &quot;status&quot;: &quot;pass&quot;,
+  &quot;fixtureCount&quot;: 5,
+  &quot;fixtures&quot;: [
+    {
+      &quot;hook&quot;: &quot;request-editor&quot;,
+      &quot;legacyExtensionApi&quot;: &quot;IHttpListener&quot;,
+      &quot;operation&quot;: &quot;processHttpMessage(request)&quot;,
+      &quot;policyOutcome&quot;: &quot;allowed&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;hook&quot;: &quot;request-editor&quot;,
+      &quot;legacyExtensionApi&quot;: &quot;IProxyListener&quot;,
+      &quot;operation&quot;: &quot;processProxyMessage(request)&quot;,
+      &quot;policyOutcome&quot;: &quot;allowed&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;hook&quot;: &quot;scanner-check&quot;,
+      &quot;legacyExtensionApi&quot;: &quot;IScannerInsertionPointProvider&quot;,
+      &quot;operation&quot;: &quot;getInsertionPoints&quot;,
+      &quot;policyOutcome&quot;: &quot;allowed&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    },
+    {
+      &quot;hook&quot;: &quot;headless-runner&quot;,
+      &quot;legacyExtensionApi&quot;: &quot;ILegacyExtensionCallbacks&quot;,
+      &quot;operation&quot;: &quot;makeHttpRequest policy-denied probe&quot;,
+      &quot;policyOutcome&quot;: &quot;denied&quot;,
+      &quot;status&quot;: &quot;pass&quot;
+    }
+  ],
+  &quot;policyDeniedOperations&quot;: [&quot;ILegacyExtensionCallbacks.makeHttpRequest&quot;],
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+}</code></pre></div>
+<p>The package embeds the selected raw exchange, manifest runtime actions, request listener, response listener, proxy listener, scanner check, insertion-point provider, editor tab, context menu factory, session-handling action, extension-state listener, helper analysis/build operation, third-party SDK edge metadata, package-refresh digest, and policy-denied operation metadata. It is executor evidence and keeps raw traffic/tokens intact until a reporting-phase command redacts output.</p>
+<h2 id="callback-relay-and-retention">Callback Relay And Retention<a class="anchor" href="#callback-relay-and-retention" aria-label="Permanent link to Callback Relay And Retention">#</a></h2>
+<p><code>callback-relay-plan</code> is dry and returns relay deployment metadata for public OAST service setup:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-callback-relay-plan&quot;,
+  &quot;publicBaseUrl&quot;: &quot;callbacks.app.example.test&quot;,
+  &quot;protocols&quot;: [&quot;dns&quot;, &quot;http&quot;, &quot;smtp&quot;],
+  &quot;dnsRecords&quot;: [&quot;*.callbacks.app.example.test 300 IN CNAME relay.proxyforge.local.&quot;],
+  &quot;routes&quot;: [&quot;https://*.callbacks.app.example.test/probe/:token&quot;],
+  &quot;healthChecks&quot;: [&quot;GET https://callbacks.app.example.test/healthz&quot;],
+  &quot;retentionHours&quot;: 72,
+  &quot;secretStorage&quot;: {
+    &quot;mode&quot;: &quot;os-keychain&quot;,
+    &quot;signingKeyId&quot;: &quot;callback-local&quot;,
+    &quot;secretRef&quot;: &quot;proxyforge/oast/callback-local&quot;,
+    &quot;signingSecret&quot;: &quot;operator-supplied-secret&quot;,
+    &quot;relayApiToken&quot;: &quot;operator-supplied-token&quot;,
+    &quot;operationalSecretPolicy&quot;: &quot;full-fidelity-until-reporting&quot;
+  }
+}</code></pre></div>
+<p><code>callback-retention-prune</code> returns expired and retained ids plus <code>prunedInteractions</code> with the original raw callback content. Passing <code>--apply --workspace ./callbacks.json</code> rewrites the workspace with expired payloads archived and expired interactions removed from the active list. The command remains an operational executor command, so callback tokens, relay keys, raw interaction records, and listener evidence are preserved until report export.</p>
+<p><code>callback-relay-soak</code> returns a public relay soak package for larger OAST projects:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-callback-public-relay-soak-package&quot;,
+  &quot;publicBaseUrl&quot;: &quot;callbacks.app.example.test&quot;,
+  &quot;payloadCount&quot;: 128,
+  &quot;interactionCount&quot;: 256,
+  &quot;observedProtocolCount&quot;: 3,
+  &quot;rawInteractionBytes&quot;: 98304,
+  &quot;reportImportProbe&quot;: {
+    &quot;kind&quot;: &quot;proxyforge-agent-callback-report-import-probe&quot;,
+    &quot;expectedManifestArtifactCount&quot;: 4
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;
+}</code></pre></div>
+<p>The package includes raw <code>payloads</code>, raw <code>interactions</code>, signed poll/replay/lifecycle/CI ids when present, relay DNS/routes/health checks, and the listener secret-storage reference. It is not a submission artifact; report commands perform redaction later.</p>
+<p>Signed relay isolation evidence is represented by <code>proxyforge-callback-external-relay-integration-package</code>. Agents should preserve each tenant poll&#39;s <code>rawRequest</code>, <code>rawResponse</code>, <code>signature</code>, <code>payloadIds</code>, <code>interactionIds</code>, and <code>isolationStatus</code>; passing packages have at least two isolated tenant polls, signed HMAC response metadata, no leaked interaction ids, and <code>reportRedactionBoundary: &quot;redact-only-during-report-export&quot;</code>. The focused relay integration test proves HTTP/DNS/SMTP callbacks through a local relay fixture and deliberately fails a cross-tenant leak case.</p>
+<p>Provider diversity evidence is represented by <code>proxyforge-callback-external-oast-provider-diversity-package</code>. Agents should preserve every provider probe&#39;s <code>rawRequest</code>, <code>rawResponse</code>, provider id/kind, protocol, tenant id, payload ids, interaction ids, signature, isolation status, and replay-support metadata. Passing packages cover generic HTTP relay, DNS webhook relay, and SMTP relay provider shapes, link a signed tenant-isolated relay integration package, and keep provider bearer tokens/callback payload tokens full fidelity until report export.</p>
+<p><code>callback-provider-probe</code> emits <code>proxyforge-agent-callback-provider-host-proof-package</code> when agents need live provider-host proof from a scoped manifest:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-agent-callback-provider-host-proof-package&quot;,
+  &quot;providerCount&quot;: 2,
+  &quot;protocolCount&quot;: 2,
+  &quot;interactionCount&quot;: 2,
+  &quot;requirements&quot;: {
+    &quot;providerHostScopeCovered&quot;: true,
+    &quot;externalHostRequestsCovered&quot;: true,
+    &quot;signedPollsCovered&quot;: true,
+    &quot;tenantIsolationCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>The package is operational evidence. Keep provider bearer tokens, callback payload tokens, raw ingest requests, raw poll requests, raw poll responses, signatures, and callback interactions intact until a report/export command creates submission-safe artifacts.</p>
+<p>Callback report round-trip evidence is represented by <code>proxyforge-callback-report-roundtrip-package</code>. Agents should preserve its imported artifact manifest, external relay/provider package ids, signed full-report-package metadata, <code>operationalSecretSamples</code>, and <code>reportRedactionBoundary</code>. Passing packages prove signed polls, Repeater/Scanner/Exploit replay packages, replay execution batches, lifecycle reviews, CI handoffs, public relay soaks, signed external relay integrations, provider diversity packages, and evidence packages all survive full report package import while exported submission content redacts only at report time.</p>
+<p>Collaborator/OAST package freshness is represented by <code>proxyforge-collaborator-package-refresh-evidence-package</code>. Agents should keep it with the source OAST artifacts when deciding whether callback proof is stale enough to rerun:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-collaborator-package-refresh-evidence-package&quot;,
+  &quot;packageRefreshProof&quot;: {
+    &quot;requiredPackageKinds&quot;: [
+      &quot;proxyforge-collaborator-parity-evidence-package&quot;,
+      &quot;proxyforge-callback-signed-poll-batch&quot;,
+      &quot;proxyforge-callback-correlation-replay&quot;,
+      &quot;proxyforge-callback-replay-execution-batch&quot;,
+      &quot;proxyforge-callback-payload-lifecycle-review&quot;,
+      &quot;proxyforge-callback-ci-handoff-package&quot;,
+      &quot;proxyforge-callback-public-relay-soak-package&quot;,
+      &quot;proxyforge-callback-external-relay-integration-package&quot;,
+      &quot;proxyforge-callback-external-oast-provider-diversity-package&quot;,
+      &quot;proxyforge-agent-callback-provider-host-proof-package&quot;,
+      &quot;proxyforge-callback-report-roundtrip-package&quot;
+    ],
+    &quot;stalePackageIds&quot;: [],
+    &quot;freshDigest&quot;: &quot;fnv-digest&quot;,
+    &quot;rawMaterialDigestPreview&quot;: &quot;fnv-digest&quot;
+  },
+  &quot;requirements&quot;: {
+    &quot;collaboratorParityRefreshCovered&quot;: true,
+    &quot;signedPollingRefreshCovered&quot;: true,
+    &quot;replayCorrelationRefreshCovered&quot;: true,
+    &quot;replayExecutionRefreshCovered&quot;: true,
+    &quot;lifecycleRetentionRefreshCovered&quot;: true,
+    &quot;ciHandoffRefreshCovered&quot;: true,
+    &quot;relaySoakRefreshCovered&quot;: true,
+    &quot;externalRelayRefreshCovered&quot;: true,
+    &quot;externalProviderDiversityRefreshCovered&quot;: true,
+    &quot;providerHostProofRefreshCovered&quot;: true,
+    &quot;reportRoundTripRefreshCovered&quot;: true,
+    &quot;packageRefreshCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;callbackSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Collaborator/OAST parity evidence is exported as <code>proxyforge-collaborator-parity-evidence-package</code>:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-collaborator-parity-evidence-package&quot;,
+  &quot;payloadCount&quot;: 3,
+  &quot;interactionCount&quot;: 3,
+  &quot;listenerProfileCount&quot;: 1,
+  &quot;requirements&quot;: {
+    &quot;payloadGenerationCovered&quot;: true,
+    &quot;dnsHttpSmtpProtocolsCovered&quot;: true,
+    &quot;interactionPollingCovered&quot;: true,
+    &quot;oastWorkspaceOwnershipCovered&quot;: true,
+    &quot;signedEvidencePackagesCovered&quot;: true,
+    &quot;localListenerBackendCovered&quot;: true,
+    &quot;publicRelaySoakCovered&quot;: true,
+    &quot;externalRelayTenantIsolationCovered&quot;: true,
+    &quot;externalProviderDiversityCovered&quot;: true,
+    &quot;retentionPruneCovered&quot;: true,
+    &quot;correlationReplayCovered&quot;: true,
+    &quot;scannerExploitRepeaterStagingCovered&quot;: true,
+    &quot;automatedReplayExecutionCovered&quot;: true,
+    &quot;ciHandoffCovered&quot;: true,
+    &quot;reportPackagePersistenceCovered&quot;: true,
+    &quot;reportPackageRoundTripCovered&quot;: true,
+    &quot;rawExecutorMaterialPreserved&quot;: true,
+    &quot;callbackSecretsPreserved&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;artifactIds&quot;: {
+    &quot;payloadIds&quot;: [&quot;cb-live-http&quot;],
+    &quot;interactionIds&quot;: [&quot;cb-int-http&quot;],
+    &quot;listenerProfileIds&quot;: [&quot;callback-listener-...&quot;],
+    &quot;signedPollBatchIds&quot;: [&quot;callback-poll-...&quot;],
+    &quot;evidencePackageIds&quot;: [&quot;callback-evidence-live&quot;],
+    &quot;externalRelayIntegrationPackageIds&quot;: [&quot;callback-external-relay-integration-...&quot;],
+    &quot;externalProviderDiversityPackageIds&quot;: [&quot;external-oast-provider-diversity-...&quot;],
+    &quot;replayPackageIds&quot;: [&quot;callback-replay-repeater&quot;, &quot;callback-replay-scanner&quot;, &quot;callback-replay-exploit-lab&quot;],
+    &quot;replayExecutionBatchIds&quot;: [&quot;callback-replay-execution-...&quot;],
+    &quot;lifecycleReviewIds&quot;: [&quot;callback-lifecycle-...&quot;],
+    &quot;ciHandoffPackageIds&quot;: [&quot;callback-ci-handoff-...&quot;],
+    &quot;relaySoakPackageIds&quot;: [&quot;callback-public-relay-soak-...&quot;],
+    &quot;reportRoundTripPackageIds&quot;: [&quot;callback-report-roundtrip-...&quot;]
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;
+}</code></pre></div>
+<p>Agents should treat this as operational evidence. It preserves raw callback requests, callback tokens, listener keys, replay manifests, report/import probes, signed external relay/provider packages, and callback report round-trip packages for executor use; submission-safe redaction happens only when <code>report-export</code> or another reporting command emits final artifacts.</p>
+<h2 id="release-trust-production-evidence">Release Trust Production Evidence<a class="anchor" href="#release-trust-production-evidence" aria-label="Permanent link to Release Trust Production Evidence">#</a></h2>
+<p>Agents should preserve <code>proxyforge-release-trust-production-evidence-package</code> before a build is promoted:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;kind&quot;: &quot;proxyforge-release-trust-production-evidence-package&quot;,
+  &quot;requirements&quot;: {
+    &quot;sbomGeneratedFromLockfile&quot;: true,
+    &quot;dependencyIntegrityCovered&quot;: true,
+    &quot;licenseReviewCovered&quot;: true,
+    &quot;packageLockFrozenCovered&quot;: true,
+    &quot;sourceChecksumsCovered&quot;: true,
+    &quot;buildChecksumsCovered&quot;: true,
+    &quot;docsAndAgentChecksumsCovered&quot;: true,
+    &quot;workflowChecksumsCovered&quot;: true,
+    &quot;provenanceStatementCovered&quot;: true,
+    &quot;provenanceLinksMaterialsAndSubjects&quot;: true,
+    &quot;signingStatePinned&quot;: true,
+    &quot;notarizationStatePinned&quot;: true,
+    &quot;verificationCommandsCovered&quot;: true,
+    &quot;releaseArtifactRetentionCovered&quot;: true,
+    &quot;reportPhaseOnlyRedaction&quot;: true
+  },
+  &quot;secretHandling&quot;: &quot;execution-full-fidelity-secrets-preserved&quot;,
+  &quot;reportRedactionBoundary&quot;: &quot;redact-only-during-report-export&quot;,
+  &quot;productionReady&quot;: true
+}</code></pre></div>
+<p>The package links the <code>package-lock.json</code> SBOM, SHA-256 checksum manifest, SLSA-lite provenance statement, verification commands, signing/notarization state pins, and retained release artifacts. It is operational release evidence; any executor tokens, cookies, callback secrets, and raw request/response samples remain full fidelity until report export.</p>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="agent-vantix.html"><span>Previous</span>Vantix Agent</a><a class="pager-link pager-next" href="security.html"><span>Next</span>Security Policy</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#status-values">Status Values</a></li><li class="toc-level-2"><a href="#phase-boundary">Phase Boundary</a></li><li class="toc-level-2"><a href="#platform-and-release-evidence">Platform And Release Evidence</a></li><li class="toc-level-2"><a href="#ui-scale-production-evidence">UI Scale Production Evidence</a></li><li class="toc-level-2"><a href="#release-security-production-evidence">Release Security Production Evidence</a></li><li class="toc-level-2"><a href="#platform-shell-production-evidence">Platform Shell Production Evidence</a></li><li class="toc-level-2"><a href="#agent-control-production-evidence">Agent Control Production Evidence</a></li><li class="toc-level-2"><a href="#proxy-edge-profile-evidence">Proxy Edge Profile Evidence</a></li><li class="toc-level-2"><a href="#fast-regression-production-evidence">Fast Regression Production Evidence</a></li><li class="toc-level-2"><a href="#full-nightly-production-evidence">Full/Nightly Production Evidence</a></li><li class="toc-level-2"><a href="#install-docs-production-evidence">Install Docs Production Evidence</a></li><li class="toc-level-2"><a href="#windows-package-production-evidence">Windows Package Production Evidence</a></li><li class="toc-level-2"><a href="#linux-package-production-evidence">Linux Package Production Evidence</a></li><li class="toc-level-2"><a href="#ai-provider-evidence">AI Provider Evidence</a></li><li class="toc-level-2"><a href="#automation-evidence">Automation Evidence</a></li><li class="toc-level-2"><a href="#exploit-lab-evidence">Exploit Lab Evidence</a></li><li class="toc-level-2"><a href="#persistent-mitm-session">Persistent MITM Session</a></li><li class="toc-level-2"><a href="#search-index">Search Index</a></li><li class="toc-level-2"><a href="#viewer-evidence">Viewer Evidence</a></li><li class="toc-level-2"><a href="#logger-evidence">Logger Evidence</a></li><li class="toc-level-2"><a href="#organizer-evidence">Organizer Evidence</a></li><li class="toc-level-2"><a href="#sequencer-analysis">Sequencer Analysis</a></li><li class="toc-level-2"><a href="#project-parity-evidence">Project Parity Evidence</a></li><li class="toc-level-2"><a href="#project-import-compatibility-evidence">Project Import Compatibility Evidence</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

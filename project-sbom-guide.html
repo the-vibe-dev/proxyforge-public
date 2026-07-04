@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project SBOM Guide - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Project SBOM Guide - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/project-sbom-guide.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a aria-current="page" href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a aria-current="page" href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/PROJECT_SBOM_GUIDE.md">docs/PROJECT_SBOM_GUIDE.md</a></p>
+  <h1>Project SBOM Guide</h1>
+</header>
+      <h1 id="project-sbom-guide">Project SBOM Guide<a class="anchor" href="#project-sbom-guide" aria-label="Permanent link to Project SBOM Guide">#</a></h1>
+<p>ProxyForge generates a Software Bill of Materials (SBOM) for the active project artifact — every captured exchange, evidence record, extension, third-party listener, signed audit export, and template run.</p>
+<p>This is distinct from the application binary SBOM produced at release time.</p>
+<h2 id="formats">Formats<a class="anchor" href="#formats" aria-label="Permanent link to Formats">#</a></h2>
+<ul><li><strong>CycloneDX 1.5 JSON</strong> — machine-readable, validator-compatible.</li><li><strong>SPDX 2.3 tag-value + JSON</strong> — compliance-friendly, toolchain-portable.</li></ul>
+<h2 id="generating-an-sbom">Generating an SBOM<a class="anchor" href="#generating-an-sbom" aria-label="Permanent link to Generating an SBOM">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>proxyforge-agent --json &lt;&lt;EOF
+{&quot;op&quot;:&quot;report.export&quot;,&quot;projectId&quot;:&quot;&lt;id&gt;&quot;,&quot;format&quot;:&quot;sbom-cyclonedx&quot;}
+EOF</code></pre></div>
+<p>Or from the GUI: <strong>Reports → Export SBOM</strong>.</p>
+<h2 id="contents">Contents<a class="anchor" href="#contents" aria-label="Permanent link to Contents">#</a></h2>
+<p>Each SBOM includes:</p>
+<ul><li>Project metadata (ID, name, creation date, scope)</li><li>Captured exchange references (count, date range, host set)</li><li>Scanner evidence matrices referenced in issues</li><li>Exploit template runs linked to issues</li><li>Extensions loaded during the project</li><li>OAST listeners configured</li><li>AI provider calls (redacted content, preserved metadata)</li><li>Signed evidence bundle digests</li><li>Audit log reference (not content — the audit log itself is a separate export)</li></ul>
+<h2 id="validation">Validation<a class="anchor" href="#validation" aria-label="Permanent link to Validation">#</a></h2>
+<p>The generated SBOM validates against the official CycloneDX and SPDX validators:</p>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code># CycloneDX
+cyclonedx-cli validate --input-file project.sbom.cdx.json --input-format json
+
+# SPDX
+spdx-tools verify project.sbom.spdx.json</code></pre></div>
+<h2 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h2>
+<ul><li><code>tests/sbom-cyclonedx-roundtrip.mjs</code></li><li><code>tests/sbom-spdx-roundtrip.mjs</code></li><li><code>tests/sbom-includes-evidence-references.mjs</code></li></ul>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="security.html"><span>Previous</span>Security Policy</a><a class="pager-link pager-next" href="roadmap.html"><span>Next</span>Roadmap</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#formats">Formats</a></li><li class="toc-level-2"><a href="#generating-an-sbom">Generating an SBOM</a></li><li class="toc-level-2"><a href="#contents">Contents</a></li><li class="toc-level-2"><a href="#validation">Validation</a></li><li class="toc-level-2"><a href="#tests">Tests</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

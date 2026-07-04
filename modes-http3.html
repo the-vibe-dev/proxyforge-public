@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HTTP/3 Mode - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="HTTP/3 Mode - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/modes-http3.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a aria-current="page" href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a aria-current="page" href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/MODES_HTTP3.md">docs/MODES_HTTP3.md</a></p>
+  <h1>HTTP/3 Mode</h1>
+</header>
+      <h1 id="http-3-and-quic-transport-mode">HTTP/3 and QUIC Transport Mode<a class="anchor" href="#http-3-and-quic-transport-mode" aria-label="Permanent link to HTTP/3 and QUIC Transport Mode">#</a></h1>
+<h2 id="overview">Overview<a class="anchor" href="#overview" aria-label="Permanent link to Overview">#</a></h2>
+<p>HTTP/3 runs over QUIC — a multiplexed transport built on UDP rather than TCP. ProxyForge can intercept and inspect HTTP/3 traffic when the optional <code>proxyforge-quic</code> side-car binary is installed. Without the side-car the module stubs return capability objects and <code>isHttp3Supported()</code> returns <code>false</code>.</p>
+<h2 id="platform-requirements">Platform Requirements<a class="anchor" href="#platform-requirements" aria-label="Permanent link to Platform Requirements">#</a></h2>
+<ul><li><strong>Any platform</strong> (Linux, macOS, Windows) — QUIC runs in userspace</li><li>UDP reachability to the target host (port 443 by default)</li><li><strong><code>proxyforge-quic</code> side-car binary</strong> installed beside the Electron app or in <code>PATH</code></li><li>The side-car is built with the <a href="https://github.com/cloudflare/quiche">quiche</a> or <a href="https://github.com/quinn-rs/quinn">quinn</a> Rust library</li><li>TLS 1.3 support is included in the side-car</li></ul>
+<blockquote><strong>Note:</strong> The side-car is an optional separate download. Without it <code>isHttp3Supported()</code> returns <code>false</code> and all connection calls resolve gracefully without doing anything.</blockquote>
+<h2 id="when-to-use">When to Use<a class="anchor" href="#when-to-use" aria-label="Permanent link to When to Use">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Use HTTP/3 Mode?</th></tr></thead><tbody><tr><td>Target explicitly negotiates h3 via Alt-Svc</td><td>Yes</td></tr><tr><td>Inspecting QUIC connection metadata (RTT, stream IDs)</td><td>Yes</td></tr><tr><td>Standard HTTPS browsing (HTTP/1.1 or HTTP/2)</td><td>No — standard MITM proxy is sufficient</td></tr><tr><td>Target only speaks HTTP/2</td><td>No</td></tr></tbody></table></div>
+<h2 id="configuration">Configuration<a class="anchor" href="#configuration" aria-label="Permanent link to Configuration">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="jsonc"><code>// Example Http3TransportConfig
+{
+  &quot;maxStreams&quot;: 100,        // Max concurrent QUIC streams
+  &quot;idleTimeoutMs&quot;: 30000,  // QUIC idle timeout in ms
+  &quot;allowInsecure&quot;: false,  // Accept self-signed TLS certs
+  &quot;alpn&quot;: [&quot;h3&quot;]           // ALPN protocols (default: [&quot;h3&quot;])
+}</code></pre></div>
+<h2 id="usage">Usage<a class="anchor" href="#usage" aria-label="Permanent link to Usage">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="ts"><code>import {
+  isHttp3Supported,
+  getHttp3Capabilities,
+  openHttp3Connection,
+} from &#39;electron/traffic/http3Transport&#39;;
+
+if (!isHttp3Supported()) {
+  const caps = getHttp3Capabilities();
+  console.warn(&#39;HTTP/3 unavailable:&#39;, caps.reason);
+} else {
+  const conn = await openHttp3Connection(&#39;https://target.example&#39;, {
+    maxStreams: 50,
+    idleTimeoutMs: 15000,
+  });
+  if (conn.connected) {
+    console.log(&#39;HTTP/3 connected, RTT:&#39;, conn.rttMs, &#39;ms&#39;);
+  }
+}</code></pre></div>
+<h2 id="how-it-works-with-side-car">How It Works (with side-car)<a class="anchor" href="#how-it-works-with-side-car" aria-label="Permanent link to How It Works (with side-car)">#</a></h2>
+<ol><li>ProxyForge calls the side-car via an IPC channel with the target URL and config.</li><li>The side-car establishes a QUIC connection to the target, performing a TLS 1.3 handshake with the ProxyForge CA certificate.</li><li>HTTP/3 request/response frames are forwarded to ProxyForge, which records them in the traffic view like standard HTTP exchanges.</li><li>Connection metadata (RTT samples, stream IDs, QUIC version) appears in the exchange detail panel.</li></ol>
+<h2 id="limitations">Limitations<a class="anchor" href="#limitations" aria-label="Permanent link to Limitations">#</a></h2>
+<ul><li>Requires optional side-car not bundled in the default release</li><li>Some servers fall back to HTTP/2 even when h3 is advertised — ProxyForge handles the negotiation gracefully</li><li>UDP may be blocked by corporate firewalls; h3 will not connect in those environments</li></ul>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="automation-api.html"><span>Previous</span>Automation API</a><a class="pager-link pager-next" href="modes-transparent.html"><span>Next</span>Transparent Mode</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#overview">Overview</a></li><li class="toc-level-2"><a href="#platform-requirements">Platform Requirements</a></li><li class="toc-level-2"><a href="#when-to-use">When to Use</a></li><li class="toc-level-2"><a href="#configuration">Configuration</a></li><li class="toc-level-2"><a href="#usage">Usage</a></li><li class="toc-level-2"><a href="#how-it-works-with-side-car">How It Works (with side-car)</a></li><li class="toc-level-2"><a href="#limitations">Limitations</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

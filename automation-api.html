@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Automation API - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Automation API - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/automation-api.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a aria-current="page" href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a aria-current="page" href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/AUTOMATION_API.md">docs/AUTOMATION_API.md</a></p>
+  <h1>Automation API</h1>
+</header>
+      <h1 id="proxyforge-automation-api">ProxyForge Automation API<a class="anchor" href="#proxyforge-automation-api" aria-label="Permanent link to ProxyForge Automation API">#</a></h1>
+<p>A JSON-RPC protocol that lets external orchestrators — CI pipelines, shell scripts, AI agents, or custom tooling — drive ProxyForge programmatically without coupling to the Electron UI.</p>
+<hr>
+<h2 id="endpoint">Endpoint<a class="anchor" href="#endpoint" aria-label="Permanent link to Endpoint">#</a></h2>
+<div class="highlight"><pre class="code-block"><code>POST /rpc
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt;</code></pre></div>
+<p>The token is generated at project start and printed to stdout (or retrievable via <code>GET /token</code> with the local session cookie).</p>
+<hr>
+<h2 id="command-format">Command Format<a class="anchor" href="#command-format" aria-label="Permanent link to Command Format">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;op&quot;: &quot;&lt;AgentOpCode&gt;&quot;,
+  &quot;requestId&quot;: &quot;optional-correlation-id&quot;,
+  &quot;&lt;param&gt;&quot;: &quot;&lt;value&gt;&quot;
+}</code></pre></div>
+<h2 id="response-format">Response Format<a class="anchor" href="#response-format" aria-label="Permanent link to Response Format">#</a></h2>
+<p>Success:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{ &quot;op&quot;: &quot;scanner.run&quot;, &quot;requestId&quot;: &quot;abc&quot;, &quot;ok&quot;: true, &quot;data&quot;: { ... } }</code></pre></div>
+<p>Error:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{ &quot;op&quot;: &quot;scanner.run&quot;, &quot;requestId&quot;: &quot;abc&quot;, &quot;ok&quot;: false, &quot;error&quot;: &quot;Exchange not found&quot;, &quot;code&quot;: 404 }</code></pre></div>
+<hr>
+<h2 id="op-codes">Op Codes<a class="anchor" href="#op-codes" aria-label="Permanent link to Op Codes">#</a></h2>
+<p>All 16 ops are defined in <code>src/automation/agentProtocol.ts</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Op Code</th><th>Description</th><th>Required Params</th></tr></thead><tbody><tr><td><code>project.create</code></td><td>Create a new project workspace</td><td><code>name</code></td></tr><tr><td><code>project.open</code></td><td>Open an existing project from disk</td><td><code>path</code></td></tr><tr><td><code>proxy.start</code></td><td>Start the intercepting proxy listener</td><td><code>projectId</code>, <code>listen</code> (e.g. <code>&quot;127.0.0.1:8080&quot;</code>)</td></tr><tr><td><code>proxy.stop</code></td><td>Stop the proxy listener</td><td><code>projectId</code></td></tr><tr><td><code>browser.launch</code></td><td>Launch a managed Chromium instance pre-configured to trust the CA</td><td><code>projectId</code></td></tr><tr><td><code>history.query</code></td><td>Query captured HTTP exchange history</td><td><code>projectId</code> · optional: <code>filter</code></td></tr><tr><td><code>repeater.send</code></td><td>Replay a request from the Repeater engine</td><td><code>projectId</code>, <code>request</code> (serialised HTTP object)</td></tr><tr><td><code>scanner.run</code></td><td>Run scanner checks against a captured exchange</td><td><code>projectId</code>, <code>exchangeId</code> · optional: <code>checks</code> (array)</td></tr><tr><td><code>scanner.matrix.fetch</code></td><td>Retrieve a probe matrix by ID</td><td><code>projectId</code>, <code>matrixId</code></td></tr><tr><td><code>oast.payload.create</code></td><td>Allocate an OAST callback token for out-of-band detection</td><td><code>projectId</code>, <code>purpose</code></td></tr><tr><td><code>oast.interactions.poll</code></td><td>Poll for OAST interactions received since last poll</td><td><code>projectId</code></td></tr><tr><td><code>exploit.template.run</code></td><td>Execute an Anvil exploit template</td><td><code>projectId</code>, <code>templateId</code>, <code>input</code></td></tr><tr><td><code>playbook.run</code></td><td>Execute an automation recipe / playbook</td><td><code>projectId</code>, <code>recipeId</code></td></tr><tr><td><code>issue.promote</code></td><td>Promote one or more evidence items to a tracked issue</td><td><code>projectId</code>, <code>evidenceIds</code> (array)</td></tr><tr><td><code>report.export</code></td><td>Export the project report in the specified format</td><td><code>projectId</code>, <code>format</code> (<code>pdf</code>/<code>html</code>/<code>json</code>/<code>md</code>)</td></tr><tr><td><code>extension.invoke</code></td><td>Invoke a named hook on a loaded extension</td><td><code>projectId</code>, <code>extensionId</code>, <code>hook</code></td></tr></tbody></table></div>
+<h3 id="proxy-start-listen-format"><code>proxy.start</code> — <code>listen</code> format<a class="anchor" href="#proxy-start-listen-format" aria-label="Permanent link to `proxy.start` — `listen` format">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>&quot;127.0.0.1:8080&quot;         # localhost only
+&quot;0.0.0.0:8080&quot;           # all interfaces (use with care)</code></pre></div>
+<h3 id="scanner-run-optional-checks-array"><code>scanner.run</code> — optional <code>checks</code> array<a class="anchor" href="#scanner-run-optional-checks-array" aria-label="Permanent link to `scanner.run` — optional `checks` array">#</a></h3>
+<p>Omitting <code>checks</code> runs all enabled checks. Pass an array of check IDs to scope the scan:</p>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{ &quot;op&quot;: &quot;scanner.run&quot;, &quot;projectId&quot;: &quot;proj_1&quot;, &quot;exchangeId&quot;: &quot;ex_42&quot;, &quot;checks&quot;: [&quot;sqli-error&quot;, &quot;xss-reflect&quot;] }</code></pre></div>
+<hr>
+<h2 id="event-stream">Event Stream<a class="anchor" href="#event-stream" aria-label="Permanent link to Event Stream">#</a></h2>
+<div class="highlight"><pre class="code-block"><code>GET /events
+Accept: text/event-stream
+Authorization: Bearer &lt;token&gt;</code></pre></div>
+<p>Server-Sent Events stream. Each event is a JSON-encoded <code>AgentEvent</code>.</p>
+<h3 id="event-types">Event Types<a class="anchor" href="#event-types" aria-label="Permanent link to Event Types">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Event</th><th>When fired</th></tr></thead><tbody><tr><td><code>proxy.exchange.captured</code></td><td>A new HTTP exchange is intercepted</td></tr><tr><td><code>scanner.probe.classified</code></td><td>A scanner probe response is classified</td></tr><tr><td><code>scanner.finding.created</code></td><td>A scanner check produces a finding</td></tr><tr><td><code>oast.callback.received</code></td><td>An out-of-band callback hits the OAST listener</td></tr><tr><td><code>issue.created</code></td><td>A new issue is tracked in the project</td></tr><tr><td><code>report.exported</code></td><td>A report file is written to disk</td></tr><tr><td><code>playbook.step.completed</code></td><td>A playbook step finishes execution</td></tr></tbody></table></div>
+<h3 id="event-envelope">Event envelope<a class="anchor" href="#event-envelope" aria-label="Permanent link to Event envelope">#</a></h3>
+<div class="highlight"><pre class="code-block" data-lang="json"><code>{
+  &quot;event&quot;: &quot;scanner.finding.created&quot;,
+  &quot;timestamp&quot;: &quot;2026-05-27T12:00:00.000Z&quot;,
+  &quot;projectId&quot;: &quot;proj_1&quot;,
+  &quot;findingId&quot;: &quot;finding_7&quot;,
+  &quot;severity&quot;: &quot;high&quot;
+}</code></pre></div>
+<hr>
+<h2 id="error-codes">Error Codes<a class="anchor" href="#error-codes" aria-label="Permanent link to Error Codes">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning</th></tr></thead><tbody><tr><td>400</td><td>Malformed command or missing required field</td></tr><tr><td>401</td><td>Missing or invalid Bearer token</td></tr><tr><td>404</td><td>Referenced resource (project, exchange, etc.) not found</td></tr><tr><td>409</td><td>Conflict — e.g. proxy already running on that port</td></tr><tr><td>500</td><td>Internal engine error</td></tr></tbody></table></div>
+<hr>
+<h2 id="example-full-scan-workflow">Example: Full Scan Workflow<a class="anchor" href="#example-full-scan-workflow" aria-label="Permanent link to Example: Full Scan Workflow">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>BASE=&quot;http://localhost:7331&quot;
+TOKEN=&quot;$(cat .pf-token)&quot;
+H=&quot;Authorization: Bearer $TOKEN&quot;
+
+# 1. Create project
+PROJ=$(curl -s -H &quot;$H&quot; -d &#39;{&quot;op&quot;:&quot;project.create&quot;,&quot;name&quot;:&quot;ci-run-1&quot;}&#39; $BASE/rpc | jq -r .data.id)
+
+# 2. Start proxy
+curl -s -H &quot;$H&quot; -d &quot;{\&quot;op\&quot;:\&quot;proxy.start\&quot;,\&quot;projectId\&quot;:\&quot;$PROJ\&quot;,\&quot;listen\&quot;:\&quot;127.0.0.1:8080\&quot;}&quot; $BASE/rpc
+
+# 3. (Drive traffic through the proxy, then pick an exchange)
+EX=$(curl -s -H &quot;$H&quot; -d &quot;{\&quot;op\&quot;:\&quot;history.query\&quot;,\&quot;projectId\&quot;:\&quot;$PROJ\&quot;}&quot; $BASE/rpc | jq -r &#39;.data.exchanges[0].id&#39;)
+
+# 4. Run scanner
+FINDING=$(curl -s -H &quot;$H&quot; -d &quot;{\&quot;op\&quot;:\&quot;scanner.run\&quot;,\&quot;projectId\&quot;:\&quot;$PROJ\&quot;,\&quot;exchangeId\&quot;:\&quot;$EX\&quot;}&quot; $BASE/rpc | jq -r &#39;.data.findingIds[0]&#39;)
+
+# 5. Promote to issue
+curl -s -H &quot;$H&quot; -d &quot;{\&quot;op\&quot;:\&quot;issue.promote\&quot;,\&quot;projectId\&quot;:\&quot;$PROJ\&quot;,\&quot;evidenceIds\&quot;:[\&quot;$FINDING\&quot;]}&quot; $BASE/rpc
+
+# 6. Export report
+curl -s -H &quot;$H&quot; -d &quot;{\&quot;op\&quot;:\&quot;report.export\&quot;,\&quot;projectId\&quot;:\&quot;$PROJ\&quot;,\&quot;format\&quot;:\&quot;html\&quot;}&quot; $BASE/rpc</code></pre></div>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="agentic-interface.html"><span>Previous</span>Agentic Interface</a><a class="pager-link pager-next" href="modes-http3.html"><span>Next</span>HTTP/3 Mode</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#endpoint">Endpoint</a></li><li class="toc-level-2"><a href="#command-format">Command Format</a></li><li class="toc-level-2"><a href="#response-format">Response Format</a></li><li class="toc-level-2"><a href="#op-codes">Op Codes</a></li><li class="toc-level-3"><a href="#proxy-start-listen-format"><code>proxy.start</code> — <code>listen</code> format</a></li><li class="toc-level-3"><a href="#scanner-run-optional-checks-array"><code>scanner.run</code> — optional <code>checks</code> array</a></li><li class="toc-level-2"><a href="#event-stream">Event Stream</a></li><li class="toc-level-3"><a href="#event-types">Event Types</a></li><li class="toc-level-3"><a href="#event-envelope">Event envelope</a></li><li class="toc-level-2"><a href="#error-codes">Error Codes</a></li><li class="toc-level-2"><a href="#example-full-scan-workflow">Example: Full Scan Workflow</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

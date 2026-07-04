@@ -5,29 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Security Policy - ProxyForge Docs</title>
   <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Security Policy - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/security.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
   <header class="topbar">
-    <a class="brand" href="./">ProxyForge <span>0.1.0-alpha.1</span></a>
-    <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">GitHub</a>
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a aria-current="page" href="security.html">Trust</a></nav>
   </header>
   <main class="layout">
-    <nav class="sidebar" aria-label="Documentation"><a href="./">README</a><a href="release-notes.html">Release Notes</a><a href="release-checklist.html">Release Checklist</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="release-evidence.html">Release Evidence</a><a href="agentic-interface.html">Agentic Interface</a><a aria-current="page" href="security.html">Security Policy</a></nav>
-    <article class="doc">
-      <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/SECURITY.md">SECURITY.md</a></p>
-      <h1 id="security-policy">Security Policy</h1>
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a aria-current="page" href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/SECURITY.md">SECURITY.md</a></p>
+  <h1>Security Policy</h1>
+</header>
+      <h1 id="security-policy">Security Policy<a class="anchor" href="#security-policy" aria-label="Permanent link to Security Policy">#</a></h1>
 <p>ProxyForge is a security testing tool. Use it only on systems you own or are explicitly authorized to assess.</p>
-<h2 id="alpha-scope">Alpha Scope</h2>
+<h2 id="alpha-scope">Alpha Scope<a class="anchor" href="#alpha-scope" aria-label="Permanent link to Alpha Scope">#</a></h2>
 <p>The open-source alpha is intended for local, authorized assessment workflows. It includes active scanning, replay, Intruder-style payload execution, OAST/callback handling, exploit validation helpers, and AI/agent control surfaces, so operators are responsible for scope, rate limits, approvals, and stop conditions.</p>
-<h2 id="reporting-vulnerabilities">Reporting Vulnerabilities</h2>
+<h2 id="reporting-vulnerabilities">Reporting Vulnerabilities<a class="anchor" href="#reporting-vulnerabilities" aria-label="Permanent link to Reporting Vulnerabilities">#</a></h2>
 <p>Please report vulnerabilities in ProxyForge itself through a private GitHub Security Advisory for this repository: https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new</p>
 <p>Use public issues only for non-sensitive bugs. Do not include live third-party secrets, raw customer traffic, reusable exploit tokens, exploitable proof-of-concept details, or unrelated private data in public reports.</p>
-<h2 id="secret-handling">Secret Handling</h2>
+<h2 id="secret-handling">Secret Handling<a class="anchor" href="#secret-handling" aria-label="Permanent link to Secret Handling">#</a></h2>
 <p>Operational workspaces intentionally preserve full-fidelity tokens, cookies, keys, callbacks, raw requests, raw responses, replay material, scanner probes, and exploit validation data so operators and agents can reproduce findings. Redaction is expected only in report/export artifacts prepared for submission.</p>
-<h2 id="responsible-use">Responsible Use</h2>
+<h2 id="responsible-use">Responsible Use<a class="anchor" href="#responsible-use" aria-label="Permanent link to Responsible Use">#</a></h2>
 <p>Do not use ProxyForge to attack systems without authorization. The maintainers may decline support for unlawful, unsafe, or out-of-scope activity.</p>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="agent-schemas.html"><span>Previous</span>Agent Schemas</a><a class="pager-link pager-next" href="project-sbom-guide.html"><span>Next</span>Project SBOM Guide</a></nav>
     </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#alpha-scope">Alpha Scope</a></li><li class="toc-level-2"><a href="#reporting-vulnerabilities">Reporting Vulnerabilities</a></li><li class="toc-level-2"><a href="#secret-handling">Secret Handling</a></li><li class="toc-level-2"><a href="#responsible-use">Responsible Use</a></li></ol>
+    </aside>
   </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
 </body>
 </html>

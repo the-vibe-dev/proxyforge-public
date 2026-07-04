@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vantix Agent - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Vantix Agent - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/agent-vantix.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a aria-current="page" href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a aria-current="page" href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/agents/VANTIX.md">docs/agents/VANTIX.md</a></p>
+  <h1>Vantix Agent</h1>
+</header>
+      <h1 id="vantix-integration-contract">Vantix Integration Contract<a class="anchor" href="#vantix-integration-contract" aria-label="Permanent link to Vantix Integration Contract">#</a></h1>
+<p>Vantix agents in <code>~/vantix/</code> can consume ProxyForge state through full-fidelity operational JSON handoffs. The default handoff directory is <code>~/vantix/proxyforge</code>, but callers can pass <code>--out</code>. Commands can be run from <code>~/vantix/</code> with an absolute path to <code>proxyforge-agent.mjs</code>; the CLI resolves ProxyForge runtime modules from its own app root rather than from the agent runner&#39;s current directory.</p>
+<h2 id="commands">Commands<a class="anchor" href="#commands" aria-label="Permanent link to Commands">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>node scripts/proxyforge-agent.mjs vantix-sync --project ./workspace.proxyforge.json --out ~/vantix/proxyforge --json
+node scripts/proxyforge-agent.mjs mitm-export --session-dir ~/vantix/proxyforge/agent-session --json
+node scripts/proxyforge-agent.mjs vantix-intel-export --project ./workspace.proxyforge.json --query authz --out ~/vantix/proxyforge --json
+node scripts/proxyforge-agent.mjs search-index --project ./workspace.proxyforge.json --query authz --out ~/vantix/proxyforge/search-index.json --soak --soak-out ~/vantix/proxyforge/search-soak.json --json
+node scripts/proxyforge-agent.mjs search-index --project ./workspace.proxyforge.json --query &quot;authz bypass&quot; --provider-url http://127.0.0.1:9000/rank --provider-token &quot;$SEARCH_PROVIDER_TOKEN&quot; --scope 127.0.0.1 --execute --provider-out ~/vantix/proxyforge/search-provider.json --json
+node scripts/proxyforge-agent.mjs sequencer-analyze --sample-file ~/vantix/proxyforge/tokens.txt --soak --min-samples 5000 --min-reliability reliable --json
+node scripts/proxyforge-agent.mjs decoder-chain --project ./workspace.proxyforge.json --request-id hx-1 --source response --transforms base64-decode,json-pretty --out ~/vantix/proxyforge/decoder-chain.json --json
+node scripts/proxyforge-agent.mjs proxy-import --file ~/vantix/proxyforge/agent-session/exchanges.jsonl --json
+node scripts/proxyforge-agent.mjs proxy-import --file ~/vantix/proxyforge/legacy-proxy-history.xml --json
+node scripts/proxyforge-agent.mjs project-store-status --store ./workspace.proxyforge --json
+node scripts/proxyforge-agent.mjs project-store-recover --store ./workspace.proxyforge --out ~/vantix/proxyforge/project-store-recovery.json --json
+node scripts/proxyforge-agent.mjs project-store-backup --store ./workspace.proxyforge --out ~/vantix/proxyforge/project-store-backups --execute --json
+node scripts/proxyforge-agent.mjs content-discovery-plan --project ./workspace.proxyforge.json --scope app.example.test --json
+node scripts/proxyforge-agent.mjs content-discovery-run --project ./workspace.proxyforge.json --scope app.example.test --limit 40 --concurrency 4 --soak --execute --json
+node scripts/proxyforge-agent.mjs target-access-review --project ./workspace.proxyforge.json --roles customer,support_admin --json
+node scripts/proxyforge-agent.mjs target-map-compare --project ./workspace.proxyforge.json --baseline hx-1 --candidate hx-1,hx-2 --json
+node scripts/proxyforge-agent.mjs automation-run --project ./workspace.proxyforge.json --workflow wf-nightly --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs automation-scheduler-tick --project ./workspace.proxyforge.json --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs automation-parity-export --project ./workspace.proxyforge.json --out ~/vantix/proxyforge/automation-parity.json --json
+node scripts/proxyforge-agent.mjs automation-service-plan --project ./workspace.proxyforge.json --workflow wf-nightly --out ~/vantix/proxyforge/automation-service-lifecycle.json --json
+node scripts/proxyforge-agent.mjs automation-service-smoke --project ./workspace.proxyforge.json --workflow wf-nightly --service-dir ~/vantix/proxyforge/automation-service-smoke --execute --json
+node scripts/proxyforge-agent.mjs crawl-run --target https://app.example.test --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs replay-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --redirect follow --connection keep-alive --timeout 10000 --execute --json
+node scripts/proxyforge-agent.mjs bulk-replay --project ./workspace.proxyforge.json --scope app.example.test --limit 50 --concurrency 5 --soak --execute --json
+node scripts/proxyforge-agent.mjs live-target-profile --manifest ./live-targets.json --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs intruder-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --payloads admin,user --concurrency 3 --soak --execute --json
+node scripts/proxyforge-agent.mjs repeater-desync-probe --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs repeater-race-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --count 12 --sync single-packet --soak --min-requests 12 --max-release-skew-ms 100 --execute --json
+node scripts/proxyforge-agent.mjs insertion-points --project ./workspace.proxyforge.json --request-id hx-1 --out ~/vantix/proxyforge/insertion-points.json --json
+node scripts/proxyforge-agent.mjs websocket-list --project ./workspace.proxyforge.json --connection-id ws-conn-1 --json
+node scripts/proxyforge-agent.mjs websocket-replay --project ./workspace.proxyforge.json --frame-id ws-1 --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs websocket-fuzz --project ./workspace.proxyforge.json --frame-id ws-1 --scope app.example.test --max-probes 6 --execute --json
+node scripts/proxyforge-agent.mjs websocket-transcript-export --project ./workspace.proxyforge.json --connection-id ws-conn-1 --format markdown --out ~/vantix/proxyforge/websocket-transcript.md --json
+node scripts/proxyforge-agent.mjs scanner-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --check-pack full-active --max-requests 13 --execute --soak --min-requests 13 --json
+node scripts/proxyforge-agent.mjs scanner-retest --project ./workspace.proxyforge.json --issue issue-1 --request-id hx-1 --retest-id hx-2 --json
+node scripts/proxyforge-agent.mjs scanner-evidence-export --project ./workspace.proxyforge.json --issue issue-1 --request-id hx-1 --out ~/vantix/proxyforge/scanner-evidence.json --json
+node scripts/proxyforge-agent.mjs scanner-oast-promote --project ./workspace.proxyforge.json --workspace ./callbacks.json --request-id hx-1 --payload-id cb-1 --interaction-id int-1 --out ~/vantix/proxyforge/scanner-oast-issue.json --json
+node scripts/proxyforge-agent.mjs anvil-plan --project ./workspace.proxyforge.json --request-id hx-1 --json
+node scripts/proxyforge-agent.mjs anvil-run --project ./workspace.proxyforge.json --request-id hx-1 --execute --json
+node scripts/proxyforge-agent.mjs anvil-package-export --project ./workspace.proxyforge.json --request-id hx-1 --out ~/vantix/proxyforge/anvil-package.json --json
+node scripts/proxyforge-agent.mjs extension-fixtures --project ./workspace.proxyforge.json --manifest ./extension.json --request-id hx-1 --json
+node scripts/proxyforge-agent.mjs callback-relay-plan --workspace ./callbacks.json --public-base callbacks.app.example.test --json
+node scripts/proxyforge-agent.mjs callback-provider-probe --providers ./oast-providers.json --scope callbacks.app.example.test --execute --json
+node scripts/proxyforge-agent.mjs callback-relay-soak --workspace ./callbacks.json --public-base callbacks.app.example.test --json
+node scripts/proxyforge-agent.mjs callback-retention-prune --workspace ./callbacks.json --retention-hours 72 --json
+node scripts/proxyforge-agent.mjs report-export --project ./workspace.proxyforge.json --format json --out ~/vantix/proxyforge/reports --json</code></pre></div>
+<p>External runner form:</p>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>cd ~/vantix
+node ~/proxyforge/scripts/proxyforge-agent.mjs status --project ~/proxyforge/workspace.proxyforge.json --json
+node ~/proxyforge/scripts/proxyforge-agent.mjs chromium-capture --project ~/proxyforge/workspace.proxyforge.json --target https://app.example.test --scope app.example.test --json</code></pre></div>
+<h2 id="handoff-contents">Handoff Contents<a class="anchor" href="#handoff-contents" aria-label="Permanent link to Handoff Contents">#</a></h2>
+<ul><li>Project summary and scope.</li><li>Persistent MITM session paths, project-CA fingerprint/root path, upstream TLS mode, and full exchange data when Vantix asks for live gathering state.</li><li>Top findings and evidence ids.</li><li><code>agentRuntime.scriptPath</code>, <code>agentRuntime.appRoot</code>, and <code>agentRuntime.commandPrefix</code> so Vantix can rerun ProxyForge from its own working directory without guessing paths.</li><li>Persistent semantic search index and <code>search-index --soak</code> artifacts for long-running intel gathering, scale checks, and cross-turn reuse.</li><li>Live semantic provider invocation packages from <code>search-index --provider-url --execute</code>, including scoped provider raw requests/responses, provider credentials, full corpus documents, ranked matches, and full operational request/response material for Vantix-side intel workflows.</li><li>Sequencer token analysis and large-sample soak packages, including full token samples, reliability level, bit/position statistics, and statistical tests for executor workflows.</li><li>Decoder transform-chain packages from <code>decoder-chain</code>, including selected request/response input, every transform step, final decoded/encoded output, digest preview, and full operational token/key/cookie material for executor workflows.</li><li>Proxy/history import packages from ProxyForge JSONL, HAR, legacy proxy XML history, raw HTTP text archives, or project exports, plus content-discovery candidate plans, content-discovery execution/soak packages, and scoped crawl results for Vantix-side intel gathering. Imported headers, cookies, tokens, API keys, and raw request/response bodies stay full fidelity until report export.</li><li>Project Store v2 status, recovery, and restore-point backup packages from <code>project-store-status</code>, <code>project-store-recover</code>, and <code>project-store-backup</code>, including replayed recovery journals, sample raw exchanges, backup manifests, and full operational tokens/cookies/keys/callbacks for executor workflows.</li><li>Target access-control review packages with role lanes, route decisions, overexposed/underexposed counts, raw exchange ids, and recommended Repeater/Scanner verification commands.</li><li>Automation service lifecycle packages from <code>automation-service-plan</code>, including Linux systemd user and Windows Task Scheduler manifests, install/start/status/stop/uninstall commands, scheduler tick commands, durable state/log paths, and full operational token/cookie/key samples until report export.</li><li>Installed-host Automation service smoke packages from <code>automation-service-smoke --execute</code>, including detached Node runner start/status/stop proof, durable status and scheduler state files, JSONL logs, scheduler tick results, PID lifecycle evidence, and full operational token/cookie/key samples until report export.</li><li>Target map comparison packages with baseline/candidate route deltas, affected parameters, authz-sensitive drift evidence, digest previews, and recommended follow-up commands.</li><li>Automation inventories, scoped run receipts, scheduler tick results, CI/headless provider presets, and Automation parity packages for Vantix-side orchestration. These preserve macro steps, queue leases, approval-block receipts, source raw exchanges, and operational tokens until report export.</li><li>Recommended follow-up commands for Chromium capture, replay, scanner planning, and reporting.</li><li>Replay transport evidence, including redirect history, final URL, timeout errors, and connection mode for Vantix-side differential analysis.</li><li>Bulk replay summaries and high-volume soak packages, including retained full-fidelity responses, request-rate telemetry, max in-flight concurrency, and dropped-window counts for executor workflows.</li><li>Live target profile packages from <code>live-target-profile</code>, including scoped raw requests/responses, host/route/status diversity, Scanner candidates, Intruder marked raw requests, replay handoff commands, bearer tokens, cookies, and API keys for executor workflows.</li><li>Intruder attack-mode and payload-transformation matrices, execution summaries, and high-volume soak packages, including Sniper/Battering Ram/Pitchfork/Cluster Bomb expansion counts, recursive payload rule expansion, processor output samples, payload-position metadata, retained raw results, request-rate telemetry, max in-flight concurrency, and grep/extract evidence for executor workflows.</li><li>Repeater desync/race command outputs, including parser-differential dry-plan evidence, single-connection proof transcripts, race soak packages, release timing, response order, and raw request/response evidence for executor workflows.</li><li>Insertion point inventory packages from <code>insertion-points</code>, including query, path, header, cookie, form, JSON, XML, multipart, and GraphQL candidates plus full raw request/response material for Vantix-side Scanner, Intruder, and Target planning.</li><li>WebSocket inventory, replay, fuzz, and transcript packages from <code>websocket-list</code>, <code>websocket-replay</code>, <code>websocket-fuzz</code>, and <code>websocket-transcript-export</code>, including selected frame ids, live handshake proof, received frames, fuzz probe outcomes, JSON/Markdown transcript content, and full text/binary payload material for executor workflows.</li><li>Active Scanner check-pack evidence packages, including supported/unsupported check accounting, built-in check coverage, scope/rate/cap gates, authz comparison legs, raw probe samples, and operational secret signals for executor workflows.</li><li>Scanner catalog metadata from <code>status.data.scannerCatalog</code>, including <code>baseline</code>, <code>input-attacks</code>, <code>api-graphql</code>, <code>auth-state</code>, and <code>full-active</code> packs. Vantix can use <code>--check-pack input-attacks</code> for reflected XSS, SQL injection, path traversal, open redirect, and command injection, or <code>--check-pack full-active --max-requests 13</code> for every built-in active check.</li><li>Crawl audit insertion evidence packages, including query/form/path coverage, duplicate merges, out-of-scope skips, active Scanner handoff, raw probe samples, and operational secret signals for executor workflows.</li><li>Scanner live calibration packages, including false-positive controls, suppressed finding records, confidence reasons, dedupe keys, and the seed exchange for executor workflows.</li><li>Scanner active-scan evidence packages, including plan/review/matrix/replay linkages, CI command metadata, report attachment manifests, active/suppressed finding status, raw exchange samples, and operational secret signals for executor workflows.</li><li>Scanner OAST issue promotion packages from <code>scanner-oast-promote</code>, including source/scanner exchanges, callback payloads, callback interactions, issue drafts, retest commands, and full callback tokens/cookies/raw material for executor workflows.</li><li>Scanner retest evidence delta packages, including baseline proof, retest proof, request-edit context, fixed/regressed/still-vulnerable/inconclusive outcome coverage, raw samples, and operational secret signals for executor workflows.</li><li>Anvil custom scan-check packages, including <code>.anvil</code> source, reusable rule libraries, positive/negative fixtures, validation runs, custom-only headless runs, signed package reviews, Scanner finding handoffs, Reports attachments, raw samples, and operational secret signals for executor workflows.</li><li>Extension fixture packages for legacy proxy-compatible request listeners, scanner checks, message editor tabs, and policy-denied callbacks, including selected raw exchange evidence for executor workflows.</li><li>OAST provider host proof, relay plans, public relay soak/report-import packages, and retention prune manifests, including provider bearer tokens, signed poll raw requests/responses, DNS/routes, secret-storage references, expired payload/interaction ids, and full raw callback records for executor workflows.</li><li>Raw request/response data for executor workflows. Use ProxyForge report exports when Vantix needs redacted submission artifacts.</li><li>Audit metadata that Vantix can attach to its own run log.</li></ul>
+<h2 id="safety">Safety<a class="anchor" href="#safety" aria-label="Permanent link to Safety">#</a></h2>
+<p>Vantix should pass explicit <code>--scope</code> values for live targets and should avoid <code>--execute</code> until the operator has confirmed the target and rate limits. Approved exploit commands must use a dedicated approval JSON artifact.</p>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="agent-claude.html"><span>Previous</span>Claude Agent</a><a class="pager-link pager-next" href="agent-schemas.html"><span>Next</span>Agent Schemas</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#commands">Commands</a></li><li class="toc-level-2"><a href="#handoff-contents">Handoff Contents</a></li><li class="toc-level-2"><a href="#safety">Safety</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

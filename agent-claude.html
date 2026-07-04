@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Agent - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Claude Agent - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/agent-claude.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a aria-current="page" href="agent-codex.html">Agents</a><a href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a aria-current="page" href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/agents/CLAUDE.md">docs/agents/CLAUDE.md</a></p>
+  <h1>Claude Agent</h1>
+</header>
+      <h1 id="claude-agent-contract">Claude Agent Contract<a class="anchor" href="#claude-agent-contract" aria-label="Permanent link to Claude Agent Contract">#</a></h1>
+<p>Claude agents should use the same command surface as Codex and keep outputs structured. The command wrapper is designed for sectioned reasoning: inspect status, gather evidence, plan active work, then run only approved commands.</p>
+<h2 id="suggested-sequence">Suggested Sequence<a class="anchor" href="#suggested-sequence" aria-label="Permanent link to Suggested Sequence">#</a></h2>
+<div class="highlight"><pre class="code-block" data-lang="bash"><code>node scripts/proxyforge-agent.mjs inventory --project ./workspace.proxyforge.json --json
+node scripts/proxyforge-agent.mjs mitm-status --session-dir ./agent-session --json
+node scripts/proxyforge-agent.mjs search-index --project ./workspace.proxyforge.json --query authz --out ./artifacts/search-index.json --soak --soak-out ./artifacts/search-soak.json --json
+node scripts/proxyforge-agent.mjs search-index --project ./workspace.proxyforge.json --query &quot;authz bypass&quot; --provider-url http://127.0.0.1:9000/rank --provider-token &quot;$SEARCH_PROVIDER_TOKEN&quot; --scope 127.0.0.1 --execute --provider-out ./artifacts/search-provider.json --json
+node scripts/proxyforge-agent.mjs sequencer-analyze --sample-file ./tokens.txt --soak --min-samples 5000 --min-reliability reliable --json
+node scripts/proxyforge-agent.mjs decoder-chain --project ./workspace.proxyforge.json --request-id hx-1 --source response --transforms base64-decode,json-pretty --json
+node scripts/proxyforge-agent.mjs proxy-import --file ./agent-session/exchanges.jsonl --json
+node scripts/proxyforge-agent.mjs proxy-import --file ./legacy-proxy-history.xml --json
+node scripts/proxyforge-agent.mjs project-store-status --store ./workspace.proxyforge --json
+node scripts/proxyforge-agent.mjs project-store-recover --store ./workspace.proxyforge --out ./artifacts/project-store-recovery.json --json
+node scripts/proxyforge-agent.mjs project-store-backup --store ./workspace.proxyforge --out ./.gitignored/proxyforge-backups --execute --json
+node scripts/proxyforge-agent.mjs content-discovery-plan --project ./workspace.proxyforge.json --scope app.example.test --json
+node scripts/proxyforge-agent.mjs content-discovery-run --project ./workspace.proxyforge.json --scope app.example.test --limit 40 --concurrency 4 --soak --execute --json
+node scripts/proxyforge-agent.mjs target-access-review --project ./workspace.proxyforge.json --roles customer,support_admin --json
+node scripts/proxyforge-agent.mjs target-map-compare --project ./workspace.proxyforge.json --baseline hx-1 --candidate hx-1,hx-2 --json
+node scripts/proxyforge-agent.mjs automation-run --project ./workspace.proxyforge.json --workflow wf-nightly --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs automation-scheduler-tick --project ./workspace.proxyforge.json --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs automation-ci-export --project ./workspace.proxyforge.json --workflow wf-nightly --provider github-actions,gitlab-ci,azure-pipelines,jenkins --json
+node scripts/proxyforge-agent.mjs automation-service-plan --project ./workspace.proxyforge.json --workflow wf-nightly --out ./artifacts/automation-service-lifecycle.json --json
+node scripts/proxyforge-agent.mjs automation-service-smoke --project ./workspace.proxyforge.json --workflow wf-nightly --service-dir ./.gitignored/automation-service-smoke --execute --json
+node scripts/proxyforge-agent.mjs crawl-run --target https://app.example.test --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs view --project ./workspace.proxyforge.json --request-id hx-1 --mode raw --json
+node scripts/proxyforge-agent.mjs replay-run --project ./workspace.proxyforge.json --request-id hx-1 --redirect follow --connection keep-alive --timeout 10000 --execute --json
+node scripts/proxyforge-agent.mjs replay-matrix --project ./workspace.proxyforge.json --request-id hx-1 --roles customer,support_admin --redirect manual --json
+node scripts/proxyforge-agent.mjs bulk-replay --project ./workspace.proxyforge.json --scope app.example.test --limit 50 --concurrency 5 --soak --execute --json
+node scripts/proxyforge-agent.mjs live-target-profile --manifest ./live-targets.json --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs intruder-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --payloads customer,support_admin --concurrency 3 --soak --execute --json
+node scripts/proxyforge-agent.mjs repeater-desync-plan --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --json
+node scripts/proxyforge-agent.mjs repeater-desync-probe --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs repeater-race-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --count 12 --sync single-packet --soak --min-requests 12 --max-release-skew-ms 100 --execute --json
+node scripts/proxyforge-agent.mjs insertion-points --project ./workspace.proxyforge.json --request-id hx-1 --out ./artifacts/insertion-points.json --json
+node scripts/proxyforge-agent.mjs websocket-list --project ./workspace.proxyforge.json --connection-id ws-conn-1 --json
+node scripts/proxyforge-agent.mjs websocket-replay --project ./workspace.proxyforge.json --frame-id ws-1 --scope app.example.test --execute --json
+node scripts/proxyforge-agent.mjs websocket-fuzz --project ./workspace.proxyforge.json --frame-id ws-1 --scope app.example.test --max-probes 6 --execute --json
+node scripts/proxyforge-agent.mjs websocket-transcript-export --project ./workspace.proxyforge.json --connection-id ws-conn-1 --format markdown --out ./artifacts/websocket-transcript.md --json
+node scripts/proxyforge-agent.mjs scanner-run --project ./workspace.proxyforge.json --request-id hx-1 --scope app.example.test --check-pack full-active --max-requests 13 --execute --soak --min-requests 13 --json
+node scripts/proxyforge-agent.mjs scanner-retest --project ./workspace.proxyforge.json --issue issue-1 --request-id hx-1 --retest-id hx-2 --json
+node scripts/proxyforge-agent.mjs scanner-evidence-export --project ./workspace.proxyforge.json --issue issue-1 --request-id hx-1 --out ./artifacts/scanner-evidence.json --json
+node scripts/proxyforge-agent.mjs scanner-oast-promote --project ./workspace.proxyforge.json --workspace ./callbacks.json --request-id hx-1 --payload-id cb-1 --interaction-id int-1 --out ./artifacts/scanner-oast-issue.json --json
+node scripts/proxyforge-agent.mjs anvil-plan --project ./workspace.proxyforge.json --request-id hx-1 --json
+node scripts/proxyforge-agent.mjs anvil-run --project ./workspace.proxyforge.json --request-id hx-1 --execute --json
+node scripts/proxyforge-agent.mjs anvil-package-export --project ./workspace.proxyforge.json --request-id hx-1 --out ./artifacts/anvil-package.json --json
+node scripts/proxyforge-agent.mjs callback-poll --workspace ./callbacks.json --json
+node scripts/proxyforge-agent.mjs callback-provider-probe --providers ./oast-providers.json --scope callbacks.app.example.test --execute --json
+node scripts/proxyforge-agent.mjs callback-relay-plan --workspace ./callbacks.json --public-base callbacks.app.example.test --json
+node scripts/proxyforge-agent.mjs callback-relay-soak --workspace ./callbacks.json --public-base callbacks.app.example.test --json
+node scripts/proxyforge-agent.mjs callback-retention-prune --workspace ./callbacks.json --retention-hours 72 --json
+node scripts/proxyforge-agent.mjs extension-fixtures --project ./workspace.proxyforge.json --manifest ./extension.json --request-id hx-1 --json
+node scripts/proxyforge-agent.mjs exploit-preview --project ./workspace.proxyforge.json --request-id hx-1 --template manual-validation --json</code></pre></div>
+<h2 id="output-handling">Output Handling<a class="anchor" href="#output-handling" aria-label="Permanent link to Output Handling">#</a></h2>
+<ul><li>Prefer <code>data</code>, <code>artifacts</code>, and <code>audit</code> fields over raw transcript text.</li><li>For persistent MITM work, use <code>mitm-start --ensure-ca --upstream-tls strict|relaxed</code> in a managed terminal and poll <code>mitm-status</code>/<code>mitm-export</code> instead of rereading raw proxy logs. Preserve the returned project-CA fingerprint, root certificate path, upstream TLS mode, and full-fidelity JSONL path.</li><li>For large projects, use <code>search-index --soak</code> to persist a full-fidelity semantic index, capture scale evidence, and reuse artifact paths across agent turns.</li><li>For authorized semantic providers, use <code>search-index --provider-url --execute</code> and preserve <code>proxyforge-agent-search-live-provider-invocation-package</code>, raw provider traffic, provider credentials, and full corpus documents until report export.</li><li>For token review, use <code>sequencer-analyze --soak</code> and keep full samples, reliability level, statistical test details, and soak budgets in the handoff.</li><li>For selected-message decoding, use <code>decoder-chain</code> and keep each transform step, final output, package digest, and full operational token/key/cookie material intact until reporting.</li><li>For gathering, import existing proxy JSONL, HAR, legacy proxy XML history, raw HTTP text archives, or ProxyForge project logs with <code>proxy-import</code>, build candidates with <code>content-discovery-plan</code>, execute bounded path probes with <code>content-discovery-run --execute --soak</code>, and execute bounded crawls through <code>crawl-run --execute</code>. Preserve imported headers, cookies, tokens, API keys, and raw request/response bodies as executor material until report export.</li><li>For Project Store v2 durability, run <code>project-store-status</code> to inspect recovery state, <code>project-store-recover</code> to replay pending capture journals, and <code>project-store-backup --execute</code> to create restore points. Keep sample raw exchanges, recovery reports, and restore manifests full fidelity until report export.</li><li>For crawl-derived Scanner audit work, preserve <code>proxyforge-crawl-audit-insertion-evidence-package</code> fields for query/form/path coverage, duplicate merges, out-of-scope skips, active Scanner handoff, raw probe samples, operational secret signals, and report-export-only redaction.</li><li>For authorization triage, use <code>target-access-review</code> to get role lanes and route decisions from scoped history before deciding which Repeater matrix or Scanner authz-diff commands need execution.</li><li>For target drift, use <code>target-map-compare</code> to package baseline/candidate route additions, removals, status/MIME/method/host changes, parameter changes, and authz-sensitive deltas before promoting Target parity evidence.</li><li>For automations, use <code>automation-list</code> to inspect workflow ids, <code>automation-run --execute</code> for scoped macro or on-tag runs, <code>automation-scheduler-tick --execute</code> for scheduler service work, <code>automation-parity-export</code> for proof packages, <code>automation-service-plan</code> for Linux systemd user plus Windows Task Scheduler lifecycle plans, and <code>automation-service-smoke --execute</code> for installed-host start/status/stop scheduler smoke. Keep approval-block receipts, leases, CI configs, service manifests, status files, JSONL logs, and operational raw material intact until report export.</li><li>Treat operational outputs as sensitive because they preserve execution tokens, cookies, keys, headers, callbacks, and raw traffic until report export.</li><li>Never infer execution from a planned result. Planned commands are dry and send no traffic.</li><li>For transport-sensitive replay, keep redirect mode, max redirects, connection mode, timeout, final URL, redirect history, and timeout errors in the handoff.</li><li>For bulk replay work, preserve <code>data.summary</code>, <code>data.soakPackage</code>, retained results, and the <code>maxInFlight</code>/request-rate evidence before summarizing parity status.</li><li>For live target profiling, preserve <code>proxyforge-agent-live-target-profile-package</code>, scoped raw requests/responses, status-class diversity, Scanner candidates, Intruder marked raw requests, bearer tokens, cookies, and API keys until report export.</li><li>For Intruder work, preserve <code>data.plan.attackModeMatrix</code>, <code>payloadTransformations</code>, <code>data.summary.streaming</code>, <code>data.soakPackage</code>, retained raw results, grep/extract matches, and the exact command flags used for attack mode, processors, rules, payload counts, caps, and concurrency.</li><li>For desync/race work, preserve <code>data.plan.parserDifferential</code> from the dry plan, then preserve <code>data.result.rawTranscript</code>, <code>responseOrder</code>, <code>releaseSkewMs</code>, <code>jitterMs</code>, <code>data.soakPackage</code>, and <code>safety.gates</code> in notes back to the operator.</li><li>For Scanner/Intruder prep from raw history, run <code>insertion-points</code> and keep the extracted query, path, header, cookie, form, JSON, XML, multipart, and GraphQL candidates with full operational tokens/keys/cookies intact until reporting.</li><li>For WebSocket work, use <code>websocket-list</code> first, then <code>websocket-replay --execute</code> or <code>websocket-fuzz --execute</code> only with scope. Keep selected frame ids, handshake proof, received frames, fuzz outcomes, transcript exports, and full text/binary payload material intact until reporting.</li><li>For Scanner check-pack work, preserve supported/unsupported check accounting, all built-in check coverage, scope/rate/cap gates, authz comparison legs, raw probe samples, operational secret signals, and report-export-only redaction from <code>proxyforge-active-scan-check-pack-evidence-package</code> when present.</li><li>Use <code>status.data.scannerCatalog</code> to choose a check pack. <code>--check-pack input-attacks</code> covers reflected XSS, SQL injection, path traversal, open redirect, and command injection; <code>--check-pack full-active --max-requests 13</code> covers every built-in active Scanner family.</li><li>For scanner work, preserve <code>data.calibrationPackage</code>, scanner tuning controls, suppressed findings, confidence reasons, and the full seed exchange before summarizing issue confidence.</li><li>For Scanner retests, preserve <code>proxyforge-scanner-retest-evidence-delta-package</code> fields from <code>scanner-retest</code> or <code>scanner-evidence-export</code>: issue link, baseline proof, retest proof, request edits, fixed/regressed/still-vulnerable/inconclusive coverage, raw samples, and operational secret signals until report export.</li><li>For active Scanner evidence packages, preserve the plan/review/matrix/replay ids, CI command, report attachment manifest, active/suppressed finding status, raw exchange samples, and <code>secretHandling</code>; redaction happens only when a report command exports submission material.</li><li>For Scanner OAST callbacks, use <code>scanner-oast-promote</code> to bind the source exchange, scanner probe, callback payload, observed interaction, issue draft, and retest commands. Keep the raw token/cookie/callback material intact until report export.</li><li>For Anvil custom scan checks, use <code>anvil-plan</code>, then <code>anvil-run --execute</code>, then <code>anvil-package-export</code> when an artifact is needed. Preserve <code>.anvil</code> source, reusable library content, positive/negative fixtures, validation, custom-only headless evidence, signed package review, Scanner/Reports handoff, raw samples, and operational secret signals until report export.</li><li>For extension work, use <code>extension-fixtures</code> to capture legacy proxy-compatible <code>IHttpListener</code>, <code>IScannerCheck</code>, <code>IMessageEditorTab</code>, helper transforms, multi-message context menus, session token refresh, insertion points, package-refresh metadata, and policy-denied callback evidence before assuming migrated extension parity.</li><li>For OAST work, preserve <code>callback-provider-probe</code> provider host proof fields, signed poll raw requests/responses, provider bearer tokens, <code>callback-relay-plan</code> DNS/routes/secret-storage fields, <code>callback-relay-soak</code> raw relay/report-import evidence, and <code>callback-retention-prune</code> expired ids plus raw pruned interactions until a report command redacts submission output.</li><li>When reporting uncertainty, include the ProxyForge command and <code>schemaVersion</code> used.</li><li>For exploit work, distinguish preview, dry-run, queued approved execution, and completed backend evidence.</li></ul>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="agent-codex.html"><span>Previous</span>Codex Agent</a><a class="pager-link pager-next" href="agent-vantix.html"><span>Next</span>Vantix Agent</a></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#suggested-sequence">Suggested Sequence</a></li><li class="toc-level-2"><a href="#output-handling">Output Handling</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>

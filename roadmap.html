@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Roadmap - ProxyForge Docs</title>
+  <meta name="description" content="ProxyForge 0.1.0-alpha.1 public alpha documentation.">
+  <meta name="theme-color" content="#1a1d21">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Roadmap - ProxyForge Docs">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
+  <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/roadmap.html">
+  <link rel="icon" href="./assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="./assets/favicon-256.png">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header class="topbar">
+    <nav class="topbar-inner" aria-label="Header">
+      <a class="brand" href="./" aria-label="ProxyForge home">
+        <img src="./assets/favicon-64.png" alt="">
+        <span>ProxyForge</span>
+      </a>
+      <label class="search-label" for="doc-search">
+        <span>Search</span>
+        <input id="doc-search" type="search" placeholder="Filter docs" autocomplete="off">
+      </label>
+      <a class="repo" href="https://github.com/the-vibe-dev/proxyforge-public">the-vibe-dev/proxyforge-public</a>
+    </nav>
+    <nav class="tabs" aria-label="Documentation sections"><a href="./">Home</a><a href="release-notes.html">Release</a><a href="operator-guide.html">Operations</a><a href="modes-http3.html">Advanced Modes</a><a href="agent-codex.html">Agents</a><a aria-current="page" href="security.html">Trust</a></nav>
+  </header>
+  <main class="layout">
+    <aside class="sidebar" aria-label="Documentation navigation">
+      <div class="sidebar-title">
+        <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
+      </div>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a aria-current="page" href="roadmap.html">Roadmap</a></div></nav>
+    </aside>
+    <article class="doc" id="content">
+      <header class="doc-header">
+  <p class="source"><a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/docs/PROXY_FORGE_ROADMAP.md">docs/PROXY_FORGE_ROADMAP.md</a></p>
+  <h1>Roadmap</h1>
+</header>
+      <h1 id="proxy-forge-roadmap">Proxy Forge Roadmap<a class="anchor" href="#proxy-forge-roadmap" aria-label="Permanent link to Proxy Forge Roadmap">#</a></h1>
+<p><strong>Date:</strong> 2026-05-26 <strong>Companion:</strong> <code>PROXY_FORGE_MASTER_PLAN.md</code> (architecture, file map, acceptance gates).</p>
+<p>This document is the <strong>time-ordered execution view</strong> of the master plan: phases, weekly cadence, PR sequence, backlog by priority, and per-phase deliverables. It does not redefine architecture — for that, read the master plan.</p>
+<hr>
+<h2 id="status-tracking">Status tracking<a class="anchor" href="#status-tracking" aria-label="Permanent link to Status tracking">#</a></h2>
+<p><em>Updated 2026-06-20. Roadmap phases 0–19 are complete as an in-repo alpha source cut. Native Linux/Windows artifact receipts remain a release-execution requirement for public installer distribution.</em></p>
+<div class="table-wrap"><table><thead><tr><th>Phase</th><th>Status</th><th>Started</th><th>Done</th><th>Gate</th><th>Notes</th></tr></thead><tbody><tr><td>0</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>—</td><td>Guardrails landed; <code>no-vantix-runtime-dependency</code> + <code>release-package-excludes-source-reference</code> pass</td></tr><tr><td>1</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G1</td><td>Scanner primitives: payload engine, oracle classifier, probe matrix, 7 families + check packs</td></tr><tr><td>2</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G5</td><td>Traffic Tier 1: flow filter DSL, 9 rule types, HAR export, cut/extract</td></tr><tr><td>3</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>—</td><td>Scanner UI workspace backend wired; scanner-active-scan-engine test passes</td></tr><tr><td>3b</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G3c</td><td>Contexts, auth methods (8 types), users/Forced User, custom pages, anti-CSRF, Modes, Replacer, policies, conditional breakpoints</td></tr><tr><td>4</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G2</td><td>Scanner depth: 4a–4i sub-phases; ≥90 active + ≥70 passive check IDs; CVE/named families; passive posture rules</td></tr><tr><td>5</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G6</td><td>Alternate proxy modes: SOCKS5, reverse listener, DNS proxy</td></tr><tr><td>6</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>—</td><td>Exploit Lab: all 14 verifier templates + 3 shared helpers; grpcSequence + multiStepChain added in this session</td></tr><tr><td>7</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G7+G8</td><td>HTTP/2 transport + ALPN + frame editor; streaming spool + SSE capture</td></tr><tr><td>8</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G9</td><td>Playback: client bulk-replay + server fake-upstream + matcher</td></tr><tr><td>9</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G10</td><td>Content views: 10 registered views (multipart, zip, CSS, MQTT, SocketIO, WBXML, DNS, GraphQL, SSE, protobuf)</td></tr><tr><td>10</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G3</td><td>Browser scan oracle: CDP/Playwright driver, DOM XSS, prototype pollution</td></tr><tr><td>10b</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G3b</td><td>Interactive DOM tracer: instrumentation, canary, sources/sinks panel, promote-to-issue</td></tr><tr><td>11</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>—</td><td>Param miner + content discovery + bundled wordlists</td></tr><tr><td>11b</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G16b</td><td>Spec import (OpenAPI/Postman/Insomnia/SOAP/OData/GraphQL/HAR) + Ajax/SPA spider</td></tr><tr><td>12</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G4</td><td>OAST provider profiles: callback registry, HMAC-signed tokens, provider guide</td></tr><tr><td>13</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>—</td><td>Skilllet metadata, skilllet mapper, recipe engine + evidence gates + 10 recipes</td></tr><tr><td>14</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G12</td><td>Extension SDK: typed declarations, helpers, manifest signing, 4 sample extensions</td></tr><tr><td>15</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G13</td><td>Project Store schema migrations: all new record types; crash recovery; snapshot roundtrip</td></tr><tr><td>16</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G14</td><td>Full-chain GUI + headless E2E; Playwright specs + headless runner</td></tr><tr><td>17</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G11</td><td>Optional side-cars: transparent (Linux), raw TCP/UDP, HTTP/3, WireGuard — smoke tests pass</td></tr><tr><td>18</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G15+G16+G17</td><td>Release hardening: renderer sandbox, IPC contracts, audit events, body caps, security regression suite, portable CI</td></tr><tr><td>18b</td><td>✓ Done</td><td>2026-05-26</td><td>2026-05-27</td><td>G15b</td><td>Headless API expansion: 6-language client generators, project SBOM (CycloneDX+SPDX), Stats counters, AI tools, open-project-folder</td></tr><tr><td>19</td><td>✓ Done</td><td>2026-06-20</td><td>2026-06-20</td><td>G6</td><td>Alpha source cut, release notes, hotfix process, tag target, and native artifact receipt workflow complete</td></tr></tbody></table></div>
+<hr>
+<h2 id="1-phase-summary">1. Phase summary<a class="anchor" href="#1-phase-summary" aria-label="Permanent link to 1. Phase summary">#</a></h2>
+<div class="highlight"><pre class="code-block"><code>Phase 0  Reset boundaries + standalone guardrails           1–2 days
+Phase 1  Scanner primitives (payload/oracle/matrix)         Week 1–2
+Phase 2  Traffic Tier 1 (filter DSL + rule packs + HAR/cut) Week 1     (parallel)
+Phase 3  Scanner UI workspace                               Week 1–2   (parallel)
+Phase 4  Scanner depth expansion (≥50 check IDs)            Week 3–8
+Phase 5  Alternate proxy modes (SOCKS5/reverse/DNS)         Week 2–3
+Phase 6  Exploit Lab verifier templates                     Week 5–7
+Phase 7  HTTP/2 + streaming                                 Week 4–5
+Phase 8  Playback (client + server)                         Week 6
+Phase 9  Content views                                      Week 7
+Phase 10 Browser scan oracle (DOM XSS, proto pollution)     Week 9–10
+Phase 11 Param miner + content discovery                    Week 11
+Phase 12 OAST provider profiles                             Week 12
+Phase 13 Skilllet metadata + automation recipes             Week 8–9
+Phase 14 Extension SDK + sample extensions                  Week 6–10  (parallel)
+Phase 15 Project Store schema migrations                    Week 10
+Phase 16 Full-chain GUI + headless E2E                      Week 11
+Phase 17 Optional native side-cars                          Week 8–12  (parallel)
+Phase 18 Release hardening + honest README                  Week 13–14
+Phase 19 Alpha cut                                           Week 15–16 (buffer)</code></pre></div>
+<p>Single-engineer realistic pace: <strong>4 months to alpha cut + 1 month buffer</strong>. Two engineers split (Track A / Track B): <strong>2.5 months</strong>. Three engineers (A / B / C split): <strong>2 months</strong>.</p>
+<hr>
+<h2 id="2-phase-0-reset-boundaries-standalone-guardrails">2. Phase 0 — Reset boundaries + standalone guardrails<a class="anchor" href="#2-phase-0-reset-boundaries-standalone-guardrails" aria-label="Permanent link to 2. Phase 0 — Reset boundaries + standalone guardrails">#</a></h2>
+<h3 id="goals">Goals<a class="anchor" href="#goals" aria-label="Permanent link to Goals">#</a></h3>
+<p>Lock in the architectural non-negotiables before any feature work so the rules can&#39;t drift.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files</th><th>Acceptance</th></tr></thead><tbody><tr><td>0.1</td><td>Vendor source-reference files</td><td><code>source-reference/vantix/</code></td><td>383 files, ~3.0 MB, README + mapping table present (curated subset — playbooks/skills/templates/scanner-engine/verifiers only). <strong>DONE.</strong></td></tr><tr><td>0.2</td><td>Gitignore the vendored dir</td><td><code>.gitignore</code></td><td><code>source-reference/</code> listed. <strong>DONE.</strong></td></tr><tr><td>0.3</td><td>Add no-runtime-dependency guard test</td><td><code>tests/no-vantix-runtime-dependency.mjs</code></td><td>Fails CI if <code>grep -R &quot;source-reference/vantix&quot;</code> finds runtime matches.</td></tr><tr><td>0.4</td><td>Add vendored-dir build exclusion verification</td><td><code>tests/release-package-excludes-source-reference.mjs</code></td><td>Confirms <code>package.json#build.files</code> does not ship the dir.</td></tr><tr><td>0.5</td><td>Feature matrix rewrite to honest states</td><td><code>docs/FEATURE_MATRIX.md</code></td><td>Every claim labelled <code>Backend</code>, <code>GUI-integrated</code>, <code>E2E-tested</code>, <code>Alpha</code>, or <code>Production</code> with a test ID.</td></tr><tr><td>0.6</td><td>README accuracy pass</td><td><code>README.md</code></td><td>Marketing prose ahead of code removed; claims cite test IDs.</td></tr><tr><td>0.7</td><td>Master plan + roadmap landed</td><td><code>planning/PROXY_FORGE_MASTER_PLAN.md</code>, <code>planning/PROXY_FORGE_ROADMAP.md</code></td><td>Both present and referenced from README. <strong>DONE.</strong></td></tr></tbody></table></div>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<ul><li>Zero runtime imports of vendored source.</li><li>Build artifacts do not contain <code>source-reference/</code>.</li><li>README and feature matrix have no claims that fail their cited test.</li></ul>
+<hr>
+<h2 id="3-phase-1-scanner-primitives-week-1-2">3. Phase 1 — Scanner primitives (Week 1–2)<a class="anchor" href="#3-phase-1-scanner-primitives-week-1-2" aria-label="Permanent link to 3. Phase 1 — Scanner primitives (Week 1–2)">#</a></h2>
+<h3 id="goals">Goals<a class="anchor" href="#goals" aria-label="Permanent link to Goals">#</a></h3>
+<p>Replace one-shot mutation + ad-hoc heuristics with a real evidence-driven scanner core.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th><th>Files (patch)</th></tr></thead><tbody><tr><td>1.1</td><td>Scanner type system</td><td><code>src/scanner/types.ts</code>, <code>src/scanner/activeCheckIds.ts</code></td><td><code>src/types.ts</code>, <code>electron/proxyEngine.ts</code>, <code>src/scannerActiveScanEngine.ts</code></td></tr><tr><td>1.2</td><td>Payload mutation engine</td><td><code>src/scanner/payloadMutationEngine.ts</code></td><td>—</td></tr><tr><td>1.3</td><td>Oracle response classifier</td><td><code>src/scanner/oracleResponseClassifier.ts</code>, <code>src/scanner/responseSignals.ts</code></td><td>—</td></tr><tr><td>1.4</td><td>Probe matrix runner</td><td><code>src/scanner/probePlanner.ts</code>, <code>src/scanner/probeRenderer.ts</code>, <code>src/scanner/probeMatrix.ts</code>, <code>src/scanner/evidenceMatrix.ts</code>, <code>src/scanner/findingBuilder.ts</code>, <code>src/scanner/safetyBudget.ts</code></td><td>—</td></tr><tr><td>1.5</td><td>Scanner runner glue</td><td><code>electron/scanner/activeScanRunner.ts</code>, <code>electron/scanner/oastPayloadBroker.ts</code></td><td><code>electron/proxyEngine.ts</code></td></tr><tr><td>1.6</td><td>Check pack registry + <code>vantix-core</code> default pack</td><td><code>src/scanner/checkRegistry.ts</code>, <code>src/scanner/checkPacks.ts</code></td><td>—</td></tr><tr><td>1.7</td><td>First 7 families (port from vendored source)</td><td><code>src/scanner/families/{sqlInjection,reflectedXss,xssOracle,ssti,pathTraversal,commandInjection,ssrf,openRedirect}.ts</code></td><td>—</td></tr><tr><td>1.7a</td><td>Per-family payload variant tables (≥6 variants each, context × encoding × scheme tricks)</td><td><code>src/scanner/families/payloads/{sqlInjection,reflectedXss,ssti,pathTraversal,commandInjection,ssrf,openRedirect}Payloads.ts</code></td><td>—</td></tr><tr><td>1.7b</td><td>Insertion-point iterator (walk real params on the exchange, not synthetic <code>pf_*</code> keys); retire single-payload <code>proxyEngine.ts</code> probes</td><td><code>src/scanner/insertionPointIterator.ts</code></td><td><code>electron/proxyEngine.ts</code> (delete <code>setProbeQueryParam</code> single-key shortcut)</td></tr><tr><td>1.8</td><td>Project Store persistence</td><td>—</td><td><code>electron/projectStore.ts</code></td></tr><tr><td>1.9</td><td>Headless CLI command</td><td>—</td><td><code>scripts/proxyforge-agent.mjs</code> (<code>scanner-run --check-pack vantix-core</code>)</td></tr></tbody></table></div>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/scanner-payload-mutation-engine.mjs
+tests/scanner-oracle-response-classifier.mjs
+tests/scanner-probe-renderer.mjs
+tests/scanner-evidence-matrix.mjs
+tests/scanner-vantix-core-fixture.mjs
+tests/project-store-scan-probe-matrix.mjs
+tests/scanner-payload-variants-per-family.mjs       # ≥6 variants/family asserted; no single-payload families allowed
+tests/scanner-insertion-point-iterator.mjs          # walks real query/body/header/cookie/JSON params, ignores synthetic
+tests/scanner-open-redirect-scheme-matrix.mjs       # javascript:/data:/protocol-relative/backslash/mixed-case all probed + flagged</code></pre></div>
+<h3 id="exit-gate-g1">Exit gate (G1)<a class="anchor" href="#exit-gate-g1" aria-label="Permanent link to Exit gate (G1)">#</a></h3>
+<ul><li><code>vantix-core</code> pack runs against a fixture app, persists matrix.</li><li>Confirmed findings for sqli/xss/ssti/path-traversal/command-injection/ssrf/open-redirect.</li><li>Negative evidence persists for non-matches.</li><li>Restart preserves scan state.</li><li><strong>Each family ships ≥6 payload variants</strong> spanning context (HTML body / attribute / JS string / CSS / URL), encoding (raw / url / double-url / html-entity / unicode), and scheme/path tricks (for <code>open-redirect</code>: <code>javascript:</code>, <code>data:</code>, protocol-relative <code>//evil</code>, backslash <code>\\evil</code>, mixed-case <code>JaVaScRiPt:</code>, whitespace-prefixed <code>%09javascript:</code>, absolute cross-origin). No family is allowed to ship with a single hard-coded payload.</li><li><strong>Active probes iterate insertion points</strong> — every observed query parameter, body field, JSON path, header, cookie. Probes must not inject into a synthetic param (<code>pf_xss=…</code>, <code>pf_id=…</code>, <code>next=…</code>) when a real one exists on the exchange. The legacy single-param probe path in <code>electron/proxyEngine.ts:5826–5849</code> is deleted in this phase.</li><li><strong><code>open-redirect</code> family</strong> alone proves the policy: walks all redirect-aliased params (<code>next</code>, <code>redirect</code>, <code>redirectUrl</code>, <code>redirect_uri</code>, <code>redirect_url</code>, <code>redirectTo</code>, <code>return</code>, <code>returnUrl</code>, <code>returnTo</code>, <code>continue</code>, <code>url</code>, <code>dest</code>, <code>destination</code>, <code>forward</code>, <code>forwardUrl</code>, <code>callback</code>, <code>callbackUrl</code>, <code>goto</code>, <code>target</code>, <code>targetUrl</code>, <code>redir</code>), tries all 7 scheme/path payload classes above, and asserts both <code>Location:</code> reflection and HTML-body <code>href=&quot;javascript:&quot;</code> reflection.</li></ul>
+<hr>
+<h2 id="4-phase-2-traffic-tier-1-week-1-parallel-with-phase-1">4. Phase 2 — Traffic Tier 1 (Week 1, parallel with Phase 1)<a class="anchor" href="#4-phase-2-traffic-tier-1-week-1-parallel-with-phase-1" aria-label="Permanent link to 4. Phase 2 — Traffic Tier 1 (Week 1, parallel with Phase 1)">#</a></h2>
+<h3 id="goals">Goals<a class="anchor" href="#goals" aria-label="Permanent link to Goals">#</a></h3>
+<p>Make the proxy feel useful for everyday operator work: filter expressions, rule packs, exports.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>2.1</td><td>Flow filter DSL parser + evaluator</td><td><code>electron/traffic/flowFilterParser.ts</code>, <code>electron/traffic/flowFilter.ts</code></td></tr><tr><td>2.2</td><td>Rule pack engine</td><td><code>electron/traffic/trafficRules.ts</code></td></tr><tr><td>2.3</td><td>Anticache + anticomp rules</td><td><code>electron/traffic/rules/anticache.ts</code>, <code>anticomp.ts</code></td></tr><tr><td>2.4</td><td>Blocklist + sticky cookie + sticky auth</td><td><code>electron/traffic/rules/{blocklist,stickyCookie,stickyAuth}.ts</code></td></tr><tr><td>2.5</td><td>Proxy auth + upstream auth</td><td><code>electron/traffic/rules/{proxyAuth,upstreamAuth}.ts</code></td></tr><tr><td>2.6</td><td>Map local + map remote</td><td><code>electron/traffic/rules/{mapLocal,mapRemote}.ts</code></td></tr><tr><td>2.7</td><td>Strip DNS HTTPS + update Alt-Svc</td><td><code>electron/traffic/rules/{stripDnsHttpsRecords,updateAltSvc}.ts</code></td></tr><tr><td>2.8</td><td>HAR export</td><td><code>electron/traffic/harExport.ts</code></td></tr><tr><td>2.9</td><td>Cut / field extraction</td><td><code>electron/traffic/cutExport.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/proxyEngine.ts</code> (rule hook points), <code>src/App.tsx</code> (Settings → Rule Packs, History filter bar), <code>electron/projectStore.ts</code> (rule packs + filter presets), <code>scripts/proxyforge-agent.mjs</code> (filter/export/rules), <code>src/types.ts</code>.</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/traffic-flow-filter.mjs
+tests/traffic-rules-anticache.mjs
+tests/traffic-rules-blocklist.mjs
+tests/traffic-rules-sticky.mjs
+tests/traffic-rules-maplocal.mjs
+tests/traffic-rules-proxyauth.mjs
+tests/traffic-rules-upstream-auth.mjs
+tests/traffic-har-export.mjs
+tests/traffic-cut-export.mjs</code></pre></div>
+<h3 id="exit-gate-g5">Exit gate (G5)<a class="anchor" href="#exit-gate-g5" aria-label="Permanent link to Exit gate (G5)">#</a></h3>
+<ul><li>Flow filter works in History, Logger, CLI export, rule pack matchers, scanner target selection.</li><li>HAR export validates against HAR 1.2 schema.</li><li>Every rule action annotates the affected exchange with rule ID + before/after.</li></ul>
+<hr>
+<h2 id="5-phase-3-scanner-ui-workspace-week-1-2-parallel">5. Phase 3 — Scanner UI workspace (Week 1–2, parallel)<a class="anchor" href="#5-phase-3-scanner-ui-workspace-week-1-2-parallel" aria-label="Permanent link to 5. Phase 3 — Scanner UI workspace (Week 1–2, parallel)">#</a></h2>
+<h3 id="goals">Goals<a class="anchor" href="#goals" aria-label="Permanent link to Goals">#</a></h3>
+<p>Make the new scanner primitives visible to operators immediately. Backend without UI does not count.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<ul><li>Scanner workspace shows: selected request, insertion points, check pack picker, payload matrix preview, expected proof requirements, request budget, throttle, live observation classes, OAST wait state, conclusion, promote-to-issue, send-to-Exploit-Lab.</li><li>Findings include <code>expectedProofSatisfied: true | false</code>.</li><li>Negative evidence shows reason + capped-run metadata.</li></ul>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/App.tsx</code> (or extracted <code>src/components/scanner/*.tsx</code>).</p>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<p>The scanner chain operates fully through the desktop GUI for the 7 Phase 1 families.</p>
+<hr>
+<h2 id="5b-phase-3b-contexts-auth-modes-anti-csrf-custom-pages-week-2-3-blocks-4b-and-10b">5b. Phase 3b — Contexts, Auth, Modes, Anti-CSRF, Custom Pages (Week 2–3, blocks 4b+ and 10b)<a class="anchor" href="#5b-phase-3b-contexts-auth-modes-anti-csrf-custom-pages-week-2-3-blocks-4b-and-10b" aria-label="Permanent link to 5b. Phase 3b — Contexts, Auth, Modes, Anti-CSRF, Custom Pages (Week 2–3, blocks 4b+ and 10b)">#</a></h2>
+<p>Every downstream surface that targets authenticated flows depends on these primitives. Land before Phase 4b (auth/session families) — without Contexts and the auth-method registry, 4b cannot reach the post-login surface deterministically.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>3b.1</td><td>Context engine + membership-by-pattern</td><td><code>src/contextEngine.ts</code></td></tr><tr><td>3b.2</td><td>Authentication method registry + 8 built-in types</td><td><code>src/authMethods/{index,formAuth,jsonAuth,postAuth,httpBasic,ntlmAuth,manualAuth,scriptAuth,totpAuth}.ts</code></td></tr><tr><td>3b.3</td><td>Multi-user per Context + Forced User mode</td><td><code>src/users/usersEngine.ts</code></td></tr><tr><td>3b.4</td><td>Custom Pages declarations per Context</td><td><code>src/customPages.ts</code></td></tr><tr><td>3b.5</td><td>Anti-CSRF token registry + pre-replay refresher</td><td><code>src/antiCsrf/{index,tokenRefresher}.ts</code></td></tr><tr><td>3b.6</td><td>Global Mode guard (Safe / Protected / Standard / Attack)</td><td><code>src/modes/index.ts</code></td></tr><tr><td>3b.7</td><td>Global Replacer rules (pre-flight rewrite)</td><td><code>src/replacer/index.ts</code></td></tr><tr><td>3b.8</td><td>Scanner policy registry (Threshold × Strength per rule)</td><td><code>src/scanner/policies/index.ts</code></td></tr><tr><td>3b.9</td><td>Conditional breakpoints (URL / method / header / body match)</td><td><code>electron/proxyEngine.ts</code> patch + <code>src/intercept/conditionalBreakpoints.ts</code></td></tr><tr><td>3b.10</td><td>Operator guide</td><td><code>docs/CONTEXT_GUIDE.md</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/scanner/activeScanRunner.ts</code>, <code>electron/repeaterReplay.ts</code>, <code>electron/intruderRunner.ts</code>, <code>electron/browserScanDriver.ts</code>, <code>electron/proxyEngine.ts</code> (intercept + scope checks consult Mode + Context).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/context-engine-membership.mjs
+tests/auth-form-login-roundtrip.mjs
+tests/auth-json-login-roundtrip.mjs
+tests/auth-script-multistep-fixture.mjs
+tests/totp-credential-cycle.mjs
+tests/forced-user-replay.mjs
+tests/anti-csrf-refresh-before-replay.mjs
+tests/custom-pages-suppress-404-false-positive.mjs
+tests/scanner-tech-exclusion-skips-irrelevant-family.mjs
+tests/global-mode-safe-blocks-active-scan.mjs
+tests/global-mode-protected-blocks-out-of-scope.mjs
+tests/policy-threshold-strength-applied-per-rule.mjs
+tests/conditional-breakpoint-url-method-header.mjs
+tests/replacer-global-rewrite-survives-scan.mjs</code></pre></div>
+<h3 id="exit-gate-g3c">Exit gate (G3c)<a class="anchor" href="#exit-gate-g3c" aria-label="Permanent link to Exit gate (G3c)">#</a></h3>
+<p>Two-Context project (public + authenticated) drives auth-aware scans cleanly. Repeater re-auths a stale session by replaying the Context&#39;s auth flow + a refreshed anti-CSRF token. Mode = Safe blocks every active probe across every subsystem; Mode = Protected blocks out-of-scope probes. A passive sweep with Custom Pages declared produces 0 false-positive 404 findings on the fixture.</p>
+<hr>
+<h2 id="6-phase-4-scanner-depth-expansion-week-3-8">6. Phase 4 — Scanner depth expansion (Week 3–8)<a class="anchor" href="#6-phase-4-scanner-depth-expansion-week-3-8" aria-label="Permanent link to 6. Phase 4 — Scanner depth expansion (Week 3–8)">#</a></h2>
+<h3 id="goals">Goals<a class="anchor" href="#goals" aria-label="Permanent link to Goals">#</a></h3>
+<p>Reach ≥90 active check IDs and ≥70 passive check IDs, organised into named packs that cover modern web injection, auth/session, cache + smuggling, deserialization + blind RCE, client-side, GraphQL + API, CVE / named families, and the full passive posture surface.</p>
+<h3 id="sub-phases">Sub-phases<a class="anchor" href="#sub-phases" aria-label="Permanent link to Sub-phases">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Week</th><th>Sub-phase</th><th>Check families added</th></tr></thead><tbody><tr><td>3</td><td>4a — modern web injection</td><td>xxe-file, xxe-oast, nosql-injection, xpath-injection, ldap-injection, expression-language-injection, csv-formula-injection</td></tr><tr><td>4</td><td>4b — auth/session</td><td>jwt-none-algorithm, jwt-weak-secret, jwt-key-confusion, session-fixation, csrf-heuristic, clickjacking, host-header-injection, crlf-header-injection, password-reset-token-leak</td></tr><tr><td>5</td><td>4c — cache + smuggling</td><td>request-smuggling-cl-te, request-smuggling-te-cl, request-smuggling-te-te, cache-poisoning-unkeyed-header, cache-poisoning-unkeyed-port, cache-deception, web-cache-key-discrepancy</td></tr><tr><td>6</td><td>4d — deserialization + blind RCE</td><td>deserialization-{java,php,dotnet,python,ruby}, ssti-blind-time, command-injection-blind-time, command-injection-blind-oast</td></tr><tr><td>7</td><td>4e — client-side (needs Phase 10 browser oracle)</td><td>dom-xss, dom-clobbering, prototype-pollution-{client,server}, postmessage-misconfig, cors-misconfig-credentialed</td></tr><tr><td>8</td><td>4f — GraphQL + API</td><td>graphql-{introspection,batching-abuse,alias-overload,introspection-disabled-bypass,field-suggestion-leak}, mass-assignment, api-versioning-mismatch, idor-{numeric,uuid-predictable}</td></tr><tr><td>8</td><td>4g — passive engine expansion (runs alongside 4f)</td><td>passive-reflected-xss, passive-reflected-redirect-param, passive-suspicious-redirect-scheme, passive-reflected-token, passive-jwt-in-url, passive-secret-in-response, passive-debug-endpoint, passive-stack-trace-leak, passive-software-version-banner, passive-error-disclosure, passive-cors-permissive-origin, passive-set-cookie-flags, passive-csp-missing-or-weak, passive-hsts-missing, passive-referrer-leak, passive-clickjacking-headers-missing</td></tr><tr><td>8</td><td>4h — CVE / named families (runs alongside 4f-4g)</td><td>shell-shock, heartbleed, log4-shell, spring4-shell, text4-shell, spring-actuator-rce-pivot, httpoxy, cloud-metadata-attack, same-origin-method-execution, http-parameter-pollution-client, http-parameter-pollution-server, http-parameter-override, get-for-post, big-redirect-response, http-insecure-methods, bypass-auth-verb, elmah-exposure, traceaxd-exposure, htaccess-exposure, env-file-exposure, hidden-file-sweep, source-code-disclosure-git, source-code-disclosure-svn, source-code-disclosure-webinf, backup-file-sweep, proxy-disclosure, saml-interaction-detected, insecure-jsf-viewstate, ssti-blind-oast, suspicious-input-transformation, open-mcp-server-detection, polyfillio-malicious-script, dns-spf-missing, cross-site-websocket-hijacking, file-upload-rules, web-cache-deception, http-header-injection, request-smuggling-h2-downgrade, relative-path-confusion, cookie-poisoning, user-controllable-charset, user-controllable-html-attribute, html-parameter-tampering, react4-shell, cve-403-bypass</td></tr><tr><td>8</td><td>4i — passive posture / signal rules (runs alongside 4g)</td><td>reflected-token-in-response, reflected-secret-in-response, jwt-in-url, jwt-in-browser-storage, sensitive-info-in-browser-storage, information-in-browser-storage, debug-endpoint, stack-trace-leak, software-version-banner, error-disclosure, source-maps-and-debug-artifacts, client-config-secret-like, api-docs-and-specs-exposure, well-known-and-metadata-files, tokens-and-secrets-in-urls, high-risk-param-names, internal-hosts-environment-hints, cors-posture-indicators, cache-privacy-posture, interesting-endpoint-patterns, credit-card-number-leak, iban-leak, hash-leak, email-leak, private-ip-leak, google-api-key-leak, aws-s3-url-leak, github-token-leak, java-stack-trace-leak, charset-mismatch, http-parameter-override-passive, cross-domain-js-source, untrusted-js-source, samesite-cookie-missing, loosely-scoped-cookie, cookie-poisoning-passive, mixed-content, http-to-https-form-post, blank-link-target, modern-web-app-detect, authentication-request-detect, session-handling-detect, verification-detect, timestamp-disclosure, hash-disclosure, base64-disclosure, suspicious-xml-comments, suspicious-html-comments, image-location-metadata, dangerous-js-function-usage, subresource-integrity-missing, cross-origin-resource-policy-missing, fetch-metadata-missing, referrer-policy-missing, anti-clickjacking-missing, x-content-type-options-missing, cache-control-missing, hsts-missing, backup-file-exposure, graphql-endpoint-detect, wsdl-detect, soap-action-detect, saml-interaction-detect, relative-path-confusion-passive, useragent-reflection</td></tr></tbody></table></div>
+<p>Each family file (template):</p>
+<div class="highlight"><pre class="code-block"><code>src/scanner/families/&lt;family&gt;.ts        # variants + classify + confirm
+tests/scanner-family-&lt;family&gt;.mjs       # fixture test
+src/data/scannerSkilllets.json          # metadata entry added</code></pre></div>
+<p>Passive engine extension lives in <code>src/scannerPassiveEngine.ts</code> (existing) with one fixture per new <code>ScannerPassiveCheckId</code>:</p>
+<div class="highlight"><pre class="code-block"><code>tests/scanner-passive-reflected-xss.mjs
+tests/scanner-passive-redirect-scheme.mjs
+tests/scanner-passive-reflected-token.mjs
+tests/scanner-passive-debug-endpoint.mjs
+tests/scanner-passive-error-disclosure.mjs</code></pre></div>
+<h3 id="exit-gate-g2">Exit gate (G2)<a class="anchor" href="#exit-gate-g2" aria-label="Permanent link to Exit gate (G2)">#</a></h3>
+<ul><li>≥90 <code>ActiveScanCheckId</code> values registered (50 core + 44 CVE/named/aux from 4h).</li><li>Every active ID has ≥1 passing fixture test.</li><li>Every active ID has a <code>scannerSkilllets.json</code> entry with proof requirements.</li><li>Passive engine grows from 8 → ≥70 <code>ScannerPassiveCheckId</code> values (8 baseline + 16 from 4g + 64 from 4i), each with a fixture test.</li><li>Passive <code>reflected-redirect-param</code> flags <code>?redirectUrl=javascript:</code>, <code>?next=//evil</code>, <code>?return=\\evil</code>, <code>?callback=data:</code> patterns without sending a probe.</li><li>Passive <code>software-version-banner</code>, <code>stack-trace-leak</code>, <code>error-disclosure</code>, <code>debug-endpoint</code>, <code>interesting-endpoint-patterns</code>, and <code>tokens-and-secrets-in-urls</code> each fire on their respective fixtures.</li></ul>
+<hr>
+<h2 id="7-phase-5-alternate-proxy-modes-week-2-3">7. Phase 5 — Alternate proxy modes (Week 2–3)<a class="anchor" href="#7-phase-5-alternate-proxy-modes-week-2-3" aria-label="Permanent link to 7. Phase 5 — Alternate proxy modes (Week 2–3)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>5.1</td><td>SOCKS5 inbound mode</td><td><code>electron/traffic/socksInbound.ts</code></td></tr><tr><td>5.2</td><td>Reverse listener mode</td><td><code>electron/traffic/reverseMode.ts</code></td></tr><tr><td>5.3</td><td>DNS proxy mode</td><td><code>electron/traffic/dnsProxy.ts</code>, <code>electron/traffic/dnsRecordRules.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/proxyEngine.ts</code> (mode dispatcher), <code>electron/main.ts</code> (lifecycle), <code>src/App.tsx</code> (mode selector + per-mode config), <code>electron/projectStore.ts</code> (mode + DNS records), <code>scripts/proxyforge-agent.mjs</code> (<code>--mode socks5|reverse|dns</code>).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/traffic-socks-inbound.mjs
+tests/traffic-reverse-mode.mjs
+tests/traffic-dns-proxy.mjs</code></pre></div>
+<h3 id="exit-gate-g6">Exit gate (G6)<a class="anchor" href="#exit-gate-g6" aria-label="Permanent link to Exit gate (G6)">#</a></h3>
+<p>Each mode passes end-to-end fixture tests. Mode persists in project file and restores on reopen.</p>
+<hr>
+<h2 id="8-phase-6-exploit-lab-verifier-templates-week-5-7">8. Phase 6 — Exploit Lab verifier templates (Week 5–7)<a class="anchor" href="#8-phase-6-exploit-lab-verifier-templates-week-5-7" aria-label="Permanent link to 8. Phase 6 — Exploit Lab verifier templates (Week 5–7)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<p>Port the 14 vendored verifiers as native TS templates, prioritised:</p>
+<div class="table-wrap"><table><thead><tr><th>Week</th><th>Templates</th></tr></thead><tbody><tr><td>5</td><td>oastCallback, webhookReplay, raceWindow, authzMatrix</td></tr><tr><td>6</td><td>cacheKeyDiff, fileUploadRoundtrip, websocketSequence, oauthFlow</td></tr><tr><td>7</td><td>mfaFlow, grpcSequence, modelOutputSink, redactionInvariant, artifactBoundary, multiStepChain</td></tr></tbody></table></div>
+<p>Files: one TS file per template under <code>src/exploitTemplates/</code> plus shared helpers (<code>verifierBase.ts</code>, <code>stateDiff.ts</code>, <code>sideEffectGuard.ts</code>, <code>browserVerifier.ts</code>).</p>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/exploitEngine.ts</code> (registry), <code>src/App.tsx</code> (template picker, run UI), <code>electron/projectStore.ts</code> (template runs), <code>scripts/proxyforge-agent.mjs</code> (<code>exploit-run --template &lt;id&gt;</code>).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<p>One <code>tests/exploit-template-&lt;id&gt;.mjs</code> per template plus <code>tests/exploit-template-project-store.mjs</code> and <code>tests/exploit-template-report-evidence.mjs</code>.</p>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<ul><li>Each template runs offline against Project Store evidence where possible.</li><li>Replay-required templates require explicit operator approval.</li><li>OAST-required templates link to OAST payload + interaction records.</li><li>Templates can promote findings to issues; report bundles include template metadata.</li></ul>
+<hr>
+<h2 id="9-phase-7-http-2-streaming-week-4-5">9. Phase 7 — HTTP/2 + streaming (Week 4–5)<a class="anchor" href="#9-phase-7-http-2-streaming-week-4-5" aria-label="Permanent link to 9. Phase 7 — HTTP/2 + streaming (Week 4–5)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>7.1</td><td>HTTP/2 transport</td><td><code>electron/traffic/http2Transport.ts</code></td></tr><tr><td>7.2</td><td>ALPN MITM negotiation</td><td><code>electron/traffic/http2Alpn.ts</code></td></tr><tr><td>7.3</td><td>Repeater frame editor</td><td><code>electron/traffic/http2FrameEditor.ts</code></td></tr><tr><td>7.4</td><td>Streaming capture</td><td><code>electron/traffic/streamingCapture.ts</code></td></tr><tr><td>7.5</td><td>Disk-backed body spool</td><td><code>electron/traffic/streamingSpool.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/proxyEngine.ts</code> (ALPN h2 in CONNECT MITM), <code>electron/certManager.ts</code> (H2 ALPN in per-host certs), <code>src/App.tsx</code> (Repeater H2 frame editor), <code>electron/projectStore.ts</code> (H2 streams + spool refs).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/traffic-http2-end-to-end.mjs
+tests/traffic-http2-frame-editor.mjs
+tests/traffic-streaming-sse.mjs
+tests/traffic-streaming-large-body.mjs</code></pre></div>
+<h3 id="exit-gate-g7-g8">Exit gate (G7 + G8)<a class="anchor" href="#exit-gate-g7-g8" aria-label="Permanent link to Exit gate (G7 + G8)">#</a></h3>
+<ul><li>H2-only origin (e.g. <code>nghttp2</code>) MITM with pseudo-header editing in Repeater.</li><li>30-minute SSE capture under 200 MB RSS, body spool reaches disk.</li></ul>
+<hr>
+<h2 id="10-phase-8-playback-week-6">10. Phase 8 — Playback (Week 6)<a class="anchor" href="#10-phase-8-playback-week-6" aria-label="Permanent link to 10. Phase 8 — Playback (Week 6)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>8.1</td><td>Client playback (bulk replay)</td><td><code>electron/traffic/playback.ts</code></td></tr><tr><td>8.2</td><td>Server playback (fake upstream)</td><td>(same file, separate exports)</td></tr><tr><td>8.3</td><td>Playback request matcher</td><td><code>electron/traffic/playbackMatcher.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/proxyEngine.ts</code> (playback hook), <code>src/App.tsx</code> (Playback workspace), <code>electron/projectStore.ts</code> (playback sessions), <code>scripts/proxyforge-agent.mjs</code> (<code>playback-client</code> / <code>playback-server</code>).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/traffic-playback-client.mjs
+tests/traffic-playback-server.mjs</code></pre></div>
+<h3 id="exit-gate-g9">Exit gate (G9)<a class="anchor" href="#exit-gate-g9" aria-label="Permanent link to Exit gate (G9)">#</a></h3>
+<ul><li>Replay a 100-flow project with scope + rate.</li><li>Serve a fake-upstream session for a regression demo.</li></ul>
+<hr>
+<h2 id="11-phase-9-content-views-week-7">11. Phase 9 — Content views (Week 7)<a class="anchor" href="#11-phase-9-content-views-week-7" aria-label="Permanent link to 11. Phase 9 — Content views (Week 7)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<p>Implement registered views: multipart, zip tree, CSS pretty, MQTT, SocketIO, WBXML, DNS pretty, GraphQL pretty, SSE, protobuf raw.</p>
+<h3 id="files">Files<a class="anchor" href="#files" aria-label="Permanent link to Files">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>electron/traffic/contentViews.ts
+electron/traffic/views/{multipart,zipTree,cssPretty,mqtt,socketio,wbxml,dnsPretty,graphqlPretty,sse,protobufRaw}.ts</code></pre></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/App.tsx</code> (Viewer renders selected view), <code>electron/projectStore.ts</code> (preferred view per content-type).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<p><code>tests/traffic-content-views.mjs</code> round-trips fixtures per view.</p>
+<h3 id="exit-gate-g10">Exit gate (G10)<a class="anchor" href="#exit-gate-g10" aria-label="Permanent link to Exit gate (G10)">#</a></h3>
+<p>Every view round-trips its fixture bytes without mutation. Renderer never loads huge blobs unbounded.</p>
+<hr>
+<h2 id="12-phase-10-browser-scan-oracle-week-9-10">12. Phase 10 — Browser scan oracle (Week 9–10)<a class="anchor" href="#12-phase-10-browser-scan-oracle-week-9-10" aria-label="Permanent link to 12. Phase 10 — Browser scan oracle (Week 9–10)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>10.1</td><td>CDP/Playwright orchestrator</td><td><code>electron/browserScanDriver.ts</code></td></tr><tr><td>10.2</td><td>Per-page sandbox worker</td><td><code>electron/browserScanWorker.ts</code></td></tr><tr><td>10.3</td><td>Scanner ↔ browser contract</td><td><code>src/scanner/browserOracle.ts</code></td></tr><tr><td>10.4</td><td>DOM XSS family</td><td><code>src/scanner/families/domXss.ts</code></td></tr><tr><td>10.5</td><td>DOM clobbering family</td><td><code>src/scanner/families/domClobbering.ts</code></td></tr><tr><td>10.6</td><td>Client prototype pollution</td><td><code>src/scanner/families/prototypePollutionClient.ts</code></td></tr><tr><td>10.7</td><td>postMessage misconfig</td><td><code>src/scanner/families/postmessageMisconfig.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/browserLauncher.ts</code> (headless scan mode), <code>electron/crawlEngine.ts</code> (browser-eligible insertion points), <code>src/App.tsx</code> (browser-required check checkbox + status), <code>electron/projectStore.ts</code> (DOM observations).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/browser-scan-driver.mjs
+tests/scanner-dom-xss-browser-fixture.mjs
+tests/scanner-proto-pollution-browser-fixture.mjs</code></pre></div>
+<h3 id="exit-gate-g3">Exit gate (G3)<a class="anchor" href="#exit-gate-g3" aria-label="Permanent link to Exit gate (G3)">#</a></h3>
+<p>DOM XSS + client-side prototype pollution confirmed by browser-observed alert/property mutation on SPA fixture.</p>
+<hr>
+<h2 id="12b-phase-10b-interactive-dom-source-sink-tracer-week-10-11">12b. Phase 10b — Interactive DOM source→sink tracer (Week 10–11)<a class="anchor" href="#12b-phase-10b-interactive-dom-source-sink-tracer-week-10-11" aria-label="Permanent link to 12b. Phase 10b — Interactive DOM source→sink tracer (Week 10–11)">#</a></h2>
+<p>Builds on the CDP/Playwright plumbing from Phase 10. Where 10 automates DOM XSS during crawl, <strong>10b</strong> adds the analyst-driven companion: live source/sink instrumentation, canary stamping, and a ProxyForge panel that surfaces the source→transformation→sink chain as the operator clicks through the managed browser.</p>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>10b.1</td><td>CDP attach + isolated-world setup</td><td><code>electron/domTracerDriver.ts</code></td></tr><tr><td>10b.2</td><td>Bundled instrumentation script (sources, sinks, taint hooks)</td><td><code>electron/domTracerInstrumentation.ts</code></td></tr><tr><td>10b.3</td><td>Tracer session/canary/event reducer</td><td><code>src/domTracerEngine.ts</code></td></tr><tr><td>10b.4</td><td>Sources timeline + sinks table + canary composer + flow graph</td><td><code>src/components/domTracer/{sourcesTimeline,sinksTable,canaryComposer,flowGraph}.tsx</code></td></tr><tr><td>10b.5</td><td>Sink + source registry with severity hints</td><td><code>src/data/domTracerSinks.ts</code></td></tr><tr><td>10b.6</td><td>Operator guide</td><td><code>docs/DOM_TRACER_GUIDE.md</code></td></tr><tr><td>10b.7</td><td>Promote-to-Scanner: trace + canary + transformation chain → Issue</td><td><code>src/scanner/domTracerPromotion.ts</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/browserLauncher.ts</code> (register tracer on in-scope managed-browser tabs only), <code>src/components/pfv2/screens/proxy.tsx</code> (Tracer tab next to History / Intercept / WebSockets), <code>electron/projectStore.ts</code> (persist tracer sessions, evidence-ready transcripts), <code>src/components/pfv2/screens/scanner.tsx</code> (accept tracer-promoted issues).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/dom-tracer-instrumentation.mjs        # instrumented page emits expected source/sink events
+tests/dom-tracer-canary-reflection.mjs      # canary lands at expected sink with recorded transformation
+tests/dom-tracer-fixture-spa.mjs            # location.hash → innerHTML SPA fixture, promoted to issue
+tests/dom-tracer-postmessage-fixture.mjs    # postMessage origin-wildcard sink flagged
+tests/dom-tracer-redirect-scheme.mjs        # `redirectUrl=javascript:...` source→sink chain captured
+tests/dom-tracer-scope-gating.mjs           # tracer refuses to attach to out-of-scope tabs</code></pre></div>
+<h3 id="exit-gate-g3b">Exit gate (G3b)<a class="anchor" href="#exit-gate-g3b" aria-label="Permanent link to Exit gate (G3b)">#</a></h3>
+<p>Live session against a managed-browser tab populates sources + sinks; a stamped canary is traced source → transformation → sink with the JS stack attached; the analyst promotes the trace into a Scanner issue with reflected payload, sink stack, and transformation chain as evidence; instrumentation refuses to attach to out-of-scope tabs.</p>
+<hr>
+<h2 id="13-phase-11-param-miner-content-discovery-week-11">13. Phase 11 — Param miner + content discovery (Week 11)<a class="anchor" href="#13-phase-11-param-miner-content-discovery-week-11" aria-label="Permanent link to 13. Phase 11 — Param miner + content discovery (Week 11)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>11.1</td><td>Content discovery engine</td><td><code>src/contentDiscoveryEngine.ts</code></td></tr><tr><td>11.2</td><td>Param miner engine</td><td><code>src/scanner/paramMinerEngine.ts</code></td></tr><tr><td>11.3</td><td>Bundled wordlists</td><td><code>src/data/wordlists/{common-paths,common-params,common-headers}.json</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/App.tsx</code> (discovery + miner workspaces), <code>scripts/proxyforge-agent.mjs</code> (<code>discover</code> / <code>mine</code> CLI commands), <code>electron/projectStore.ts</code> (discovery runs).</p>
+<hr>
+<h2 id="13b-phase-11b-api-spec-ingest-ajax-spa-spider-week-11-12">13b. Phase 11b — API spec ingest + Ajax/SPA spider (Week 11–12)<a class="anchor" href="#13b-phase-11b-api-spec-ingest-ajax-spa-spider-week-11-12" aria-label="Permanent link to 13b. Phase 11b — API spec ingest + Ajax/SPA spider (Week 11–12)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>11b.1</td><td>Spec import router + OpenAPI 3 / Swagger 2</td><td><code>src/specImport/{index,openApi}.ts</code></td></tr><tr><td>11b.2</td><td>Postman v2.1 collections</td><td><code>src/specImport/postman.ts</code></td></tr><tr><td>11b.3</td><td>Insomnia v4 collections</td><td><code>src/specImport/insomnia.ts</code></td></tr><tr><td>11b.4</td><td>SOAP WSDL 1.1 / 1.2</td><td><code>src/specImport/soapWsdl.ts</code></td></tr><tr><td>11b.5</td><td>OData $metadata</td><td><code>src/specImport/odata.ts</code></td></tr><tr><td>11b.6</td><td>GraphQL SDL + introspection JSON</td><td><code>src/specImport/graphqlSchema.ts</code></td></tr><tr><td>11b.7</td><td>Insertion-point extraction from spec</td><td><code>src/scanner/insertionPointsFromSpec.ts</code></td></tr><tr><td>11b.8</td><td>Import wizard UI</td><td><code>src/components/pfv2/screens/import/</code></td></tr><tr><td>11b.9</td><td>Ajax / SPA spider CDP driver</td><td><code>electron/spiders/ajaxSpiderDriver.ts</code></td></tr><tr><td>11b.10</td><td>Ajax spider heuristics + SPA-router patterns</td><td><code>electron/spiders/ajaxSpiderHeuristics.ts</code>, <code>src/data/spider/spaPatterns.json</code></td></tr><tr><td>11b.11</td><td>Passive link crawler refactor (carved out of <code>crawlEngine</code>)</td><td><code>src/spiders/passiveLinkCrawler.ts</code></td></tr><tr><td>11b.12</td><td>Ajax spider engine + sitemap merge</td><td><code>src/spiders/ajaxSpiderEngine.ts</code></td></tr></tbody></table></div>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/spec-import-openapi.mjs            # 12 routes, 47 params, 3 auth schemes extracted
+tests/spec-import-postman.mjs
+tests/spec-import-insomnia.mjs
+tests/spec-import-soap-wsdl.mjs
+tests/spec-import-odata.mjs
+tests/spec-import-graphql-schema.mjs
+tests/spider-ajax-react-router-fixture.mjs
+tests/spider-ajax-vue-router-fixture.mjs
+tests/spider-ajax-event-handlers-fixture.mjs
+tests/spider-ajax-rate-budget-respected.mjs</code></pre></div>
+<h3 id="exit-gate-g16b">Exit gate (G16b)<a class="anchor" href="#exit-gate-g16b" aria-label="Permanent link to Exit gate (G16b)">#</a></h3>
+<p>Each of the six supported spec formats imports a fixture and populates Target Map + insertion-point inventory + a ready-to-replay Repeater group. Ajax spider visits ≥80 % of routes the passive crawl misses on the React Router and Vue Router fixtures, and respects the per-project rate budget.</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/content-discovery-engine.mjs
+tests/scanner-param-miner.mjs</code></pre></div>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<p>Bounded run finds at least one hidden header param and one hidden path on fixture app. Custom wordlist import works.</p>
+<hr>
+<h2 id="14-phase-12-oast-provider-profiles-week-12">14. Phase 12 — OAST provider profiles (Week 12)<a class="anchor" href="#14-phase-12-oast-provider-profiles-week-12" aria-label="Permanent link to 14. Phase 12 — OAST provider profiles (Week 12)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>12.1</td><td>Provider registry</td><td><code>electron/callbackProviderRegistry.ts</code></td></tr><tr><td>12.2</td><td>Provider profile types</td><td><code>src/oastProviderProfile.ts</code></td></tr><tr><td>12.3</td><td>Operator guide</td><td><code>docs/OAST_PROVIDER_GUIDE.md</code></td></tr></tbody></table></div>
+<h3 id="acceptance">Acceptance<a class="anchor" href="#acceptance" aria-label="Permanent link to Acceptance">#</a></h3>
+<ul><li>BYO public listener documented (tunnel patterns).</li><li>Per-project HMAC-signed payload tokens.</li><li>Callback received via at least one third-party DNS + HTTP provider in test environment.</li></ul>
+<h3 id="exit-gate-g4">Exit gate (G4)<a class="anchor" href="#exit-gate-g4" aria-label="Permanent link to Exit gate (G4)">#</a></h3>
+<p>Callback received, signed, correlated to scan run, promoted to issue, exported in signed bundle, survives project close/reopen.</p>
+<hr>
+<h2 id="15-phase-13-skilllet-metadata-automation-recipes-week-8-9">15. Phase 13 — Skilllet metadata + automation recipes (Week 8–9)<a class="anchor" href="#15-phase-13-skilllet-metadata-automation-recipes-week-8-9" aria-label="Permanent link to 15. Phase 13 — Skilllet metadata + automation recipes (Week 8–9)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>13.1</td><td>Skilllet JSON extraction from vendored skilllets.py</td><td><code>src/data/scannerSkilllets.json</code></td></tr><tr><td>13.2</td><td>Skilllet mapper</td><td><code>src/scanner/skillletMapper.ts</code></td></tr><tr><td>13.3</td><td>Recipe schema + engine + evidence gates</td><td><code>src/automation/{playbookSchema,playbookRecipeEngine,playbookEvidenceGate,agentProtocol}.ts</code></td></tr><tr><td>13.4</td><td>First 10 recipes (port from vendored playbook YAMLs)</td><td><code>src/automation/recipes/{webPayloadFamilyValidation,ssrfCallbackValidation,apiAuthzMatrix,blindSqlOracleMatrix,fileUploadRoundtrip,websocketSequenceReview,graphqlSurfaceValidation,contentDiscoveryParamMining,identitySessionReview,proofPackCompletion}.ts</code></td></tr><tr><td>13.5</td><td>Bundled skill pack docs</td><td><code>src/data/skillPacks/*.md</code> (67 packs + 14 shared)</td></tr><tr><td>13.6</td><td>Capability ontology</td><td><code>src/data/capabilityOntology.json</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/automationEngine.ts</code> (registry + lifecycle), <code>src/App.tsx</code> (automation workspace + scanner help panel surfaces skill pack docs), <code>electron/projectStore.ts</code> (recipe runs + evidence gates), <code>scripts/proxyforge-agent.mjs</code> (<code>playbook-list/plan/run/export</code>).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/scanner-skilllet-metadata.mjs
+tests/scanner-skilllet-mapper.mjs
+tests/playbook-recipe-parser.mjs
+tests/playbook-recipe-run-fixture.mjs
+tests/playbook-evidence-gates.mjs
+tests/automation-recipes.mjs
+tests/headless-automation-recipes.mjs</code></pre></div>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<ul><li>Every scanner check has skilllet metadata.</li><li>At least 10 recipes parse and render.</li><li>At least 3 recipes execute against fixtures end-to-end.</li><li>Recipe runs survive project reopen.</li></ul>
+<hr>
+<h2 id="16-phase-14-extension-sdk-sample-extensions-week-6-10-parallel">16. Phase 14 — Extension SDK + sample extensions (Week 6–10, parallel)<a class="anchor" href="#16-phase-14-extension-sdk-sample-extensions-week-6-10-parallel" aria-label="Permanent link to 16. Phase 14 — Extension SDK + sample extensions (Week 6–10, parallel)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>14.1</td><td>Typed SDK declarations</td><td><code>src/extensions/sdk.d.ts</code></td></tr><tr><td>14.2</td><td>SDK helpers</td><td><code>src/extensions/sdkHelpers.ts</code></td></tr><tr><td>14.3</td><td>Manifest validation + signed package</td><td><code>src/extensions/manifest.ts</code></td></tr><tr><td>14.4</td><td>Sample extensions</td><td><code>src/extensions/sampleExtensions/{passive-secret-detector,header-injector,intruder-base64,custom-scan-check}/</code></td></tr><tr><td>14.5</td><td>Documentation</td><td><code>docs/EXTENSION_API.md</code></td></tr></tbody></table></div>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>src/extensionEngine.ts</code> adds hooks for <code>request</code>, <code>response</code>, <code>tls_clienthello</code>, <code>tcp_message</code>, <code>scan_check</code>, <code>editor_tab</code>, <code>intruder_payload_processor</code>, <code>repeater_action</code>, <code>scanner_passive</code>.</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/extension-sdk-contract.mjs
+tests/extension-signed-package.mjs
+tests/extension-sample-passive-secret.mjs
+tests/extension-sample-header-injector.mjs
+tests/extension-sample-intruder-base64.mjs
+tests/extension-sample-custom-scan-check.mjs</code></pre></div>
+<h3 id="exit-gate-g12">Exit gate (G12)<a class="anchor" href="#exit-gate-g12" aria-label="Permanent link to Exit gate (G12)">#</a></h3>
+<p>4 sample extensions load, manifest signatures verify, hooks fire, runtime policy enforced.</p>
+<hr>
+<h2 id="17-phase-15-project-store-schema-migrations-week-10">17. Phase 15 — Project Store schema migrations (Week 10)<a class="anchor" href="#17-phase-15-project-store-schema-migrations-week-10" aria-label="Permanent link to 17. Phase 15 — Project Store schema migrations (Week 10)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<p>Add records (full list in master plan §8.5). Categories:</p>
+<ul><li>Scanner: check packs, probe runs, variants, observations, evidence matrices, negative evidence.</li><li>Skill metadata.</li><li>Playbook: recipes, runs, steps, evidence gates.</li><li>Exploit template runs.</li><li>Traffic: rule packs, rule events, filter presets, HAR exports, cut exports, content view preferences, playback sessions, mode configs, DNS record rules.</li><li>Protocol: HTTP/2 streams, streaming spool refs.</li></ul>
+<h3 id="patches">Patches<a class="anchor" href="#patches" aria-label="Permanent link to Patches">#</a></h3>
+<p><code>electron/projectStore.ts</code> (migrations + serde), <code>electron/projectSnapshotEngine.ts</code> (snapshot test of all new tables).</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/project-store-migrations.mjs
+tests/project-store-snapshot-roundtrip.mjs
+tests/project-store-crash-recovery.mjs</code></pre></div>
+<h3 id="exit-gate-g13">Exit gate (G13)<a class="anchor" href="#exit-gate-g13" aria-label="Permanent link to Exit gate (G13)">#</a></h3>
+<p>Project export → fresh install → import preserves every new field. Crash recovery replays partial scanner/recipe runs.</p>
+<hr>
+<h2 id="18-phase-16-full-chain-gui-headless-e2e-week-11">18. Phase 16 — Full-chain GUI + headless E2E (Week 11)<a class="anchor" href="#18-phase-16-full-chain-gui-headless-e2e-week-11" aria-label="Permanent link to 18. Phase 16 — Full-chain GUI + headless E2E (Week 11)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<p>Playwright specs covering the full operator workflow on Linux + Windows package builds.</p>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/proxyforge-full-chain-scanner-core.spec.ts
+tests/proxyforge-full-chain-oast.spec.ts
+tests/proxyforge-full-chain-http2.spec.ts
+tests/proxyforge-full-chain-socks5.spec.ts
+tests/proxyforge-full-chain-reverse.spec.ts
+tests/proxyforge-full-chain-dns.spec.ts
+tests/proxyforge-full-chain-playback.spec.ts
+tests/proxyforge-full-chain-domxss-browser.spec.ts
+tests/proxyforge-full-chain-report-reopen.spec.ts
+tests/headless-full-chain-vantix-core.mjs
+tests/headless-full-chain-playbook.mjs</code></pre></div>
+<h3 id="exit-gate-g14">Exit gate (G14)<a class="anchor" href="#exit-gate-g14" aria-label="Permanent link to Exit gate (G14)">#</a></h3>
+<p>Each spec passes on Linux + Windows package builds.</p>
+<hr>
+<h2 id="19-phase-17-optional-native-side-cars-week-8-12-parallel">19. Phase 17 — Optional native side-cars (Week 8–12, parallel)<a class="anchor" href="#19-phase-17-optional-native-side-cars-week-8-12-parallel" aria-label="Permanent link to 19. Phase 17 — Optional native side-cars (Week 8–12, parallel)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<p>Each side-car is optional. Proxy Forge ships fine without any of them.</p>
+<div class="table-wrap"><table><thead><tr><th>Sub-phase</th><th>Side-car</th><th>Files</th></tr></thead><tbody><tr><td>17a</td><td>Transparent (Linux)</td><td><code>side-cars/transparent-linux/</code> (Rust), <code>electron/traffic/transparentMode.ts</code>, <code>docs/MODES_TRANSPARENT.md</code></td></tr><tr><td>17b</td><td>Raw TCP/UDP</td><td><code>electron/traffic/rawTcpUdp.ts</code> (pure Node — no side-car needed)</td></tr><tr><td>17c</td><td>HTTP/3 / QUIC</td><td><code>side-cars/quic/</code> (Rust + quiche), <code>electron/traffic/http3Transport.ts</code>, <code>docs/MODES_HTTP3.md</code></td></tr><tr><td>17d</td><td>WireGuard</td><td><code>side-cars/wireguard/</code> (Rust + boringtun), <code>electron/traffic/wireguardMode.ts</code>, <code>docs/MODES_WIREGUARD.md</code></td></tr></tbody></table></div>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<p>Gated on platform + side-car availability:</p>
+<div class="highlight"><pre class="code-block"><code>tests/traffic-transparent-linux.mjs
+tests/traffic-raw-tcp-udp.mjs
+tests/traffic-http3-end-to-end.mjs
+tests/traffic-wireguard.mjs</code></pre></div>
+<h3 id="exit-gate-g11">Exit gate (G11)<a class="anchor" href="#exit-gate-g11" aria-label="Permanent link to Exit gate (G11)">#</a></h3>
+<p>Each side-car has a passing smoke test on its supported platform. Build pipeline produces optional installer extras.</p>
+<hr>
+<h2 id="20-phase-18-release-hardening-honest-readme-week-13-14">20. Phase 18 — Release hardening + honest README (Week 13–14)<a class="anchor" href="#20-phase-18-release-hardening-honest-readme-week-13-14" aria-label="Permanent link to 20. Phase 18 — Release hardening + honest README (Week 13–14)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Patch</th></tr></thead><tbody><tr><td>18.1</td><td>Main renderer sandbox enabled</td><td><code>electron/main.ts</code>, <code>electron/preload.ts</code></td></tr><tr><td>18.2</td><td>All dangerous IPC behind contracts</td><td><code>electron/ipcContracts.ts</code></td></tr><tr><td>18.3</td><td>Runtime schema validation on IPC payloads</td><td><code>electron/ipcContracts.ts</code></td></tr><tr><td>18.4</td><td>Audit events for proxy/CA/cookies/scan/OAST/AI/exec/report/extension</td><td><code>electron/projectStore.ts</code>, related engines</td></tr><tr><td>18.5</td><td>Body/transcript caps everywhere</td><td>proxy, OAST, WebSocket, reports, AI handoff</td></tr><tr><td>18.6</td><td>Portable fast CI from source archive</td><td><code>tests/release-readiness.mjs</code>, <code>tests/ci-fast-suite.mjs</code></td></tr><tr><td>18.7</td><td>Playwright browser install/cache handling</td><td><code>scripts/release-smoke.mjs</code></td></tr><tr><td>18.8</td><td>Linux + Windows package smoke tests cover full chain</td><td><code>scripts/release-smoke.mjs</code></td></tr><tr><td>18.9</td><td>SBOM + checksums + release manifest</td><td><code>scripts/release-trust.mjs</code></td></tr><tr><td>18.10</td><td>Honest README + feature matrix accuracy</td><td><code>README.md</code>, <code>docs/FEATURE_MATRIX.md</code></td></tr><tr><td>18.11</td><td>Feature matrix lint</td><td><code>docs/FEATURE_MATRIX_LINT.mjs</code></td></tr><tr><td>18.12</td><td>Security regression suite</td><td><code>tests/security-regression-*.mjs</code></td></tr></tbody></table></div>
+<h3 id="security-regression-coverage">Security regression coverage<a class="anchor" href="#security-regression-coverage" aria-label="Permanent link to Security regression coverage">#</a></h3>
+<ul><li>Path traversal in maplocal/exports.</li><li>Archive zip-slip on HAR/bundle import.</li><li>IPC parameter validation rejects malformed payloads.</li><li>Side-car process boundary cannot escape sandbox env.</li><li>OAST signature verification rejects forged callbacks.</li><li>Body/transcript caps prevent runaway memory.</li><li>AI handoff redaction is applied at boundary.</li></ul>
+<h3 id="exit-gate-g15-g16-g17">Exit gate (G15 + G16 + G17)<a class="anchor" href="#exit-gate-g15-g16-g17" aria-label="Permanent link to Exit gate (G15 + G16 + G17)">#</a></h3>
+<ul><li>Renderer sandbox enabled (or narrowly excepted with passing test for the exception).</li><li>IPC schema-validated.</li><li>Security regression suite green.</li><li>README claim-to-test ratio: 1:1.</li><li><code>grep -R &quot;source-reference/vantix&quot;</code> returns no runtime matches.</li><li>Product builds and passes fast CI with <code>source-reference/vantix/</code> deleted.</li></ul>
+<hr>
+<h2 id="20b-phase-18b-headless-api-surface-expansion-week-13-15-parallel">20b. Phase 18b — Headless API surface expansion (Week 13–15, parallel)<a class="anchor" href="#20b-phase-18b-headless-api-surface-expansion-week-13-15-parallel" aria-label="Permanent link to 20b. Phase 18b — Headless API surface expansion (Week 13–15, parallel)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Files (new)</th></tr></thead><tbody><tr><td>18b.1</td><td>Headless API IR + generator registry</td><td><code>src/apiGenerators/index.ts</code></td></tr><tr><td>18b.2</td><td>Python client generator (sync + async, pydantic models)</td><td><code>src/apiGenerators/pythonGenerator.ts</code></td></tr><tr><td>18b.3</td><td>Node.js / TypeScript generator (ESM, co-emitted types)</td><td><code>src/apiGenerators/nodeJsGenerator.ts</code></td></tr><tr><td>18b.4</td><td>Java generator (Gradle module, records, jakarta.json)</td><td><code>src/apiGenerators/javaGenerator.ts</code></td></tr><tr><td>18b.5</td><td>Rust generator (serde + tokio)</td><td><code>src/apiGenerators/rustGenerator.ts</code></td></tr><tr><td>18b.6</td><td>Go generator (modules, encoding/json)</td><td><code>src/apiGenerators/goGenerator.ts</code></td></tr><tr><td>18b.7</td><td>PHP generator (PSR-4, guzzle)</td><td><code>src/apiGenerators/phpGenerator.ts</code></td></tr><tr><td>18b.8</td><td>Wiki / Markdown reference generator</td><td><code>src/apiGenerators/wikiGenerator.ts</code></td></tr><tr><td>18b.9</td><td>Project SBOM engine (CycloneDX + SPDX)</td><td><code>src/sbomEngine.ts</code>, <code>src/sbomFormats/{cyclonedx,spdx}.ts</code></td></tr><tr><td>18b.10</td><td>Global Stats counters + passive Stats rule</td><td><code>src/stats/{countersEngine,countersStore,passiveStatsRule}.ts</code></td></tr><tr><td>18b.11</td><td>AI agent SQL-over-traffic tool (read-only, sandboxed SELECT)</td><td><code>src/aiTools/capturedTrafficSql.ts</code></td></tr><tr><td>18b.12</td><td>AI agent managed-browser-drive tool (Mode + Context gated)</td><td><code>src/aiTools/managedBrowserDrive.ts</code></td></tr><tr><td>18b.13</td><td>AI tool registry + per-tool auth gate UI</td><td><code>src/aiTools/index.ts</code>, <code>src/components/pfv2/screens/remaining.tsx</code> patch</td></tr><tr><td>18b.14</td><td>Open-project-folder action</td><td><code>src/components/pfv2/screens/settings/openProjectFolder.tsx</code>, <code>electron/openProjectFolder.ts</code></td></tr></tbody></table></div>
+<h3 id="tests">Tests<a class="anchor" href="#tests" aria-label="Permanent link to Tests">#</a></h3>
+<div class="highlight"><pre class="code-block"><code>tests/api-client-python-smoke.mjs
+tests/api-client-nodejs-smoke.mjs
+tests/api-client-java-smoke.mjs
+tests/api-client-rust-smoke.mjs
+tests/api-client-go-smoke.mjs
+tests/api-client-php-smoke.mjs
+tests/sbom-cyclonedx-roundtrip.mjs
+tests/sbom-spdx-roundtrip.mjs
+tests/sbom-includes-evidence-references.mjs
+tests/stats-counter-decay.mjs
+tests/stats-rule-redirect-chain-finding.mjs
+tests/stats-rule-5xx-cluster-finding.mjs
+tests/ai-tool-traffic-sql-readonly.mjs
+tests/ai-tool-traffic-sql-injection-impossible.mjs
+tests/ai-tool-browser-drive-scope-gated.mjs
+tests/ai-tool-browser-drive-mode-safe-blocks.mjs
+tests/open-project-folder-whitelist-guard.mjs</code></pre></div>
+<h3 id="exit-gate-g15b">Exit gate (G15b)<a class="anchor" href="#exit-gate-g15b" aria-label="Permanent link to Exit gate (G15b)">#</a></h3>
+<ul><li>Six language stubs build + round-trip <code>proxy.start</code> + <code>history.query</code> + <code>report.export</code> against a fixture project.</li><li>CycloneDX + SPDX SBOM exports validate against the official validators and round-trip through a clean importer.</li><li>Stats rule fires findings on the 5xx-cluster and redirect-chain fixtures; counters survive project close/reopen.</li><li>Under Mode = Standard with an in-scope target, the AI agent answers a captured-traffic question using one parametrised SELECT; under Mode = Safe, the call is refused with an auditable reason. The AI managed-browser tool refuses to attach to out-of-scope tabs.</li></ul>
+<hr>
+<h2 id="21-phase-19-alpha-cut-week-15-16-buffer">21. Phase 19 — Alpha cut (Week 15–16, buffer)<a class="anchor" href="#21-phase-19-alpha-cut-week-15-16-buffer" aria-label="Permanent link to 21. Phase 19 — Alpha cut (Week 15–16, buffer)">#</a></h2>
+<h3 id="tasks">Tasks<a class="anchor" href="#tasks" aria-label="Permanent link to Tasks">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th></tr></thead><tbody><tr><td>19.1</td><td>Tag <code>v0.x-alpha</code></td><td><code>v0.1.0-alpha.1</code></td><td><strong>READY.</strong> Create on the release commit after CI receipts are clean.</td></tr><tr><td>19.2</td><td>Signed packages (Linux .deb + AppImage, Windows .exe NSIS + portable)</td><td>Native artifact matrix + release-smoke receipts</td><td><strong>DONE as release workflow.</strong> Public distribution still requires artifact receipts for the exact release commit and optional operator signing credentials.</td></tr><tr><td>19.3</td><td>Release notes citing every G1-G17 gate result</td><td><code>docs/RELEASE_NOTES_v0.1.0-alpha.1.md</code></td><td><strong>DONE.</strong></td></tr><tr><td>19.4</td><td>Public README rewrite for alpha audience</td><td><code>README.md</code></td><td><strong>DONE.</strong></td></tr><tr><td>19.5</td><td>Alpha announcement</td><td>Release notes + README release summary</td><td><strong>DONE as committed announcement copy.</strong></td></tr><tr><td>19.6</td><td>Bug-bash window (1 week)</td><td>Release notes + hotfix process</td><td><strong>DONE as release operating process.</strong></td></tr><tr><td>19.7</td><td>Hotfix process documented</td><td><code>docs/HOTFIX_PROCESS.md</code></td><td><strong>DONE.</strong></td></tr></tbody></table></div>
+<h3 id="exit-gate">Exit gate<a class="anchor" href="#exit-gate" aria-label="Permanent link to Exit gate">#</a></h3>
+<p>All §3 checklists in the master plan fully <code>[x]</code>. All G1-G17 gates have source evidence and release notes. Packaged binaries must pass smoke tests on clean Linux + Windows machines through the native artifact matrix before broad public distribution.</p>
+<hr>
+<h2 id="22-pr-sequencing-numbered-execution-order">22. PR sequencing (numbered execution order)<a class="anchor" href="#22-pr-sequencing-numbered-execution-order" aria-label="Permanent link to 22. PR sequencing (numbered execution order)">#</a></h2>
+<div class="highlight"><pre class="code-block"><code>PR  1 — Scanner primitives part 1: types + payload engine + oracle classifier  (Phase 1.1–1.3)
+PR  2 — Scanner primitives part 2: probe matrix + finding builder              (Phase 1.4)
+PR  3 — Scanner primitives part 3: runner + first 7 families + check pack      (Phase 1.5–1.7)
+PR  3b — Per-family payload variant tables + insertion-point iterator + delete  (Phase 1.7a–1.7b)
+         single-payload `proxyEngine.ts` probes
+PR  4 — Scanner UI workspace                                                   (Phase 3)
+PR  4b — Contexts + auth methods + users + custom pages + anti-CSRF + Modes    (Phase 3b)
+         + global Replacer + scanner policies + conditional breakpoints
+PR  5 — Project Store scanner schema                                           (Phase 1.8 + 15 first slice)
+PR  6 — Flow filter DSL                                                        (Phase 2.1)
+PR  7 — Rule pack engine + 11 rule types                                       (Phase 2.2–2.7)
+PR  8 — HAR export + cut/extract                                               (Phase 2.8–2.9)
+PR  9 — Modern web injection families (4a)                                     (Phase 4a)
+PR 10 — SOCKS5 mode                                                            (Phase 5.1)
+PR 11 — Reverse mode                                                           (Phase 5.2)
+PR 12 — DNS proxy mode                                                         (Phase 5.3)
+PR 13 — Auth/session check families (4b)                                       (Phase 4b)
+PR 14 — Exploit Lab oastCallback + webhookReplay templates                     (Phase 6 first slice)
+PR 15 — HTTP/2 transport                                                       (Phase 7.1–7.2)
+PR 16 — HTTP/2 Repeater frame editor                                           (Phase 7.3)
+PR 17 — Cache + smuggling families (4c)                                        (Phase 4c)
+PR 18 — Streaming bodies + spool                                               (Phase 7.4–7.5)
+PR 19 — Playback (client + server)                                             (Phase 8)
+PR 20 — Deserialization + blind RCE families (4d)                              (Phase 4d)
+PR 21 — Browser scan driver + worker                                           (Phase 10.1–10.3)
+PR 22 — DOM XSS + proto pollution families (4e)                                (Phase 4e + Phase 10.4–10.7)
+PR 22b — Interactive DOM tracer (driver, instrumentation, panel, promotion)    (Phase 10b)
+PR 23 — Content views                                                          (Phase 9)
+PR 24 — GraphQL + API families (4f)                                            (Phase 4f)
+PR 24b — Passive engine expansion (16 new passive check IDs + fixtures)        (Phase 4g)
+PR 24c — CVE / named active families (44 new IDs + fixtures)                   (Phase 4h)
+PR 24d — Passive posture rule expansion (~64 new IDs + fixtures)               (Phase 4i)
+PR 25 — Exploit Lab raceWindow + authzMatrix + cacheKeyDiff + fileUpload       (Phase 6 second slice)
+PR 26 — Exploit Lab websocketSequence + oauthFlow + mfaFlow + grpcSequence     (Phase 6 third slice)
+PR 27 — Exploit Lab remaining templates                                        (Phase 6 fourth slice)
+PR 28 — Param miner + content discovery + wordlists                            (Phase 11)
+PR 28b — Spec import (OpenAPI/Postman/Insomnia/SOAP/OData/GraphQL) +           (Phase 11b)
+         Ajax/SPA spider + sitemap merge
+PR 29 — Extension SDK + 4 sample extensions                                    (Phase 14)
+PR 30 — Skilllet metadata + UI surfacing                                       (Phase 13.1–13.2 + 13.5–13.6)
+PR 31 — Recipe engine + first 5 recipes                                        (Phase 13.3–13.4 first half)
+PR 32 — Remaining 5 recipes                                                    (Phase 13.4 second half)
+PR 33 — OAST provider profiles + signed tokens                                 (Phase 12)
+PR 34 — Project Store migrations (remaining tables)                            (Phase 15)
+PR 35 — Side-car: transparent (Linux)                                          (Phase 17a)
+PR 36 — Side-car: raw TCP/UDP                                                  (Phase 17b)
+PR 37 — Side-car: HTTP/3                                                       (Phase 17c)
+PR 38 — Side-car: WireGuard                                                    (Phase 17d)
+PR 39 — Full-chain GUI E2E specs                                               (Phase 16)
+PR 40 — Headless E2E + portable CI                                             (Phase 18.6–18.7)
+PR 41 — Renderer sandbox + IPC contracts                                       (Phase 18.1–18.3)
+PR 42 — Audit events + body caps                                               (Phase 18.4–18.5)
+PR 43 — Security regression suite                                              (Phase 18.12)
+PR 44 — Package smokes + SBOM + release manifest                               (Phase 18.8–18.9)
+PR 44b — Multi-lang API client generators + project SBOM + Stats counters +    (Phase 18b)
+         AI traffic-SQL tool + AI managed-browser tool + open-project-folder
+PR 45 — README + feature matrix honesty + lint                                 (Phase 18.10–18.11)
+PR 46 — Alpha tag + release notes                                               (Phase 19)</code></pre></div>
+<p><strong>Total:</strong> 46 PRs (~100 commits realistic).</p>
+<hr>
+<h2 id="23-backlog-by-priority">23. Backlog by priority<a class="anchor" href="#23-backlog-by-priority" aria-label="Permanent link to 23. Backlog by priority">#</a></h2>
+<h3 id="p0-required-for-alpha-credibility">P0 — required for alpha credibility<a class="anchor" href="#p0-required-for-alpha-credibility" aria-label="Permanent link to P0 — required for alpha credibility">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Phase</th></tr></thead><tbody><tr><td>1</td><td>No runtime vendored-source dependency (CI guard)</td><td>0</td></tr><tr><td>2</td><td>Honest feature matrix</td><td>0</td></tr><tr><td>3</td><td>Scanner payload mutation engine</td><td>1</td></tr><tr><td>4</td><td>Oracle response classifier</td><td>1</td></tr><tr><td>5</td><td>Probe matrix + evidence persistence</td><td>1</td></tr><tr><td>6</td><td>First 7 scanner families</td><td>1</td></tr><tr><td>6b</td><td>Per-family payload variant tables (≥6/family) + insertion-point iterator; delete single-payload <code>proxyEngine.ts</code> probes</td><td>1.7a–1.7b</td></tr><tr><td>6c</td><td>Passive engine expansion (8 → ≥24 IDs, incl. reflected-redirect-scheme catching <code>javascript:</code>/<code>data:</code>/<code>//</code>/<code>\\</code>)</td><td>4g</td></tr><tr><td>7</td><td>Scanner UI workspace</td><td>3</td></tr><tr><td>8</td><td>Flow filter DSL + 11 rule types</td><td>2</td></tr><tr><td>9</td><td>HAR export + cut/extract</td><td>2</td></tr><tr><td>10</td><td>Project Store schema migrations</td><td>15</td></tr><tr><td>11</td><td>Full-chain GUI + headless E2E</td><td>16</td></tr><tr><td>12</td><td>Renderer sandbox + IPC contracts</td><td>18</td></tr><tr><td>13</td><td>Security regression suite</td><td>18</td></tr><tr><td>14</td><td>Portable CI from source archive</td><td>18</td></tr></tbody></table></div>
+<h3 id="p1-makes-proxy-forge-useful-day-to-day">P1 — makes Proxy Forge useful day-to-day<a class="anchor" href="#p1-makes-proxy-forge-useful-day-to-day" aria-label="Permanent link to P1 — makes Proxy Forge useful day-to-day">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Phase</th></tr></thead><tbody><tr><td>14b</td><td>Contexts + auth methods + users + custom pages + anti-CSRF + Modes</td><td>3b</td></tr><tr><td>15</td><td>Scanner depth expansion (≥90 active, ≥70 passive IDs)</td><td>4</td></tr><tr><td>15b</td><td>CVE / named active families (Log4Shell, Spring4Shell, Heartbleed, ShellShock, cloud-metadata, …)</td><td>4h</td></tr><tr><td>15c</td><td>Passive posture rule expansion (~64 IDs)</td><td>4i</td></tr><tr><td>16</td><td>SOCKS5 / reverse / DNS modes</td><td>5</td></tr><tr><td>17</td><td>HTTP/2 + streaming</td><td>7</td></tr><tr><td>18</td><td>Playback (client + server)</td><td>8</td></tr><tr><td>19</td><td>Content views</td><td>9</td></tr><tr><td>20</td><td>Exploit Lab verifier templates</td><td>6</td></tr><tr><td>21</td><td>Skilllet metadata + automation recipes</td><td>13</td></tr><tr><td>22</td><td>OAST provider profiles</td><td>12</td></tr><tr><td>23</td><td>Extension SDK + sample extensions</td><td>14</td></tr><tr><td>23b</td><td>API spec ingest (OpenAPI/Postman/Insomnia/SOAP/OData/GraphQL) + Ajax spider</td><td>11b</td></tr><tr><td>23c</td><td>Multi-language API client generators (Python/Node.js/Java/Rust/Go/PHP)</td><td>18b</td></tr><tr><td>23d</td><td>Project SBOM (CycloneDX + SPDX)</td><td>18b</td></tr><tr><td>23e</td><td>Global Stats counters + passive Stats rule</td><td>18b</td></tr><tr><td>23f</td><td>AI agent traffic-SQL tool + managed-browser tool</td><td>18b</td></tr></tbody></table></div>
+<h3 id="p2-expands-coverage-and-operator-confidence">P2 — expands coverage and operator confidence<a class="anchor" href="#p2-expands-coverage-and-operator-confidence" aria-label="Permanent link to P2 — expands coverage and operator confidence">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Phase</th></tr></thead><tbody><tr><td>24</td><td>Browser scan oracle (DOM XSS, proto pollution)</td><td>10</td></tr><tr><td>24b</td><td>Interactive DOM source→sink tracer (analyst-driven)</td><td>10b</td></tr><tr><td>25</td><td>Param miner + content discovery</td><td>11</td></tr><tr><td>26</td><td>Optional side-cars (transparent, raw TCP/UDP, HTTP/3, WireGuard)</td><td>17</td></tr><tr><td>27</td><td>Long-tail product detection checks (~175 detections from vendored corpus)</td><td>post-alpha</td></tr><tr><td>28</td><td>Sechive-family recipes (10 OWASP-style coverage recipes)</td><td>post-alpha</td></tr></tbody></table></div>
+<h3 id="p3-durability-and-ecosystem">P3 — durability and ecosystem<a class="anchor" href="#p3-durability-and-ecosystem" aria-label="Permanent link to P3 — durability and ecosystem">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Item</th><th>Phase</th></tr></thead><tbody><tr><td>29</td><td>Generic automation API (CLI + JSON + event stream)</td><td>18 (parallel)</td></tr><tr><td>30</td><td>Signed evidence bundles + verification</td><td>already exists; harden</td></tr><tr><td>31</td><td>Enterprise policy package format</td><td>already exists; harden</td></tr><tr><td>32</td><td>Hosted multi-tenant OAST service</td><td>post-alpha</td></tr><tr><td>33</td><td>Cross-platform native side-car installer extras</td><td>post-alpha</td></tr></tbody></table></div>
+<hr>
+<h2 id="24-operating-cadence">24. Operating cadence<a class="anchor" href="#24-operating-cadence" aria-label="Permanent link to 24. Operating cadence">#</a></h2>
+<p>Each working day:</p>
+<div class="highlight"><pre class="code-block"><code>morning  — read top-of-queue PR, plan the day&#39;s slice
+midday   — implementation + per-family fixture tests
+afternoon — test pass, type check, build, smoke
+end      — open PR with tests, update FEATURE_MATRIX.md row for the new capability</code></pre></div>
+<p>Each working week:</p>
+<div class="highlight"><pre class="code-block"><code>monday    — pick top P0/P1 backlog item per active track
+mid-week  — landing PRs, opening new ones
+friday    — fast CI sweep, README accuracy spot-check, weekly cut tag</code></pre></div>
+<p>Each phase exit:</p>
+<div class="highlight"><pre class="code-block"><code>- all phase tests green
+- master plan §10 gate marked done
+- backlog reordered against learnings
+- planning/PROXY_FORGE_ROADMAP.md timeline column updated</code></pre></div>
+<hr>
+<h2 id="25-status-tracking">25. Status tracking<a class="anchor" href="#25-status-tracking" aria-label="Permanent link to 25. Status tracking">#</a></h2>
+<p>Add a single status table at the top of this file once execution starts:</p>
+<div class="highlight"><pre class="code-block"><code>| Phase | Status        | Started     | Done        | Gate |
+|---|---|---|---|---|
+| 0   | In progress | 2026-05-26 |             |       |
+| 1   | Pending     |             |             | G1    |
+| 2   | Pending     |             |             | G5    |
+| ... | ...         |             |             |       |</code></pre></div>
+<p>Update at each phase boundary. Reference the gate ID from the master plan §10 in each row.</p>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="project-sbom-guide.html"><span>Previous</span>Project SBOM Guide</a><span></span></nav>
+    </article>
+    <aside class="toc" aria-label="Table of contents">
+      <p>Table of contents</p>
+      <ol><li class="toc-level-2"><a href="#status-tracking">Status tracking</a></li><li class="toc-level-2"><a href="#1-phase-summary">1. Phase summary</a></li><li class="toc-level-2"><a href="#2-phase-0-reset-boundaries-standalone-guardrails">2. Phase 0 — Reset boundaries + standalone guardrails</a></li><li class="toc-level-3"><a href="#goals">Goals</a></li><li class="toc-level-3"><a href="#tasks">Tasks</a></li><li class="toc-level-3"><a href="#exit-gate">Exit gate</a></li><li class="toc-level-2"><a href="#3-phase-1-scanner-primitives-week-1-2">3. Phase 1 — Scanner primitives (Week 1–2)</a></li><li class="toc-level-3"><a href="#goals">Goals</a></li><li class="toc-level-3"><a href="#tasks">Tasks</a></li><li class="toc-level-3"><a href="#tests">Tests</a></li><li class="toc-level-3"><a href="#exit-gate-g1">Exit gate (G1)</a></li><li class="toc-level-2"><a href="#4-phase-2-traffic-tier-1-week-1-parallel-with-phase-1">4. Phase 2 — Traffic Tier 1 (Week 1, parallel with Phase 1)</a></li><li class="toc-level-3"><a href="#goals">Goals</a></li><li class="toc-level-3"><a href="#tasks">Tasks</a></li><li class="toc-level-3"><a href="#patches">Patches</a></li><li class="toc-level-3"><a href="#tests">Tests</a></li><li class="toc-level-3"><a href="#exit-gate-g5">Exit gate (G5)</a></li><li class="toc-level-2"><a href="#5-phase-3-scanner-ui-workspace-week-1-2-parallel">5. Phase 3 — Scanner UI workspace (Week 1–2, parallel)</a></li><li class="toc-level-3"><a href="#goals">Goals</a></li><li class="toc-level-3"><a href="#tasks">Tasks</a></li><li class="toc-level-3"><a href="#patches">Patches</a></li><li class="toc-level-3"><a href="#exit-gate">Exit gate</a></li><li class="toc-level-2"><a href="#5b-phase-3b-contexts-auth-modes-anti-csrf-custom-pages-week-2-3-blocks-4b-and-10b">5b. Phase 3b — Contexts, Auth, Modes, Anti-CSRF, Custom Pages (Week 2–3, blocks 4b+ and 10b)</a></li><li class="toc-level-3"><a href="#tasks">Tasks</a></li></ol>
+    </aside>
+  </main>
+  <footer class="footer">
+    <span>ProxyForge 0.1.0-alpha.1 public alpha</span>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/LICENSE">MIT licensed</a>
+    <a href="https://github.com/the-vibe-dev/proxyforge-public/security/advisories/new">Report a vulnerability</a>
+  </footer>
+  <script>
+    const search = document.querySelector('#doc-search');
+    const navLinks = [...document.querySelectorAll('#doc-nav a')];
+    search?.addEventListener('input', () => {
+      const query = search.value.trim().toLowerCase();
+      navLinks.forEach((link) => {
+        link.hidden = query && !link.textContent.toLowerCase().includes(query);
+      });
+    });
+  </script>
+</body>
+</html>
