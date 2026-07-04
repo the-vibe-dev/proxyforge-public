@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1d21">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Install Linux and Windows - ProxyForge Docs">
-  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release notes.">
   <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
   <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/install-linux-windows.html">
   <link rel="icon" href="./assets/favicon-32.png">
@@ -36,7 +36,7 @@
       <div class="sidebar-title">
         <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
       </div>
-      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a aria-current="page" href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a aria-current="page" href="install-linux-windows.html">Install Linux and Windows</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
     </aside>
     <article class="doc" id="content">
       <header class="doc-header">
@@ -203,11 +203,11 @@ npm run dist:win:zip   # zip-only fallback when Wine is unavailable</code></pre>
     { &quot;name&quot;: &quot;packaged-gui-launch&quot;, &quot;status&quot;: &quot;passed&quot; }
   ]
 }</code></pre></div>
-<p>Attach JSON output and artifact SHA-256 values to <a href="https://github.com/the-vibe-dev/proxyforge-public/blob/main/RELEASE_EVIDENCE.md">RELEASE_EVIDENCE.md</a>. A lane is not marked <code>Production Ready</code> until its clean-machine install, browser routing/trust-store, packaged headless scan/report, packaged runtime proxy/cert/OAST/report, and platform-specific cookie/decryption smokes have current evidence.</p>
+<p>Keep JSON output and artifact SHA-256 values with the GitHub release or internal release run, not in the public source tree. A lane is not marked <code>Production Ready</code> until its clean-machine install, browser routing/trust-store, packaged headless scan/report, packaged runtime proxy/cert/OAST/report, and platform-specific cookie/decryption smokes have current evidence.</p>
 <h3 id="known-host-dependent-lanes">Known host-dependent lanes<a class="anchor" href="#known-host-dependent-lanes" aria-label="Permanent link to Known host-dependent lanes">#</a></h3>
 <ul><li><strong>Windows <code>Cert:\CurrentUser\Root</code> mutation</strong> — blocked with <code>ERROR_NOT_SUPPORTED</code> on <code>windows-trust-runner</code> and similar locked hosts. This is the trust-store automation lane only; the manual fallback in <a href="#windows-ca-fallback">Windows CA fallback</a> works on any session.</li><li><strong>Windows DPAPI sample-cookie extraction</strong> — requires a host where the current user has a Chromium-derived profile key DPAPI can unwrap.</li><li><strong>Linux Secret Service cookie extraction</strong> — requires a desktop session with an unlocked keyring.</li></ul>
 <p>These do not block alpha install. They are noted in the release matrix and revisit cycles.</p>
-      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="release-notes.html"><span>Previous</span>Release Notes</a><a class="pager-link pager-next" href="release-checklist.html"><span>Next</span>Release Checklist</a></nav>
+      <nav class="pager" aria-label="Previous and next pages"><a class="pager-link" href="release-notes.html"><span>Previous</span>Release Notes</a><a class="pager-link pager-next" href="operator-guide.html"><span>Next</span>Operator Guide</a></nav>
     </article>
     <aside class="toc" aria-label="Table of contents">
       <p>Table of contents</p>

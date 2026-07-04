@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1d21">
   <meta property="og:type" content="website">
   <meta property="og:title" content="ProxyForge Docs">
-  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release notes.">
   <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
   <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/">
   <link rel="icon" href="./assets/favicon-32.png">
@@ -36,7 +36,7 @@
       <div class="sidebar-title">
         <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
       </div>
-      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a aria-current="page" href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a aria-current="page" href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
     </aside>
     <article class="doc" id="content">
       <section class="pf-hero" aria-labelledby="proxyforge-title">
@@ -151,7 +151,7 @@ proxyforge headless --target https://app.example.test --scope app.example.test -
 npm run dist:linux
 npm run dist:win
 npm run dist:win:zip</code></pre></div>
-<p><code>npm run test:release</code> builds the renderer and Electron runtime, then checks Electron Builder targets, packaged entrypoints, ignored release directories, and the operator checklist. Linux targets AppImage and <code>.deb</code>. Windows targets NSIS and portable executables. <code>dist:win:zip</code> is the Linux-host fallback when Wine is unavailable. The install-smoke procedure lives in <a href="release-checklist.html"><code>docs/RELEASE_CHECKLIST.md</code></a>; artifact evidence is in <a href="release-evidence.html"><code>docs/RELEASE_EVIDENCE.md</code></a>.</p>
+<p><code>npm run test:release</code> builds the renderer and Electron runtime, then checks Electron Builder targets, packaged entrypoints, ignored release directories, and the public operator docs. Linux targets AppImage and <code>.deb</code>. Windows targets NSIS and portable executables. Install, SmartScreen, checksum, CA trust, and smoke-test guidance lives in <a href="install-linux-windows.html"><code>docs/INSTALL_LINUX_WINDOWS.md</code></a> and <a href="operator-guide.html"><code>docs/OPERATOR_GUIDE.md</code></a>.</p>
 <hr>
 <h2 id="agent-control-surface">Agent Control Surface<a class="anchor" href="#agent-control-surface" aria-label="Permanent link to Agent Control Surface">#</a></h2>
 <p><code>proxyforge-agent</code> is a JSON control wrapper over IPC for Codex, Claude, Vantix, and OpenAI-compatible local endpoints. Nine control lanes:</p>

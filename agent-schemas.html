@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1a1d21">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Agent Schemas - ProxyForge Docs">
-  <meta property="og:description" content="ProxyForge public alpha documentation and release evidence.">
+  <meta property="og:description" content="ProxyForge public alpha documentation and release notes.">
   <meta property="og:image" content="https://the-vibe-dev.github.io/proxyforge-public/assets/proxyforge-social-square.png">
   <meta property="og:url" content="https://the-vibe-dev.github.io/proxyforge-public/agent-schemas.html">
   <link rel="icon" href="./assets/favicon-32.png">
@@ -36,7 +36,7 @@
       <div class="sidebar-title">
         <img src="./assets/proxyforge-logo-lockup.png" alt="ProxyForge">
       </div>
-      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a><a href="release-checklist.html">Release Checklist</a><a href="release-evidence.html">Release Evidence</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a aria-current="page" href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
+      <nav id="doc-nav"><div class="nav-section"><p>Home</p><a href="./">Home</a></div><div class="nav-section"><p>Release</p><a href="release-notes.html">Release Notes</a><a href="install-linux-windows.html">Install Linux and Windows</a></div><div class="nav-section"><p>Operations</p><a href="operator-guide.html">Operator Guide</a><a href="feature-matrix.html">Feature Matrix</a><a href="agentic-interface.html">Agentic Interface</a><a href="automation-api.html">Automation API</a></div><div class="nav-section"><p>Advanced Modes</p><a href="modes-http3.html">HTTP/3 Mode</a><a href="modes-transparent.html">Transparent Mode</a><a href="modes-wireguard.html">WireGuard Mode</a><a href="oast-provider-guide.html">OAST Provider Guide</a></div><div class="nav-section"><p>Agents</p><a href="agent-codex.html">Codex Agent</a><a href="agent-claude.html">Claude Agent</a><a href="agent-vantix.html">Vantix Agent</a><a aria-current="page" href="agent-schemas.html">Agent Schemas</a></div><div class="nav-section"><p>Trust</p><a href="security.html">Security Policy</a><a href="project-sbom-guide.html">Project SBOM Guide</a><a href="roadmap.html">Roadmap</a></div></nav>
     </aside>
     <article class="doc" id="content">
       <header class="doc-header">
@@ -443,16 +443,14 @@
 }</code></pre></div>
 <p>Agents should use this package to separate manual hosted warmups from actual scheduled CI accumulation. Manual <code>workflow_dispatch</code> runs can prove the hosted lane and cache mechanics, but the row should not move to Production Ready until scheduled run receipts are linked by run id to retained summaries, prove <code>actions/cache/restore</code> plus <code>actions/cache/save</code>, include uploaded summary and dashboard artifacts, preserve full-fidelity operational material, and keep redaction at report export only.</p>
 <h2 id="install-docs-production-evidence">Install Docs Production Evidence<a class="anchor" href="#install-docs-production-evidence" aria-label="Permanent link to Install Docs Production Evidence">#</a></h2>
-<p><code>proxyforge-install-docs-production-evidence-package</code> is the proof bundle for packaged install, operator, release, and agent documentation:</p>
+<p><code>proxyforge-install-docs-production-evidence-package</code> is the proof bundle for packaged install, operator, and agent documentation:</p>
 <div class="highlight"><pre class="code-block" data-lang="json"><code>{
   &quot;kind&quot;: &quot;proxyforge-install-docs-production-evidence-package&quot;,
-  &quot;documentCount&quot;: 8,
-  &quot;packagedDocumentCount&quot;: 8,
+  &quot;documentCount&quot;: 6,
+  &quot;packagedDocumentCount&quot;: 6,
   &quot;requirements&quot;: {
     &quot;installGuidePackaged&quot;: true,
     &quot;operatorGuidePackaged&quot;: true,
-    &quot;releaseChecklistPackaged&quot;: true,
-    &quot;releaseEvidencePackaged&quot;: true,
     &quot;agentDocsPackaged&quot;: true,
     &quot;packageScriptCovered&quot;: true,
     &quot;linuxInstallCovered&quot;: true,
@@ -465,7 +463,7 @@
     &quot;highRiskWorkflowsCovered&quot;: true,
     &quot;troubleshootingCovered&quot;: true,
     &quot;productionSignoffCovered&quot;: true,
-    &quot;releaseEvidenceSynchronized&quot;: true,
+    &quot;packagedDocsSynchronized&quot;: true,
     &quot;rawExecutorMaterialPreserved&quot;: true,
     &quot;operationalSecretsPreserved&quot;: true,
     &quot;reportPhaseOnlyRedaction&quot;: true
